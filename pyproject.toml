@@ -1,0 +1,62 @@
+[project]
+name = "micro-service-agent"
+version = "0.1.0"
+description = "A container-based agent structure"
+readme = "README.md"
+authors = [
+    { name = "Sinan Ozel", email = "coding@sinan.slmail.me" },
+]
+license = { file = "LICENSE" }
+dependencies = [
+    "pytest==9.0.1",
+    "pytest-depends==1.0.1",
+    "pytest-repeated==0.3.8",
+    "pillow==12.0.0",
+    "pillow-heif==1.1.1",
+    "streamlit==1.52.1",
+    "litellm==1.80.0",
+    "fastapi==0.124.2",
+    "uvicorn[standard]==0.38.0",
+    "supervisor==4.3.0",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest==9.0.1",          # For running tests
+    "pytest-cov>=3.0.0",      # For test coverage reporting
+    "pytest-depends>=1.0.1",  # For test dependency management
+    "pytest-mock>=3.14.0",    # For mocking in tests
+    "httpx>=0.28.1",          # To make more complex calls, such as streaming.
+]
+
+dev = [
+    "isort>=5.12.0",          # For import sorting
+    "ruff>=0.12.11",          # For linting
+    "black>=24.0.0",          # For code formatting (Black)
+    "docformatter>=1.7.5",    # For formatting docstrings
+]
+
+docs = [
+    "mkdocs-material>=9.0.0", # Material theme for MkDocs
+    "mkdocstrings[python]>=0.24.0",  # API documentation from docstrings
+]
+
+[tool.ruff]
+line-length = 80
+
+[tool.black]
+line-length = 80
+target-version = ['py312']
+
+[tool.isort]
+profile = "black"
+line_length = 80
+
+[project.urls]
+Homepage = "https://github.com/<ORGANIZATION>/<MODULE-NAME>"
+Issues = "https://github.com/<ORGANIZATION>/<MODULE-NAME>/issues"

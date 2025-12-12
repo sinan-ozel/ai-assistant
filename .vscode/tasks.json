@@ -1,0 +1,37 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "docker-build",
+            "dockerBuild": {
+                "context": "${workspaceFolder}/agent_stem",
+                "dockerfile": "${workspaceFolder}/agent_stem/Dockerfile",
+                "tag": "agent-stem:latest"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Run Tests",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/test_environments/test_env_basic/docker-compose.yaml",
+                "--project-directory", "${workspaceFolder}/test_environments/test_env_basic",
+                "up",
+                "--build",
+                "--abort-on-container-exit",
+                "--exit-code-from", "tests"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        }
+    ]
+}

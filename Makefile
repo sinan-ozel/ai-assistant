@@ -1,0 +1,24 @@
+.PHONY: test clean build help
+
+help:
+	@echo "Available targets:"
+	@echo "  make test   - Run all tests in isolated Docker environment"
+	@echo "  make build  - Build the agent_stem Docker image"
+	@echo "  make clean  - Clean up test containers and networks"
+	@echo "  make help   - Show this help message"
+
+test:
+	docker compose \
+		-f test_environments/test_env_basic/docker-compose.yaml \
+		--project-directory test_environments/test_env_basic \
+		up \
+		--build \
+		--abort-on-container-exit \
+		--exit-code-from tests
+
+build:
+	docker build -t agent-stem:latest agent_stem/
+
+clean:
+	docker compose -f test_environments/test_env_basic/docker-compose.yaml --project-directory test_environments/test_env_basic down -v
+	rm -rf test_environments/test_env_basic/test-results/*
