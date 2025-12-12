@@ -1,0 +1,31 @@
+{
+    "name": "micro-service-agent-devcontainer",
+    "dockerComposeFile": "docker-compose.yaml",
+    "service": "devcontainer",
+    "workspaceFolder": "/workspace",
+    "mounts": [
+        "source=${localEnv:HOME}/.ssh,target=/home/devuser/.ssh,type=bind"
+    ],
+    "features": {
+	    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+	      "moby": false
+	    },
+        "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "clemenspeters.format-json",
+                "euskadi31.json-pretty-printer",
+                "jgalianoz.qr-generator",
+                "github.vscode-github-actions",
+                "ms-kubernetes-tools.vscode-kubernetes-tools",
+                "redhat.vscode-yaml",
+                "Tim-Koehler.helm-intellisense",
+                "ms-vscode.makefile-tools"
+            ]
+        }
+    },
+    "remoteUser": "devuser"
+}
