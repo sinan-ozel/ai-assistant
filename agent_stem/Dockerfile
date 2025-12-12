@@ -19,6 +19,9 @@ COPY agent_stem/src/ /app/src/
 COPY agent_stem/default/ /app/default/
 COPY agent_stem/tests/ /app/tests/
 
+# Set PYTHONPATH to include src directory
+ENV PYTHONPATH=/app/src:$PYTHONPATH
+
 # Copy supervisor configuration
 COPY agent_stem/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
