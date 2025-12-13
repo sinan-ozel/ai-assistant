@@ -5,6 +5,6 @@ services:
       dockerfile: reformat/Dockerfile
     container_name: reformat-code
     volumes:
-      - /workspace/agent_stem/src:/workspace/src:rw
+      - ./agent_stem/src:/workspace/src:rw
     working_dir: /workspace
     network_mode: bridge
