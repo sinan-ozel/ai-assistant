@@ -1,5 +1,7 @@
 import logging
+
 from fastapi import FastAPI
+
 from startup.discover_providers import discover_providers
 
 # Configure logging

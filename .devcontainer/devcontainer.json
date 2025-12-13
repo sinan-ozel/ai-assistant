@@ -3,19 +3,24 @@
     "dockerComposeFile": "docker-compose.yaml",
     "service": "devcontainer",
     "workspaceFolder": "/workspace",
+    "remoteUser": "root",
     "mounts": [
         "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind"
     ],
     "features": {
-	    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+	    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+	      "version": "latest",
 	      "moby": false,
+	      "dockerDashComposeVersion": "v2",
+	      "enableNonRootDocker": "false"
 	    },
-        "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
         "ghcr.io/devcontainers/features/github-cli:1": {}
     },
     "customizations": {
         "vscode": {
             "extensions": [
+		        "github.copilot",
+		        "github.copilot-chat",
                 "ms-python.python",
                 "ms-python.vscode-pylance",
                 "clemenspeters.format-json",
@@ -29,6 +34,5 @@
             ]
         }
     },
-    "postStartCommand": "echo 'Checking services...' && timeout 30 bash -c 'until curl -sf http://redis:6379 >/dev/null 2>&1 || nc -z redis 6379 2>/dev/null; do echo Waiting for Redis...; sleep 2; done' && echo 'Redis is ready' && timeout 30 bash -c 'until curl -sf http://qdrant:6333/healthz 2>/dev/null | grep -q ok; do echo Waiting for Qdrant...; sleep 2; done' && echo 'Qdrant is ready' && echo 'All services are ready!'",
-    "remoteUser": "root"
+    "postStartCommand": "nohup dockerd > /var/log/dockerd.log 2>&1 & sleep 5 && echo 'Docker daemon started' && timeout 30 bash -c 'until nc -z redis 6379 2>/dev/null; do echo Waiting for Redis...; sleep 2; done' && echo 'Redis is ready' && echo 'DevContainer ready!'",
 }

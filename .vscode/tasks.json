@@ -32,6 +32,18 @@
                 "kind": "test",
                 "isDefault": true
             }
+        },
+        {
+            "label": "Reformat Code",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/reformat/docker-compose.yaml",
+                "up",
+                "--build"
+            ],
+            "problemMatcher": []
         }
     ]
 }
