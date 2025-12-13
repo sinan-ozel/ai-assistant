@@ -24,14 +24,22 @@ async def startup_event():
 
     try:
         providers_state = discover_providers()
-        logger.info(f"Found {len(providers_state['available_providers'])} available providers")
+        logger.info(
+            f"Found {len(providers_state['available_providers'])} available providers"
+        )
 
-        if providers_state['default_provider']:
-            logger.info(f"Default provider: {providers_state['default_provider']}")
+        if providers_state["default_provider"]:
+            logger.info(
+                f"Default provider: {providers_state['default_provider']}"
+            )
     except Exception as e:
         logger.error(f"Error discovering providers: {e}")
         # Don't fail startup, but log the error
-        providers_state = {"providers": [], "available_providers": [], "default_provider": None}
+        providers_state = {
+            "providers": [],
+            "available_providers": [],
+            "default_provider": None,
+        }
 
 
 @app.get("/health")
@@ -46,5 +54,5 @@ async def get_providers():
     return {
         "available": providers_state.get("available_providers", []),
         "default": providers_state.get("default_provider"),
-        "total": len(providers_state.get("providers", []))
+        "total": len(providers_state.get("providers", [])),
     }

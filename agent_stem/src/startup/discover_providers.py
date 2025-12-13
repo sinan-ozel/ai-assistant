@@ -4,11 +4,12 @@ import os
 import warnings
 from pathlib import Path
 from typing import Any, Dict, List
+
 import yaml
 from litellm import completion
 
 # Allowed configuration keys for provider validation
-ALLOWED_KEYS = ['model', 'api_base', 'api_key', 'max_tokens']
+ALLOWED_KEYS = ["model", "api_base", "api_key", "max_tokens"]
 
 # Base directories for providers
 DEFAULT_PROVIDERS_DIR = Path("/app/default/providers")
@@ -26,7 +27,11 @@ def substitute_env_vars(config: Dict[str, Any]) -> Dict[str, Any]:
     """
     result = {}
     for key, value in config.items():
-        if isinstance(value, str) and value.startswith("${") and value.endswith("}"):
+        if (
+            isinstance(value, str)
+            and value.startswith("${")
+            and value.endswith("}")
+        ):
             env_var = value[2:-1]
             result[key] = os.getenv(env_var, value)
         elif isinstance(value, dict):
@@ -87,8 +92,7 @@ def validate_provider(config: Dict[str, Any]) -> tuple[bool, str]:
 
 
 def load_providers_from_directory(
-    directory: Path,
-    is_default: bool = True
+    directory: Path, is_default: bool = True
 ) -> List[Dict[str, Any]]:
     """Load and validate providers from a directory.
 
@@ -103,7 +107,9 @@ def load_providers_from_directory(
 
     if not directory.exists():
         if is_default:
-            raise RuntimeError(f"Default providers directory not found: {directory}")
+            raise RuntimeError(
+                f"Default providers directory not found: {directory}"
+            )
         return providers
 
     for provider_file in sorted(directory.glob("*.yaml")):
@@ -114,7 +120,7 @@ def load_providers_from_directory(
             "available": False,
             "is_enabled": True,
             "error": None,
-            "config": {}
+            "config": {},
         }
 
         try:
@@ -133,7 +139,9 @@ def load_providers_from_directory(
 
             # Validate required fields
             if "model" not in config:
-                error_msg = f"Provider {provider_file.name} missing 'model' field"
+                error_msg = (
+                    f"Provider {provider_file.name} missing 'model' field"
+                )
                 if is_default:
                     raise RuntimeError(error_msg)
                 else:
@@ -149,7 +157,9 @@ def load_providers_from_directory(
 
             # Check API key availability
             if not check_api_key_available(config):
-                provider_data["error"] = "Required API key not found in environment"
+                provider_data["error"] = (
+                    "Required API key not found in environment"
+                )
                 providers.append(provider_data)
                 continue
 
@@ -164,7 +174,9 @@ def load_providers_from_directory(
 
         except Exception as e:
             if is_default:
-                raise RuntimeError(f"Error loading default provider {provider_file.name}: {e}")
+                raise RuntimeError(
+                    f"Error loading default provider {provider_file.name}: {e}"
+                )
             else:
                 provider_data["error"] = str(e)
                 providers.append(provider_data)
@@ -182,10 +194,14 @@ def discover_providers() -> Dict[str, Any]:
         - default_provider: Name of default provider (if only one available)
     """
     # Load from default directory
-    default_providers = load_providers_from_directory(DEFAULT_PROVIDERS_DIR, is_default=True)
+    default_providers = load_providers_from_directory(
+        DEFAULT_PROVIDERS_DIR, is_default=True
+    )
 
     # Load from custom directory
-    custom_providers = load_providers_from_directory(CUSTOM_PROVIDERS_DIR, is_default=False)
+    custom_providers = load_providers_from_directory(
+        CUSTOM_PROVIDERS_DIR, is_default=False
+    )
 
     # Combine all providers
     all_providers = default_providers + custom_providers
@@ -202,5 +218,5 @@ def discover_providers() -> Dict[str, Any]:
     return {
         "providers": all_providers,
         "available_providers": available_names,
-        "default_provider": default_provider
+        "default_provider": default_provider,
     }

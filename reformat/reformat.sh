@@ -1,0 +1,39 @@
+#!/bin/bash
+set -e
+
+echo ""
+echo "=========================================="
+echo "Running Black (code formatter)..."
+echo "=========================================="
+black src/
+
+echo ""
+echo "=========================================="
+echo "Running docformatter (docstring formatter)..."
+echo "=========================================="
+# First check
+docformatter \
+  --check \
+  --recursive \
+  --wrap-summaries 72 \
+  --wrap-descriptions 72 \
+  src/
+
+# Then apply changes
+docformatter \
+  --in-place \
+  --recursive \
+  --wrap-summaries 72 \
+  --wrap-descriptions 72 \
+  src/
+
+echo ""
+echo "=========================================="
+echo "Running isort (import sorter)..."
+echo "=========================================="
+isort src/
+
+echo ""
+echo "=========================================="
+echo "Formatting complete!"
+echo "=========================================="

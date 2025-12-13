@@ -1,5 +1,5 @@
-from time import sleep
 import logging
+from time import sleep
 
 if __name__ == "__main__":
     logging.info("Aware worker starting...")
