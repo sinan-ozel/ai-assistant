@@ -26,17 +26,4 @@ COPY ../pyproject.toml /workspace/pyproject.toml
 # Install Python dependencies including dev dependencies
 RUN pip install --no-cache-dir -e ".[dev]"
 
-# Create non-root user and add to docker group
-# Use ARG to allow passing host UID/GID
-ARG USER_UID=1000
-ARG USER_GID=1000
-
-RUN groupadd -g 999 docker || true && \
-    groupadd -g ${USER_GID} devuser || true && \
-    useradd -m -s /bin/bash -u ${USER_UID} -g ${USER_GID} devuser && \
-    usermod -aG docker devuser && \
-    chown -R devuser:devuser /workspace
-
-USER devuser
-
 CMD ["/bin/bash"]

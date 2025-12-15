@@ -26,10 +26,12 @@
                 "clemenspeters.format-json",
                 "euskadi31.json-pretty-printer",
                 "jgalianoz.qr-generator",
+                "gruntfuggly.todo-tree",
                 "github.vscode-github-actions",
                 "ms-kubernetes-tools.vscode-kubernetes-tools",
                 "redhat.vscode-yaml",
                 "Tim-Koehler.helm-intellisense",
+                "shd101wyy.markdown-preview-enhanced",
                 "ms-vscode.makefile-tools"
             ]
         }
