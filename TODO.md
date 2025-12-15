@@ -1,4 +1,7 @@
 - [ ] Create a new test_environment, one with secrets and access to LLMs. Rewrite the test_providers one there.
+- [ ] Add the swagger and the task explorer extensions to the template repo.
+- [ ] Add the general tests to the template repo.
+- [ ] Add tests to see that swagger is returning examples and specifications.
 - [ ] Add github actions, reformat and commit
 - [ ] Add first agent, take out the ollama provider
 - [ ] Finish the providers processing logic

@@ -32,9 +32,8 @@ def build_example_from_schema(schema, components):
     return schema.get("example", None)
 
 
-@pytest.mark.depends(on=["test_health_endpoint.py::test_health_endpoint"])
 def get_openapi_endpoints():
-    """Yield (method, path, example) for each endpoint with a 200 response."""
+    """Yield (method, path, request_example, response_example) for each endpoint with a 200 response."""
     resp = requests.get(OPENAPI_URL)
     resp.raise_for_status()
     openapi = resp.json()
@@ -43,35 +42,57 @@ def get_openapi_endpoints():
         for method, details in methods.items():
             responses = details.get("responses", {})
             if "200" in responses:
-                example = {}
+                request_example = {}
+                response_example = None
+
+                # Extract request example if requestBody exists
                 if "requestBody" in details:
                     content = details["requestBody"].get("content", {})
                     for media_type, media_details in content.items():
                         # Try to resolve $ref in schema
                         schema = media_details.get("schema", {})
                         if schema:
-                            example = build_example_from_schema(schema, components)
+                            request_example = build_example_from_schema(schema, components)
                         # If there is a direct example, prefer it
                         if "example" in media_details:
-                            example = media_details["example"]
+                            request_example = media_details["example"]
                         elif "examples" in media_details:
                             first = next(iter(media_details["examples"].values()))
-                            example = first.get("value", {})
-                yield method, path, example
+                            request_example = first.get("value", {})
+
+                # Extract response example from 200 response
+                response_200 = responses["200"]
+                response_content = response_200.get("content", {})
+                for media_type, media_details in response_content.items():
+                    schema = media_details.get("schema", {})
+                    if schema:
+                        response_example = build_example_from_schema(schema, components)
+                    # If there is a direct example, prefer it
+                    if "example" in media_details:
+                        response_example = media_details["example"]
+                    elif "examples" in media_details:
+                        first = next(iter(media_details["examples"].values()))
+                        response_example = first.get("value", {})
+
+                yield method, path, request_example, response_example
 
 
-@pytest.mark.parametrize("method,path,example", list(get_openapi_endpoints()))
-def test_openapi_200_responses(method, path, example):
+@pytest.mark.depends(on=["test_health_endpoint.py::test_health_endpoint"])
+@pytest.mark.parametrize("method,path,request_example,response_example", list(get_openapi_endpoints()))
+def test_openapi_200_responses(method, path, request_example, response_example):
     """
     Automatically checks that all documented endpoints with a 200 response
-    in the OpenAPI spec actually return a 200 status code.
+    in the OpenAPI spec actually return a 200 status code and have response examples.
     """
     url = f"{BASE_URL}{path}"
     if method == "get":
+        # GET requests should have response examples
+        assert response_example is not None, f"No response example found for {method.upper()} {path}"
         resp = requests.get(url)
     elif method == "post":
-        assert example, f"No example found for {method.upper()} {path}"
-        resp = requests.post(url, json=example)
+        assert request_example, f"No request example found for {method.upper()} {path}"
+        assert response_example is not None, f"No response example found for {method.upper()} {path}"
+        resp = requests.post(url, json=request_example)
     else:
         pytest.skip(f"Method {method.upper()} not supported for endpoint {url}")
 
@@ -79,6 +100,5 @@ def test_openapi_200_responses(method, path, example):
         f"Endpoint {method.upper()} {url} did not return 200. "
         f"Returned {resp.status_code}. Response: {resp.text}"
     )
-    # TODO: Get the response example, check that the keys match.
 
 # TODO: Add another test where we remove one of the keys from the example, and assert 400 or 422.
