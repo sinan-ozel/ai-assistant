@@ -1,4 +1,4 @@
+- [ ] Create a new test_environment, one with secrets and access to LLMs. Rewrite the test_providers one there.
 - [ ] Add github actions, reformat and commit
-- [ ] Rename to /private/v1/providers, add test
 - [ ] Add first agent, take out the ollama provider
 - [ ] Finish the providers processing logic

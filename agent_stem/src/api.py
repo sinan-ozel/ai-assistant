@@ -22,24 +22,15 @@ async def startup_event():
     logger.info("Starting FastAPI app...")
     logger.info("Discovering providers...")
 
-    try:
-        providers_state = discover_providers()
-        logger.info(
-            f"Found {len(providers_state['available_providers'])} available providers"
-        )
+    providers_state = discover_providers()
+    logger.info(
+        f"Found {len(providers_state['available_providers'])} available providers"
+    )
 
-        if providers_state["default_provider"]:
-            logger.info(
-                f"Default provider: {providers_state['default_provider']}"
-            )
-    except Exception as e:
-        logger.error(f"Error discovering providers: {e}")
-        # Don't fail startup, but log the error
-        providers_state = {
-            "providers": [],
-            "available_providers": [],
-            "default_provider": None,
-        }
+    if providers_state["default_provider"]:
+        logger.info(
+            f"Default provider: {providers_state['default_provider']}"
+        )
 
 
 @app.get("/health")
@@ -48,11 +39,12 @@ async def health():
     return {"status": "ok"}
 
 
-@app.get("/providers")
+@app.get("/private/v1/providers")
 async def get_providers():
     """Get information about available providers."""
     return {
         "available": providers_state.get("available_providers", []),
         "default": providers_state.get("default_provider"),
         "total": len(providers_state.get("providers", [])),
+        "status": providers_state.get("status", "unknown"),
     }

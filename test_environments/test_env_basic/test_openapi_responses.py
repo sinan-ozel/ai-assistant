@@ -32,7 +32,7 @@ def build_example_from_schema(schema, components):
     return schema.get("example", None)
 
 
-@pytest.mark.depends(on=["test_health.py::test_health_endpoint"])
+@pytest.mark.depends(on=["test_health_endpoint.py::test_health_endpoint"])
 def get_openapi_endpoints():
     """Yield (method, path, example) for each endpoint with a 200 response."""
     resp = requests.get(OPENAPI_URL)

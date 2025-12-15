@@ -215,8 +215,17 @@ def discover_providers() -> Dict[str, Any]:
     if len(available) == 1:
         default_provider = available[0]["name"]
 
+    # Determine status
+    if len(available) == 0:
+        status = "no_providers_available"
+    elif len(available) == 1:
+        status = "one_provider_available"
+    else:
+        status = "multiple_providers_available"
+
     return {
         "providers": all_providers,
         "available_providers": available_names,
         "default_provider": default_provider,
+        "status": status,
     }
