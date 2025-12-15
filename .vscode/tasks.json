@@ -2,10 +2,10 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build",
+            "label": "Build Container",
             "type": "docker-build",
             "dockerBuild": {
-                "context": "${workspaceFolder}/agent_stem",
+                "context": "${workspaceFolder}",
                 "dockerfile": "${workspaceFolder}/agent_stem/Dockerfile",
                 "tag": "agent-stem:latest"
             },
@@ -13,6 +13,32 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "Run Container",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "run",
+                "--rm",
+                "--name", "workspace-dev",
+                "-p", "8000:8000",
+                "-p", "8501:8501",
+                "agent-stem:latest"
+            ],
+            "dependsOn": ["Build Container"],
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^(.*)$",
+                    "line": 1
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".",
+                    "endsPattern": "Uvicorn running on|Application startup complete"
+                }
+            },
+            "isBackground": true
         },
         {
             "label": "Run Tests",
