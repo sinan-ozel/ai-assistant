@@ -1,0 +1,39 @@
+services:
+  # Test infrastructure services
+  # Application under test
+  app:
+    build:
+      context: ../..
+      dockerfile: agent_stem/Dockerfile
+    container_name: app-test-nothing
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/8000' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Test runner
+  tests:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: tests-runner-nothing
+    networks:
+      - test-network
+    environment:
+      - BASE_URL=http://app:8000
+    depends_on:
+      app:
+        condition: service_healthy
+    volumes:
+      - .:/tests
+      - test-results:/tests/test-results
+
+networks:
+  test-network:
+    driver: bridge
+
+volumes:
+  test-results:

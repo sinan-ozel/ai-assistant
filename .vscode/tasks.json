@@ -41,7 +41,7 @@
             "isBackground": true
         },
         {
-            "label": "Run Tests",
+            "label": "Run Tests (No LLM)",
             "type": "shell",
             "command": "docker",
             "args": [
@@ -52,6 +52,29 @@
                 "--build",
                 "--abort-on-container-exit",
                 "--exit-code-from", "tests"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests (No Services)",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/test_environments/test_env_nothing/docker-compose.yaml",
+                "--project-directory", "${workspaceFolder}/test_environments/test_env_nothing",
+                "up",
+                "--build",
+                "--abort-on-container-exit",
+                "--exit-code-from", "tests"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests",
+            "dependsOn": [
+                "Run Tests (No LLM)",
+                "Run Tests (No Services)"
             ],
             "problemMatcher": [],
             "group": {

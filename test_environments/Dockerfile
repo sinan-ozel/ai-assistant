@@ -13,9 +13,6 @@ RUN pip install --no-cache-dir \
     pytest-depends==1.0.1 \
     requests
 
-# Copy test files
-COPY test_*.py .
-
 # Create directory for test results
 RUN mkdir -p /tests/test-results
 

@@ -9,6 +9,13 @@ help:
 
 test:
 	docker compose \
+		-f test_environments/test_env_nothing/docker-compose.yaml \
+		--project-directory test_environments/test_env_nothing \
+		up \
+		--build \
+		--abort-on-container-exit \
+		--exit-code-from tests
+	docker compose \
 		-f test_environments/test_env_no_llm/docker-compose.yaml \
 		--project-directory test_environments/test_env_no_llm \
 		up \

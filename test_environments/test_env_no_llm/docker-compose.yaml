@@ -2,7 +2,7 @@ services:
   # Test infrastructure services
   redis-test:
     image: redis:7.4.2-alpine
-    container_name: redis-test
+    container_name: redis-test-no-llm
     command: redis-server --appendonly yes
     networks:
       - test-network
@@ -14,7 +14,7 @@ services:
 
   qdrant-test:
     image: qdrant/qdrant:v1.12.1
-    container_name: qdrant-test
+    container_name: qdrant-test-no-llm
     networks:
       - test-network
     healthcheck:
@@ -25,7 +25,7 @@ services:
 
   embedding-test:
     image: sinanozel/ollama.0.12.11:all-minilm-33m
-    container_name: embedding-test
+    container_name: embedding-test-no-llm
     networks:
       - test-network
     healthcheck:
@@ -39,7 +39,7 @@ services:
     build:
       context: ../..
       dockerfile: agent_stem/Dockerfile
-    container_name: app-test
+    container_name: app-test-no-llm
     networks:
       - test-network
     environment:
@@ -67,7 +67,7 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
-    container_name: tests-runner
+    container_name: tests-runner-no-llm
     networks:
       - test-network
     environment:
@@ -76,6 +76,7 @@ services:
       app:
         condition: service_healthy
     volumes:
+      - .:/tests
       - test-results:/tests/test-results
 
 networks:
