@@ -36,7 +36,7 @@ def load_endpoint_module(endpoint_file: Path) -> Dict[str, Any]:
 
 
 def discover_endpoints(endpoints_dir: Path = DEFAULT_ENDPOINTS_DIR):
-    """Discover and load all endpoint modules.
+    """Discover and load all endpoint modules recursively.
 
     Args:
         endpoints_dir: Directory containing endpoint Python files
@@ -48,12 +48,12 @@ def discover_endpoints(endpoints_dir: Path = DEFAULT_ENDPOINTS_DIR):
         logger.warning(f"Endpoints directory not found: {endpoints_dir}")
         return
 
-    for endpoint_file in sorted(endpoints_dir.glob("*.py")):
+    for endpoint_file in sorted(endpoints_dir.rglob("*.py")):
         if endpoint_file.name.startswith("_"):
             continue
 
         try:
-            logger.info(f"Loading endpoint: {endpoint_file.name}")
+            logger.info(f"Loading endpoint: {endpoint_file.relative_to(endpoints_dir)}")
             endpoint_module = load_endpoint_module(endpoint_file)
             yield endpoint_file.stem, endpoint_module["handler"], endpoint_module["spec"]
         except Exception as e:
