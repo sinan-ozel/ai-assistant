@@ -46,8 +46,8 @@
             "command": "docker",
             "args": [
                 "compose",
-                "-f", "${workspaceFolder}/test_environments/test_env_basic/docker-compose.yaml",
-                "--project-directory", "${workspaceFolder}/test_environments/test_env_basic",
+                "-f", "${workspaceFolder}/test_environments/test_env_no_llm/docker-compose.yaml",
+                "--project-directory", "${workspaceFolder}/test_environments/test_env_no_llm",
                 "up",
                 "--build",
                 "--abort-on-container-exit",

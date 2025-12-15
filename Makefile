@@ -9,8 +9,8 @@ help:
 
 test:
 	docker compose \
-		-f test_environments/test_env_basic/docker-compose.yaml \
-		--project-directory test_environments/test_env_basic \
+		-f test_environments/test_env_no_llm/docker-compose.yaml \
+		--project-directory test_environments/test_env_no_llm \
 		up \
 		--build \
 		--abort-on-container-exit \
@@ -20,5 +20,5 @@ build:
 	docker build -t agent-stem:latest agent_stem/
 
 clean:
-	docker compose -f test_environments/test_env_basic/docker-compose.yaml --project-directory test_environments/test_env_basic down -v
-	rm -rf test_environments/test_env_basic/test-results/*
+	docker compose -f test_environments/test_env_no_llm/docker-compose.yaml --project-directory test_environments/test_env_no_llm down -v
+	rm -rf test_environments/test_env_no_llm/test-results/*
