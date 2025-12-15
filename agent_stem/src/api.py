@@ -3,6 +3,7 @@ import logging
 from fastapi import FastAPI
 
 from startup.discover_providers import discover_providers
+from startup.discover_endpoints import discover_endpoints
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -32,19 +33,27 @@ async def startup_event():
             f"Default provider: {providers_state['default_provider']}"
         )
 
+    # Discover and register endpoints
+    logger.info("Discovering and registering endpoints...")
+    for name, handler, spec in discover_endpoints():
+        # Create a closure to capture providers_state for endpoints that need it
+        if "providers" in name:
 
-@app.get("/health")
-async def health():
-    """Health check endpoint."""
-    return {"status": "ok"}
+            async def route_handler():
+                return await handler(providers_state)
 
+        else:
+            route_handler = handler
 
-@app.get("/private/v1/providers")
-async def get_providers():
-    """Get information about available providers."""
-    return {
-        "available": providers_state.get("available_providers", []),
-        "default": providers_state.get("default_provider"),
-        "total": len(providers_state.get("providers", [])),
-        "status": providers_state.get("status", "unknown"),
-    }
+        # Register the route
+        for method in spec["methods"]:
+            app.add_api_route(
+                spec["path"],
+                route_handler,
+                methods=[method],
+                summary=spec.get("summary"),
+                description=spec.get("description"),
+                responses=spec.get("responses", {}),
+            )
+            logger.info(f"Registered {method} {spec['path']} from {name}")
+
