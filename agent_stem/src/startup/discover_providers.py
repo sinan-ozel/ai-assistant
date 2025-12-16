@@ -8,12 +8,14 @@ from typing import Any, Dict, List
 import yaml
 from litellm import completion
 
+from common import CUSTOMIZATION_FOLDER, DEFAULTS_FOLDER
+
 # Allowed configuration keys for provider validation
 ALLOWED_KEYS = ["model", "api_base", "api_key", "max_tokens"]
 
 # Base directories for providers
-DEFAULT_PROVIDERS_DIR = Path("/app/default/providers")
-CUSTOM_PROVIDERS_DIR = Path("/app/custom/providers")
+DEFAULT_PROVIDERS_DIR = DEFAULTS_FOLDER / "providers"
+CUSTOM_PROVIDERS_DIR = CUSTOMIZATION_FOLDER / "providers"
 
 
 def substitute_env_vars(config: Dict[str, Any]) -> Dict[str, Any]:
