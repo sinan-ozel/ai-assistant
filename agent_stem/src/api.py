@@ -2,8 +2,8 @@ import logging
 
 from fastapi import FastAPI
 
-from startup.discover_providers import discover_providers
-from startup.discover_endpoints import discover_endpoints
+from startup.providers import discover_providers
+from startup.endpoints import discover_endpoints
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
