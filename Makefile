@@ -22,6 +22,20 @@ test:
 		--build \
 		--abort-on-container-exit \
 		--exit-code-from tests
+	docker compose \
+		-f test_environments/test_env_self_hosted_llm/docker-compose.yaml \
+		--project-directory test_environments/test_env_self_hosted_llm \
+		up \
+		--build \
+		--abort-on-container-exit \
+		--exit-code-from tests
+	docker compose \
+		-f test_environments/test_env_mistral/docker-compose.yaml \
+		--project-directory test_environments/test_env_mistral \
+		up \
+		--build \
+		--abort-on-container-exit \
+		--exit-code-from tests
 
 build:
 	docker build -t agent-stem:latest agent_stem/

@@ -71,10 +71,42 @@
             "problemMatcher": []
         },
         {
-            "label": "Run Tests",
+            "label": "Run Tests (Mistral)",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/test_environments/test_env_mistral/docker-compose.yaml",
+                "--project-directory", "${workspaceFolder}/test_environments/test_env_mistral",
+                "up",
+                "--build",
+                "--abort-on-container-exit",
+                "--exit-code-from", "tests"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests (Self-Hosted LLM)",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/test_environments/test_env_self_hosted_llm/docker-compose.yaml",
+                "--project-directory", "${workspaceFolder}/test_environments/test_env_self_hosted_llm",
+                "up",
+                "--build",
+                "--abort-on-container-exit",
+                "--exit-code-from", "tests"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run All Tests",
             "dependsOn": [
                 "Run Tests (No LLM)",
-                "Run Tests (No Services)"
+                "Run Tests (No Services)",
+                "Run Tests (Mistral)",
+                "Run Tests (Self-Hosted LLM)"
             ],
             "problemMatcher": [],
             "group": {
