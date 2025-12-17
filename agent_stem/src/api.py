@@ -2,7 +2,8 @@ import logging
 
 from fastapi import FastAPI
 
-from startup.providers import discover_providers
+from startup.providers import (discover_providers,
+                               discover_context_windows)
 from startup.endpoints import discover_endpoints
 
 # Configure logging
@@ -32,6 +33,13 @@ async def startup_event():
         logger.info(
             f"Default provider: {providers_state['default_provider']}"
         )
+
+    # Query context windows from available providers
+    if providers_state["available_providers"]:
+        logger.info("Querying context windows from providers...")
+
+        await discover_context_windows(providers_state)
+        logger.info("Context window discovery complete")
 
     # Discover and register endpoints
     logger.info("Discovering and registering endpoints...")

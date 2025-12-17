@@ -1,4 +1,6 @@
 .devcontainer/data
+.devcontainer/devcontainer.env
+.vscode/settings.json
 **/__pycache__
 **/.pytest_cache
 **/.env

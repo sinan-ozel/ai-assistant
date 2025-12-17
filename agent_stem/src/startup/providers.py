@@ -1,14 +1,19 @@
 """Provider discovery and validation module."""
 
+import asyncio
+import logging
 import os
+import re
 import warnings
 from pathlib import Path
 from typing import Any, Dict, List
 
 import yaml
-from litellm import completion
+from litellm import acompletion, completion
 
 from common import CUSTOMIZATION_FOLDER, DEFAULTS_FOLDER
+
+logger = logging.getLogger(__name__)
 
 # Allowed configuration keys for provider validation
 ALLOWED_KEYS = ["model", "api_base", "api_key", "max_tokens"]
@@ -171,6 +176,9 @@ def load_providers_from_directory(
                 provider_data["available"] = True
             else:
                 provider_data["error"] = error
+                logger.warning(
+                    f"Provider {provider_file.stem} validation failed: {error}"
+                )
 
             providers.append(provider_data)
 
@@ -231,3 +239,112 @@ def discover_providers() -> Dict[str, Any]:
         "default_provider": default_provider,
         "status": status,
     }
+
+
+def parse_context_window(response_text: str) -> int | None:
+    """Parse context window from LLM response.
+
+    Args:
+        response_text: Raw response text from LLM
+
+    Returns:
+        Context window size as integer, or None if parsing fails
+    """
+    if not response_text:
+        return None
+
+    # Strip whitespace
+    text = response_text.strip()
+
+    # Try direct int conversion
+    try:
+        return int(text)
+    except ValueError:
+        pass
+
+    # Look for a single number pattern in the text
+    # Pattern matches numbers with optional whitespace around them
+    numbers = re.findall(r'\b(\d+)\b', text)
+
+    if len(numbers) == 1:
+        try:
+            return int(numbers[0])
+        except ValueError:
+            pass
+
+    return None
+
+
+async def query_context_window(provider_data: Dict[str, Any]) -> int | None:
+    """Query a provider for their context window size.
+
+    Args:
+        provider_data: Provider dictionary with config
+
+    Returns:
+        Context window size as integer, or None if query fails
+    """
+    config = provider_data.get("config", {})
+
+    # Build kwargs for litellm
+    kwargs = {}
+    for key in ALLOWED_KEYS:
+        if config.get(key):
+            kwargs[key] = config[key]
+
+    # Prompt asking for context window
+    kwargs["messages"] = [
+        {
+            "role": "user",
+            "content": (
+                "What is your maximum context window size in tokens? "
+                "Please respond with only the number, nothing else."
+            ),
+        }
+    ]
+    kwargs["max_tokens"] = kwargs.get("max_tokens", 50)
+
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            response = await acompletion(**kwargs)
+
+        # Extract text from response
+        response_text = response.choices[0].message.content
+        return parse_context_window(response_text)
+
+    except Exception:
+        return None
+
+
+async def discover_context_windows(providers_state: Dict[str, Any]) -> None:
+    """Query all available providers for their context windows.
+
+    Updates the providers_state dictionary in-place, adding:
+    provider_data -> llm_responses -> context_window
+
+    Args:
+        providers_state: Dictionary returned by discover_providers()
+    """
+    # Get all available providers
+    available_providers = [
+        p for p in providers_state["providers"] if p["available"]
+    ]
+
+    # Query all providers concurrently
+    tasks = [
+        query_context_window(provider) for provider in available_providers
+    ]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    # Update provider data with results
+    for provider, result in zip(available_providers, results):
+        # Initialize llm_responses if not present
+        if "llm_responses" not in provider:
+            provider["llm_responses"] = {}
+
+        # Store context window (can be None if query failed)
+        if isinstance(result, Exception):
+            provider["llm_responses"]["context_window"] = None
+        else:
+            provider["llm_responses"]["context_window"] = result

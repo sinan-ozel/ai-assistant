@@ -19,6 +19,7 @@
     "customizations": {
         "vscode": {
             "extensions": [
+                "42crunch.vscode-openapi",
 		        "github.copilot",
 		        "github.copilot-chat",
                 "ms-python.python",
@@ -30,6 +31,7 @@
                 "github.vscode-github-actions",
                 "ms-kubernetes-tools.vscode-kubernetes-tools",
                 "redhat.vscode-yaml",
+                "spmeesseman.vscode-taskexplorer",
                 "Tim-Koehler.helm-intellisense",
                 "shd101wyy.markdown-preview-enhanced",
                 "ms-vscode.makefile-tools"

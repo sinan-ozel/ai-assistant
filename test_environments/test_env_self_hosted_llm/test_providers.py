@@ -20,9 +20,9 @@ def test_providers(ollama_server_available):
         except Exception:
             pass
         if time.time() - start > timeout:
-            raise TimeoutError(f"/private/v1/providers endpoint did not return expected response within {timeout} seconds")
+            break
         time.sleep(1)
-    assert response.status_code == 200
+    assert response.status_code == 200, f"/private/v1/providers endpoint did not return expected response within {timeout} seconds"
     data = response.json()
     assert data["status"] == "one_provider_available"
     assert "available" in data
