@@ -126,4 +126,13 @@ def test_openapi_200_responses(method, path, request_example, response_example, 
                     f"Required field '{field}' not found in response. "
                 )
 
-# TODO: Add another test where we remove one of the keys from the example, and assert 400 or 422.
+    # For POST requests, test that removing each required field results in 422
+    if method == "post" and request_example and isinstance(request_example, dict):
+        for key in request_example.keys():
+            # Create a copy with this key removed
+            incomplete_request = {k: v for k, v in request_example.items() if k != key}
+            resp_incomplete = requests.post(url, json=incomplete_request)
+            assert resp_incomplete.status_code == 422, (
+                f"Expected 422 when '{key}' is missing from POST {url}. "
+                f"Got {resp_incomplete.status_code}. Response: {resp_incomplete.text}"
+            )
