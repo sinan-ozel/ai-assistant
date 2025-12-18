@@ -34,40 +34,31 @@ async def run_provider_discovery():
     """Background task to discover providers and context windows."""
     global providers_state
 
-    try:
-        logger.info("Starting provider discovery in background...")
+    logger.info("Starting provider discovery in background...")
 
-        # Run synchronous provider discovery in executor to avoid blocking
-        loop = asyncio.get_event_loop()
-        discovered = await loop.run_in_executor(None, discover_providers)
+    # Run synchronous provider discovery in executor to avoid blocking
+    loop = asyncio.get_event_loop()
+    providers_state = await loop.run_in_executor(None, discover_providers)
+    print(providers_state)
 
-        # Update providers_state
-        providers_state.update(discovered)
+    logger.info(
+        f"Found {len(providers_state['available_providers'])} available providers"
+    )
 
+    if providers_state["default_provider"]:
         logger.info(
-            f"Found {len(providers_state['available_providers'])} available providers"
+            f"Default provider: {providers_state['default_provider']}"
         )
 
-        if providers_state["default_provider"]:
-            logger.info(
-                f"Default provider: {providers_state['default_provider']}"
-            )
+    # Query context windows from available providers
+    if providers_state["available_providers"]:
+        logger.info("Querying context windows from providers...")
+        await discover_context_windows(providers_state)
+        logger.info("Context window discovery complete")
 
-        # Query context windows from available providers
-        if providers_state["available_providers"]:
-            logger.info("Querying context windows from providers...")
-            await discover_context_windows(providers_state)
-            logger.info("Context window discovery complete")
-
-        # Mark discovery as complete
-        providers_state["loading"] = False
-        logger.info("Provider discovery complete")
-
-    except Exception as e:
-        logger.error(f"Error during provider discovery: {e}")
-        providers_state["loading"] = False
-        providers_state["status"] = "error"
-        providers_state["error"] = str(e)
+    # Mark discovery as complete
+    providers_state["loading"] = False
+    logger.info("Provider discovery complete")
 
 
 @app.on_event("startup")
