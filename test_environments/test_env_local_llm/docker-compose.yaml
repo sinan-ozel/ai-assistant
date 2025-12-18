@@ -1,0 +1,108 @@
+services:
+  # Test infrastructure services
+  redis-test:
+    image: redis:7.4.2-alpine
+    container_name: redis-test-local-llm
+    command: redis-server --appendonly yes
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  qdrant-test:
+    image: qdrant/qdrant:v1.12.1
+    container_name: qdrant-test-local-llm
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  embedding-test:
+    image: sinanozel/ollama.0.12.11:all-minilm-33m
+    container_name: embedding-test-local-llm
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/11434' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Ollama server with gemma3-270m model
+  ollama-test:
+    image: sinanozel/ollama.0.12.11:gemma3-270m
+    container_name: ollama-test-local-llm
+    networks:
+      - test-network
+    deploy:
+      resources:
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/11434' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Application under test
+  app:
+    build:
+      context: ../..
+      dockerfile: agent_stem/Dockerfile
+    container_name: app-test-local-llm
+    networks:
+      - test-network
+    environment:
+      - REDIS_HOST=redis-test
+      - REDIS_PORT=6379
+      - QDRANT_HOST=qdrant-test
+      - QDRANT_PORT=6333
+      - EMBEDDING_HOST=embedding-test
+      - EMBEDDING_PORT=11434
+    depends_on:
+      redis-test:
+        condition: service_healthy
+      qdrant-test:
+        condition: service_healthy
+      embedding-test:
+        condition: service_healthy
+      ollama-test:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/8000' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    volumes:
+      - ./cortex:/app/cortex
+
+  # Test runner
+  tests:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: tests-runner-local-llm
+    networks:
+      - test-network
+    environment:
+      - BASE_URL=http://app:8000
+    depends_on:
+      app:
+        condition: service_healthy
+    volumes:
+      - .:/tests
+      - test-results:/tests/test-results
+
+networks:
+  test-network:
+    driver: bridge
+
+volumes:
+  test-results:
