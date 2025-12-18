@@ -311,6 +311,8 @@ async def query_context_window(provider_data: Dict[str, Any]) -> int | None:
 
         # Extract text from response
         response_text = response.choices[0].message.content
+        logger.info(f"Context window query response: {response_text}")
+
         return parse_context_window(response_text)
 
     except Exception:

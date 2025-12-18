@@ -1,9 +1,14 @@
 """Health check endpoint."""
 
 
-async def handler():
-    """Health check endpoint."""
-    return {"status": "ok"}
+async def handler(providers_state: dict):
+    """Health check endpoint with provider loading status."""
+    response = {"status": "ok"}
+
+    if providers_state.get("loading", True):
+        response["providers_loading"] = True
+
+    return response
 
 
 spec = {
@@ -18,10 +23,13 @@ spec = {
                 "application/json": {
                     "schema": {
                         "type": "object",
-                        "properties": {"status": {"type": "string"}},
+                        "properties": {
+                            "status": {"type": "string"},
+                            "providers_loading": {"type": "boolean"}
+                        },
                         "required": ["status"],
                     },
-                    "example": {"status": "ok"},
+                    "example": {"status": "ok", "providers_loading": False},
                 }
             },
         }

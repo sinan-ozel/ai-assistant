@@ -6,6 +6,11 @@ RUN apt-get update \
         build-essential \
         git \
         curl \
+        iputils-ping \
+        dnsutils \
+        netcat-openbsd \
+        wget \
+        jq \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
