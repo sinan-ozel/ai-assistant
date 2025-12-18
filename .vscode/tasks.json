@@ -103,12 +103,10 @@
         },
         {
             "label": "Run All Tests",
-            "dependsOn": [
-                "Run Tests (No LLM)",
-                "Run Tests (No Services)",
-                "Run Tests (Mistral)",
-                "Run Tests (Self-Hosted LLM)",
-                "Run Tests (Local LLM)"
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "${workspaceFolder}/test_environments/run_all_tests.sh"
             ],
             "problemMatcher": [],
             "group": {
