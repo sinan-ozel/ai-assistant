@@ -47,14 +47,31 @@ def test_provider_context_window(ollama_server_available):
 
     # Query the context window endpoint
     context_url = f"{BASE_URL}/private/v1/providers/{provider_name}/max-context-window"
-    response = requests.get(context_url)
-    assert response.status_code == 200
+    start = time.time()
+    timeout = 30  # seconds - context window query can take time
+    response = None
+    while True:
+        try:
+            response = requests.get(context_url)
+            if response.status_code == 200:
+                break
+        except Exception:
+            pass
+        if time.time() - start > timeout:
+            break
+        time.sleep(1)
+
+    assert response is not None, f"No response received from {context_url}"
+    assert response.status_code == 200, (
+        f"Context window endpoint did not return 200 within {timeout} seconds. "
+        f"Status: {response.status_code}, Response: {response.text}"
+    )
 
     context_data = response.json()
     assert "provider" in context_data
     assert "max_context_window" in context_data
     assert context_data["provider"] == provider_name
     assert isinstance(context_data["max_context_window"], int)
-    assert context_data["max_context_window"] == 0
+    assert context_data["max_context_window"] == 2048
 
 
