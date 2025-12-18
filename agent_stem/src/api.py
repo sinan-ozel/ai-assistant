@@ -13,7 +13,11 @@ from startup.endpoints import discover_endpoints
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+app = FastAPI(
+    swagger_ui_parameters={
+        "syntaxHighlight.theme": "monokai"
+    }
+)
 
 # Global state for providers
 providers_state = {
