@@ -89,11 +89,20 @@ async def startup_event():
 
         # Determine the appropriate route handler
         if "providers_state" in params:
-            # Use functools.partial to bind providers_state
-            # This leaves other parameters (like path params) free for FastAPI to inject
-            route_handler = functools.partial(handler, providers_state=providers_state)
-            # Update the signature to remove providers_state parameter
-            functools.update_wrapper(route_handler, handler)
+            # Create a wrapper that properly removes providers_state from the signature
+            # This is necessary because FastAPI inspects function signatures
+            async def create_wrapper(original_handler):
+                async def wrapper(**kwargs):
+                    return await original_handler(providers_state=providers_state, **kwargs)
+
+                # Create new signature without providers_state parameter
+                new_params = [p for p in sig.parameters.values() if p.name != "providers_state"]
+                wrapper.__signature__ = inspect.Signature(parameters=new_params)
+                wrapper.__name__ = original_handler.__name__
+                wrapper.__doc__ = original_handler.__doc__
+                return wrapper
+
+            route_handler = await create_wrapper(handler)
         else:
             route_handler = handler
 

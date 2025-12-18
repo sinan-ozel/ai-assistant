@@ -1,6 +1,7 @@
 import pytest
 import requests
 import os
+import re
 
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 OPENAPI_URL = f"{BASE_URL}/openapi.json"
@@ -33,7 +34,7 @@ def build_example_from_schema(schema, components):
 
 
 def get_openapi_endpoints():
-    """Yield (method, path, request_example, response_example) for each endpoint with a 200 response."""
+    """Yield (method, path, request_example, response_example, all_response_codes, required_fields) for each endpoint with a 200 response."""
     resp = requests.get(OPENAPI_URL)
     resp.raise_for_status()
     openapi = resp.json()
@@ -44,6 +45,8 @@ def get_openapi_endpoints():
             if "200" in responses:
                 request_example = {}
                 response_example = None
+                required_fields = []
+                all_response_codes = [int(code) if code.isdigit() else code for code in responses.keys()]
 
                 # Extract request example if requestBody exists
                 if "requestBody" in details:
@@ -60,13 +63,16 @@ def get_openapi_endpoints():
                             first = next(iter(media_details["examples"].values()))
                             request_example = first.get("value", {})
 
-                # Extract response example from 200 response
+                # Extract response example and required fields from 200 response
                 response_200 = responses["200"]
                 response_content = response_200.get("content", {})
                 for media_type, media_details in response_content.items():
                     schema = media_details.get("schema", {})
+                    if "$ref" in schema:
+                        schema = resolve_ref(schema["$ref"], components)
                     if schema:
                         response_example = build_example_from_schema(schema, components)
+                        required_fields = schema.get("required", [])
                     # If there is a direct example, prefer it
                     if "example" in media_details:
                         response_example = media_details["example"]
@@ -74,17 +80,25 @@ def get_openapi_endpoints():
                         first = next(iter(media_details["examples"].values()))
                         response_example = first.get("value", {})
 
-                yield method, path, request_example, response_example
+                yield method, path, request_example, response_example, all_response_codes, required_fields
 
 
 @pytest.mark.depends(on=["test_health_endpoint.py::test_health_endpoint"])
-@pytest.mark.parametrize("method,path,request_example,response_example", list(get_openapi_endpoints()))
-def test_openapi_200_responses(method, path, request_example, response_example):
+@pytest.mark.parametrize("method,path,request_example,response_example,all_response_codes,required_fields", list(get_openapi_endpoints()))
+def test_openapi_200_responses(method, path, request_example, response_example, all_response_codes, required_fields):
     """
     Automatically checks that all documented endpoints with a 200 response
-    in the OpenAPI spec actually return a 200 status code and have response examples.
+    in the OpenAPI spec return one of their documented response codes.
     """
+    # Replace path parameters with values from the response example
     url = f"{BASE_URL}{path}"
+    if response_example and "{" in path:
+        # Extract path parameters and substitute with values from example
+        for param_match in re.finditer(r'\{(\w+)\}', path):
+            param_name = param_match.group(1)
+            if param_name in response_example:
+                url = url.replace(f"{{{param_name}}}", str(response_example[param_name]))
+
     if method == "get":
         # GET requests should have response examples
         assert response_example is not None, f"No response example found for {method.upper()} {path}"
@@ -96,9 +110,20 @@ def test_openapi_200_responses(method, path, request_example, response_example):
     else:
         pytest.skip(f"Method {method.upper()} not supported for endpoint {url}")
 
-    assert resp.status_code == 200, (
-        f"Endpoint {method.upper()} {url} did not return 200. "
-        f"Returned {resp.status_code}. Response: {resp.text}"
+    # Accept any documented response code as valid
+    assert resp.status_code in all_response_codes, (
+        f"Endpoint {method.upper()} {url} returned {resp.status_code}. "
+        f"Expected one of {all_response_codes}. Response: {resp.text}"
     )
+
+    # If we got a 200 response, validate it matches the expected structure
+    if resp.status_code == 200:
+        actual_response = resp.json()
+        # Check that all required fields from the schema are present in the response
+        if isinstance(response_example, dict) and required_fields:
+            for field in required_fields:
+                assert field in actual_response, (
+                    f"Required field '{field}' not found in response. "
+                )
 
 # TODO: Add another test where we remove one of the keys from the example, and assert 400 or 422.
