@@ -1,11 +1,14 @@
 {
     "name": "micro-service-agent-devcontainer",
-    "dockerComposeFile": "docker-compose.yaml",
-    "service": "devcontainer",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
     "workspaceFolder": "/workspace",
     "remoteUser": "root",
     "mounts": [
-        "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind"
+        "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind",
+        "source=${localWorkspaceFolder},target=/workspace,type=bind"
     ],
     "features": {
 	    "ghcr.io/devcontainers/features/docker-in-docker:2": {
@@ -38,5 +41,5 @@
             ]
         }
     },
-    "postStartCommand": "nohup dockerd > /var/log/dockerd.log 2>&1 & sleep 5 && echo 'Docker daemon started' && timeout 30 bash -c 'until nc -z redis 6379 2>/dev/null; do echo Waiting for Redis...; sleep 2; done' && echo 'Redis is ready' && echo 'DevContainer ready!'",
+    "postStartCommand": "nohup dockerd > /var/log/dockerd.log 2>&1 & sleep 5 && echo 'Docker daemon started' && echo 'DevContainer ready!'"
 }
