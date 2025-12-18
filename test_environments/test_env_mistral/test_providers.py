@@ -55,4 +55,4 @@ def test_provider_context_window(mistral_api_key_available):
     assert "max_context_window" in context_data
     assert context_data["provider"] == "pixtral"
     assert isinstance(context_data["max_context_window"], int)
-    assert context_data["max_context_window"] == 0
+    assert context_data["max_context_window"] == 4096
