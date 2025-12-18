@@ -1,0 +1,50 @@
+services:
+  agent-stem-dev:
+    image: agent-stem:latest
+    container_name: agent-stem-dev
+    volumes:
+      - ..:/workspace
+    working_dir: /workspace
+    ports:
+      - "8000:8000"
+      - "8501:8501"
+    networks:
+      - agent-dev-network
+    depends_on:
+      - redis
+      - qdrant
+      - embedding
+
+  redis:
+    image: redis:7.4.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./dev-data/redis:/data
+    command: redis-server --appendonly yes
+    networks:
+      - agent-dev-network
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.1
+    container_name: qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - ./dev-data/qdrant:/qdrant/storage
+    networks:
+      - agent-dev-network
+
+  embedding:
+    image: sinanozel/ollama.0.12.11:all-minilm-33m
+    container_name: embedding
+    ports:
+      - "11434:11434"
+    networks:
+      - agent-dev-network
+
+networks:
+  agent-dev-network:
+    driver: bridge

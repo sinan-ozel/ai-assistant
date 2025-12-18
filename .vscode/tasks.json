@@ -19,26 +19,12 @@
             "type": "shell",
             "command": "docker",
             "args": [
-                "run",
-                "--rm",
-                "--name", "workspace-dev",
-                "-p", "8000:8000",
-                "-p", "8501:8501",
-                "agent-stem:latest"
+                "compose",
+                "-f", "${workspaceFolder}/agent_stem/docker-compose.yaml",
+                "up"
             ],
             "dependsOn": ["Build Container"],
-            "problemMatcher": {
-                "pattern": {
-                    "regexp": "^(.*)$",
-                    "line": 1
-                },
-                "background": {
-                    "activeOnStart": true,
-                    "beginsPattern": ".",
-                    "endsPattern": "Uvicorn running on|Application startup complete"
-                }
-            },
-            "isBackground": true
+            "problemMatcher": []
         },
         {
             "label": "Run Tests (No LLM)",
@@ -123,6 +109,16 @@
                 "-f", "${workspaceFolder}/reformat/docker-compose.yaml",
                 "up",
                 "--build"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Export OpenAPI to YAML",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "mkdir -p ${workspaceFolder}/docs && curl -s http://localhost:8000/openapi.json | python3 -c \"import sys, json, yaml; print(yaml.dump(json.load(sys.stdin), default_flow_style=False, sort_keys=False))\" > ${workspaceFolder}/docs/openapi.yaml && echo 'OpenAPI spec written to docs/openapi.yaml'"
             ],
             "problemMatcher": []
         }
