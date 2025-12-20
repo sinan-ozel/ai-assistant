@@ -33,6 +33,7 @@ def test_providers(ollama_server_available):
     assert data["default"] is not None
 
 
+@pytest.mark.depends(name='test_provider_context_window')
 def test_provider_context_window(ollama_server_available):
     """Test if the provider's context window endpoint works correctly."""
     # First get the list of providers
@@ -73,5 +74,3 @@ def test_provider_context_window(ollama_server_available):
     assert context_data["provider"] == provider_name
     assert isinstance(context_data["max_context_window"], int)
     assert context_data["max_context_window"] == 2048
-
-

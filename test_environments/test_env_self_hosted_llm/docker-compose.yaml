@@ -84,6 +84,7 @@ services:
     volumes:
       - .:/tests
       - test-results:/tests/test-results
+    command: ["pytest", "-v", "--tb=short"]
 
 networks:
   test-network:

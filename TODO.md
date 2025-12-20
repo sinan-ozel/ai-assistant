@@ -1,5 +1,5 @@
-- [ ] Add the swagger and the task explorer extensions to the template repo.
-- [ ] Add the general tests to the template repo.
 - [ ] Add github actions, reformat and commit
-- [ ] Add first agent, take out the ollama provider
-- [ ] Finish the providers processing logic
+- [ ] Add option to configure LiteLLM-style providers, through config.yaml https://medium.com/the-guy-wire/make-all-your-llms-openai-compatible-with-docker-litellm-337a73b9b79d
+- [ ] Add option to add System Message through YAML-base config.
+- [ ] Add option to add python Code "Lobe" through YAML-base config.
+- [ ] Finish logic / protocol for the default provider

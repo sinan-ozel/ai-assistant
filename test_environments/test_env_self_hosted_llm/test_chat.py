@@ -4,9 +4,17 @@ import litellm
 import os
 
 
+litellm.set_verbose = False
+litellm.verbose = False
+litellm.suppress_debug_info = True
+litellm.log_raw_llm_output = False
+litellm.drop_params = True
+
+
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 
+@pytest.mark.depends(name='test_chat_completions_basic', on=['test_provider_context_window'])
 def test_chat_completions_basic(ollama_server_available):
     """Test basic chat completion with a trivial question."""
     url = f"{BASE_URL}/v1/chat/completions"
@@ -58,6 +66,7 @@ def test_chat_completions_basic(ollama_server_available):
     print(f"Response content: {content}")
 
 
+@pytest.mark.depends(on=['test_chat_completions_basic'])
 def test_chat_completions_litellm(ollama_server_available):
     """Test chat completion using LiteLLM client interface."""
     # Configure LiteLLM to use our custom OpenAI-compatible endpoint
@@ -65,14 +74,12 @@ def test_chat_completions_litellm(ollama_server_available):
 
     # Use litellm to make a completion request
     # Prefix with "openai/" to tell LiteLLM to use OpenAI-compatible format
-    # Provide a dummy api_key since we don't require authentication
     response = litellm.completion(
-        model="openai/gemma3_on_vpn",
+        model="ollama/gemma3:4b",
         messages=[
             {"role": "user", "content": "What is the capital of France? Answer with only the city name."}
         ],
         api_base=api_base,
-        api_key="dummy-key",  # Our endpoint doesn't require authentication
         temperature=0.1,
         max_tokens=10
     )
