@@ -65,8 +65,8 @@ services:
   # Test runner
   tests:
     build:
-      context: ..
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: test_environments/Dockerfile
     container_name: tests-runner-no-llm
     networks:
       - test-network

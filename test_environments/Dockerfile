@@ -7,11 +7,11 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Install pytest and dependencies
-RUN pip install --no-cache-dir \
-    pytest==9.0.1 \
-    pytest-depends==1.0.1 \
-    requests
+# Copy pyproject.toml from the workspace root
+COPY pyproject.toml .
+
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir .[test]  # Install test dependencies
 
 # Create directory for test results
 RUN mkdir -p /tests/test-results
