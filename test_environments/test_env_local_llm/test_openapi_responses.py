@@ -85,7 +85,7 @@ def get_openapi_endpoints():
 
 @pytest.mark.depends(on=["test_health_endpoint.py::test_health_endpoint"])
 @pytest.mark.parametrize("method,path,request_example,response_example,all_response_codes,required_fields", list(get_openapi_endpoints()))
-def test_openapi_200_responses(method, path, request_example, response_example, all_response_codes, required_fields):
+def test_openapi_request_examples(method, path, request_example, response_example, all_response_codes, required_fields):
     """
     Automatically checks that all documented endpoints with a 200 response
     in the OpenAPI spec return one of their documented response codes.

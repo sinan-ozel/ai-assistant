@@ -3,7 +3,8 @@ import functools
 import inspect
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
+from typing import Dict, Any
 
 from startup.providers import (discover_providers,
                                discover_context_windows)
@@ -78,27 +79,66 @@ async def startup_event():
         sig = inspect.signature(handler)
         params = list(sig.parameters.keys())
 
+        # Check if endpoint has a request body schema
+        request_body_spec = spec.get("requestBody", {})
+        has_request = "request" in params and request_body_spec
+
         # Determine the appropriate route handler
-        if "providers_state" in params:
+        if "providers_state" in params or has_request:
             # Create a wrapper that properly removes providers_state from the signature
-            # This is necessary because FastAPI inspects function signatures
-            async def create_wrapper(original_handler):
-                async def wrapper(**kwargs):
-                    return await original_handler(providers_state=providers_state, **kwargs)
+            # and adds proper Body parameter for request body validation
+            async def create_wrapper(original_handler, request_spec):
+                if has_request:
+                    # Extract schema from requestBody
+                    content = request_spec.get("content", {})
+                    json_content = content.get("application/json", {})
+                    schema = json_content.get("schema", {})
+                    example = json_content.get("example")
+
+                    # Create Body parameter with schema
+                    body_param = inspect.Parameter(
+                        "request",
+                        inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                        default=Body(..., openapi_examples={"example": {"value": example}} if example else None),
+                        annotation=Dict[str, Any]
+                    )
+
+                    async def wrapper(request: Dict[str, Any] = Body(..., openapi_examples={"example": {"value": example}} if example else None)):
+                        if "providers_state" in params:
+                            return await original_handler(request=request, providers_state=providers_state)
+                        else:
+                            return await original_handler(request=request)
+                else:
+                    async def wrapper(**kwargs):
+                        return await original_handler(providers_state=providers_state, **kwargs)
 
                 # Create new signature without providers_state parameter
-                new_params = [p for p in sig.parameters.values() if p.name != "providers_state"]
+                new_params = [p for p in sig.parameters.values() if p.name not in ["providers_state", "request"]]
+                if has_request:
+                    # Add request parameter with Body annotation
+                    body_param = inspect.Parameter(
+                        "request",
+                        inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                        annotation=Dict[str, Any]
+                    )
+                    new_params = [body_param] + new_params
+
                 wrapper.__signature__ = inspect.Signature(parameters=new_params)
                 wrapper.__name__ = original_handler.__name__
                 wrapper.__doc__ = original_handler.__doc__
                 return wrapper
 
-            route_handler = await create_wrapper(handler)
+            route_handler = await create_wrapper(handler, request_body_spec)
         else:
             route_handler = handler
 
         # Register the route
         for method in spec["methods"]:
+            # Build openapi_extra with requestBody schema
+            openapi_extra = {}
+            if request_body_spec:
+                openapi_extra["requestBody"] = request_body_spec
+
             app.add_api_route(
                 spec["path"],
                 route_handler,
@@ -106,6 +146,7 @@ async def startup_event():
                 summary=spec.get("summary"),
                 description=spec.get("description"),
                 responses=spec.get("responses", {}),
+                openapi_extra=openapi_extra,
             )
             logger.info(f"Registered {method} {spec['path']} from {name}")
 

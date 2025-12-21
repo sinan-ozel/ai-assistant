@@ -1,39 +1,32 @@
 """Chat completions endpoint - OpenAI-compatible API."""
 
-from typing import List, Optional
-from pydantic import BaseModel, Field
+from jsonschema import validate, ValidationError
+from fastapi import HTTPException
 
 
-class Message(BaseModel):
-    """Chat message."""
-    role: str = Field(..., description="Role of the message author (system, user, assistant)")
-    content: str = Field(..., description="Content of the message")
-
-
-class ChatCompletionRequest(BaseModel):
-    """Request body for chat completion."""
-    model: str = Field(..., description="ID of the model to use")
-    messages: List[Message] = Field(..., description="List of messages in the conversation")
-    temperature: Optional[float] = Field(1.0, description="Sampling temperature between 0 and 2", ge=0, le=2)
-    max_tokens: Optional[int] = Field(None, description="Maximum number of tokens to generate")
-    stream: Optional[bool] = Field(False, description="Whether to stream the response")
-    top_p: Optional[float] = Field(1.0, description="Nucleus sampling parameter", ge=0, le=1)
-    stop: Optional[List[str]] = Field(None, description="Stop sequences")
-
-
-async def handler(request: ChatCompletionRequest, providers_state: dict):
+async def handler(request: dict, providers_state: dict):
     """
     Create a chat completion (OpenAI-compatible API).
 
     This endpoint follows the OpenAI Chat Completion API format,
     making it compatible with most LLM clients and tools.
     """
+    # Validate request against schema
+    try:
+        validate(instance=request, schema=spec["requestBody"]["content"]["application/json"]["schema"])
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    # Access request fields as dict keys
+    model = request.get("model")
+    messages = request.get("messages", [])
+
     # Dummy response for now - implementation coming later
     return {
         "id": "chatcmpl-dummy123",
         "object": "chat.completion",
         "created": 1734700000,
-        "model": request.model,
+        "model": model,
         "choices": [
             {
                 "index": 0,

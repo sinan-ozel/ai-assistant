@@ -34,7 +34,7 @@ def build_example_from_schema(schema, components):
 
 
 def get_openapi_endpoints():
-    """Yield (method, path, request_example, response_example, all_response_codes, required_fields) for each endpoint with a 200 response."""
+    """Yield (method, path, request_example, response_example, all_response_codes, required_request_fields, required_response_fields) for each endpoint with a 200 response."""
     resp = requests.get(OPENAPI_URL)
     resp.raise_for_status()
     openapi = resp.json()
@@ -45,7 +45,8 @@ def get_openapi_endpoints():
             if "200" in responses:
                 request_example = {}
                 response_example = None
-                required_fields = []
+                required_request_fields = []
+                required_response_fields = []
                 all_response_codes = [int(code) if code.isdigit() else code for code in responses.keys()]
 
                 # Extract request example if requestBody exists
@@ -54,6 +55,23 @@ def get_openapi_endpoints():
                     for media_type, media_details in content.items():
                         # Try to resolve $ref in schema
                         schema = media_details.get("schema", {})
+
+                        # For POST requests, ensure schema has properties defined
+                        if method == "post":
+                            if not schema:
+                                raise AssertionError(f"POST {path} is missing schema in requestBody")
+                            # Resolve $ref if present
+                            resolved_schema = schema
+                            if "$ref" in schema:
+                                resolved_schema = resolve_ref(schema["$ref"], components)
+                            if "properties" not in resolved_schema:
+                                raise AssertionError(
+                                    f"POST {path} schema is missing 'properties'. "
+                                    f"Schema must define properties for request validation."
+                                )
+                            # Extract required fields from request schema
+                            required_request_fields = resolved_schema.get("required", [])
+
                         if schema:
                             request_example = build_example_from_schema(schema, components)
                         # If there is a direct example, prefer it
@@ -72,7 +90,7 @@ def get_openapi_endpoints():
                         schema = resolve_ref(schema["$ref"], components)
                     if schema:
                         response_example = build_example_from_schema(schema, components)
-                        required_fields = schema.get("required", [])
+                        required_response_fields = schema.get("required", [])
                     # If there is a direct example, prefer it
                     if "example" in media_details:
                         response_example = media_details["example"]
@@ -80,12 +98,12 @@ def get_openapi_endpoints():
                         first = next(iter(media_details["examples"].values()))
                         response_example = first.get("value", {})
 
-                yield method, path, request_example, response_example, all_response_codes, required_fields
+                yield method, path, request_example, response_example, all_response_codes, required_request_fields, required_response_fields
 
 
 @pytest.mark.depends(on=["test_health_endpoint.py::test_health_endpoint"])
-@pytest.mark.parametrize("method,path,request_example,response_example,all_response_codes,required_fields", list(get_openapi_endpoints()))
-def test_openapi_200_responses(method, path, request_example, response_example, all_response_codes, required_fields):
+@pytest.mark.parametrize("method,path,request_example,response_example,all_response_codes,required_request_fields,required_response_fields", list(get_openapi_endpoints()))
+def test_openapi_request_examples(method, path, request_example, response_example, all_response_codes, required_request_fields, required_response_fields):
     """
     Automatically checks that all documented endpoints with a 200 response
     in the OpenAPI spec return one of their documented response codes.
@@ -120,19 +138,21 @@ def test_openapi_200_responses(method, path, request_example, response_example, 
     if resp.status_code == 200:
         actual_response = resp.json()
         # Check that all required fields from the schema are present in the response
-        if isinstance(response_example, dict) and required_fields:
-            for field in required_fields:
+        if isinstance(response_example, dict) and required_response_fields:
+            for field in required_response_fields:
                 assert field in actual_response, (
                     f"Required field '{field}' not found in response. "
                 )
 
-    # For POST requests, test that removing each required field results in 422
-    if method == "post" and request_example and isinstance(request_example, dict):
-        for key in request_example.keys():
-            # Create a copy with this key removed
-            incomplete_request = {k: v for k, v in request_example.items() if k != key}
-            resp_incomplete = requests.post(url, json=incomplete_request)
-            assert resp_incomplete.status_code == 422, (
-                f"Expected 422 when '{key}' is missing from POST {url}. "
-                f"Got {resp_incomplete.status_code}. Response: {resp_incomplete.text}"
-            )
+    # For POST requests, test that removing each REQUIRED field results in 422
+    if method == "post" and request_example and isinstance(request_example, dict) and required_request_fields:
+        for key in required_request_fields:
+            # Only test required fields
+            if key in request_example:
+                # Create a copy with this key removed
+                incomplete_request = {k: v for k, v in request_example.items() if k != key}
+                resp_incomplete = requests.post(url, json=incomplete_request)
+                assert resp_incomplete.status_code == 422, (
+                    f"Expected 422 when required field '{key}' is missing from POST {url}. "
+                    f"Got {resp_incomplete.status_code}. Response: {resp_incomplete.text}"
+                )

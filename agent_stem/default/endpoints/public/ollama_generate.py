@@ -1,30 +1,29 @@
 """Ollama generate endpoint - Ollama-native API."""
 
-from typing import Optional, List
-from pydantic import BaseModel, Field
+from jsonschema import validate, ValidationError
+from fastapi import HTTPException
 
 
-
-class OllamaGenerateRequest(BaseModel):
-    """Request body for Ollama generate."""
-    model: str = Field(..., description="Model name to use")
-    prompt: str = Field(..., description="The prompt to generate completion for")
-    stream: Optional[bool] = Field(False, description="Whether to stream the response")
-    temperature: Optional[float] = Field(0.8, description="Temperature for sampling")
-    top_p: Optional[float] = Field(0.9, description="Top-p sampling parameter")
-    top_k: Optional[int] = Field(40, description="Top-k sampling parameter")
-
-
-async def handler(request: OllamaGenerateRequest, providers_state: dict):
+async def handler(request: dict, providers_state: dict):
     """
     Generate completion using Ollama format.
 
     This endpoint follows the Ollama Generate API format,
     making it compatible with Ollama clients and LiteLLM when using ollama/ prefix.
     """
+    # Validate request against schema
+    try:
+        validate(instance=request, schema=spec["requestBody"]["content"]["application/json"]["schema"])
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    # Access request fields as dict keys
+    model = request.get("model")
+    prompt = request.get("prompt")
+
     # Dummy response for now - implementation coming later
     return {
-        "model": request.model,
+        "model": model,
         "created_at": "2024-12-20T00:00:00.000000Z",
         "response": "This is a dummy response. Implementation coming soon.",
         "done": True,

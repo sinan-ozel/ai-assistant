@@ -15,7 +15,7 @@ def test_providers(mistral_api_key_available):
     while True:
         try:
             response = requests.get(url)
-            if response.status_code == 200 and response.json().get("status", "") == "one_provider_available":
+            if response.status_code == 200 and response.json().get("status", "") == "multiple_providers_available":
                 break
         except Exception:
             pass
@@ -24,7 +24,7 @@ def test_providers(mistral_api_key_available):
         time.sleep(1)
     assert response.status_code == 200, f"/private/v1/providers endpoint did not return expected response within {timeout} seconds"
     data = response.json()
-    assert data["status"] == "one_provider_available"
+    assert data["status"] == "multiple_providers_available"
     assert "available" in data
     assert "default" in data
     assert "total" in data
