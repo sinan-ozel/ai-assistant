@@ -57,6 +57,80 @@ spec = {
     "methods": ["POST"],
     "summary": "Create chat completion",
     "description": "Creates a model response for the given chat conversation. Compatible with OpenAI's Chat Completion API format.",
+    "requestBody": {
+        "required": True,
+        "content": {
+            "application/json": {
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "model": {
+                            "type": "string",
+                            "description": "ID of the model to use for completion"
+                        },
+                        "messages": {
+                            "type": "array",
+                            "description": "List of messages in the conversation",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "role": {
+                                        "type": "string",
+                                        "enum": ["system", "user", "assistant"],
+                                        "description": "Role of the message author"
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "description": "Human-readable text content of the message"
+                                    }
+                                },
+                                "required": ["role", "content"]
+                            },
+                            "minItems": 1
+                        },
+                        "temperature": {
+                            "type": "number",
+                            "minimum": 0.0,
+                            "maximum": 2.0,
+                            "default": 1.0,
+                            "description": "Sampling temperature. Higher values make output more random, lower values more deterministic"
+                        },
+                        "max_tokens": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Maximum number of tokens to generate in the completion"
+                        },
+                        "stream": {
+                            "type": "boolean",
+                            "default": False,
+                            "description": "Whether to stream the response incrementally"
+                        },
+                        "top_p": {
+                            "type": "number",
+                            "minimum": 0.0,
+                            "maximum": 1.0,
+                            "default": 1.0,
+                            "description": "Nucleus sampling parameter. Alternative to temperature"
+                        },
+                        "stop": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "Up to 4 sequences where the API will stop generating tokens"
+                        }
+                    },
+                    "required": ["model", "messages"]
+                },
+                "example": {
+                    "model": "pixtral",
+                    "messages": [
+                        {"role": "user", "content": "What is the capital of France?"}
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 100
+                }
+            }
+        }
+    },
     "responses": {
         200: {
             "description": "Chat completion response",

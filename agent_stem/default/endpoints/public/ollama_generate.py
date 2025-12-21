@@ -4,6 +4,7 @@ from typing import Optional, List
 from pydantic import BaseModel, Field
 
 
+
 class OllamaGenerateRequest(BaseModel):
     """Request body for Ollama generate."""
     model: str = Field(..., description="Model name to use")
@@ -42,6 +43,58 @@ spec = {
     "methods": ["POST"],
     "summary": "Generate completion (Ollama format)",
     "description": "Generates a completion for a prompt using Ollama's native API format. Compatible with Ollama clients.",
+    "requestBody": {
+        "required": True,
+        "content": {
+            "application/json": {
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "model": {
+                            "type": "string",
+                            "description": "Name of the model to use for generation"
+                        },
+                        "prompt": {
+                            "type": "string",
+                            "description": "Human-readable text prompt to generate a completion for"
+                        },
+                        "stream": {
+                            "type": "boolean",
+                            "default": False,
+                            "description": "Whether to stream the response incrementally"
+                        },
+                        "temperature": {
+                            "type": "number",
+                            "minimum": 0.0,
+                            "maximum": 2.0,
+                            "default": 0.8,
+                            "description": "Temperature for sampling. Higher values increase randomness"
+                        },
+                        "top_p": {
+                            "type": "number",
+                            "minimum": 0.0,
+                            "maximum": 1.0,
+                            "default": 0.9,
+                            "description": "Top-p (nucleus) sampling parameter"
+                        },
+                        "top_k": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 40,
+                            "description": "Top-k sampling parameter. Limits to top k tokens"
+                        }
+                    },
+                    "required": ["model", "prompt"]
+                },
+                "example": {
+                    "model": "gemma3:4b",
+                    "prompt": "What is the capital of France?",
+                    "stream": False,
+                    "temperature": 0.7
+                }
+            }
+        }
+    },
     "responses": {
         200: {
             "description": "Completion generated successfully",
