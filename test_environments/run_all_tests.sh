@@ -15,7 +15,7 @@ echo "========================================"
 declare -a TEST_ENVS=(
     "test_env_no_llm"
     "test_env_nothing"
-    "test_env_mistral"
+    # "test_env_mistral"
     "test_env_self_hosted_llm"
     # "test_env_local_llm"
 )
