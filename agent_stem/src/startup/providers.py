@@ -201,7 +201,7 @@ def discover_providers() -> Dict[str, Any]:
         Dictionary containing:
         - providers: List of all provider data
         - available_providers: List of available provider names
-        - default_provider: Name of default provider (if only one available)
+        - default_provider: Name of default provider (determined by logic)
     """
     # Load from default directory
     default_providers = load_providers_from_directory(
@@ -220,18 +220,62 @@ def discover_providers() -> Dict[str, Any]:
     available = [p for p in all_providers if p["available"]]
     available_names = [p["name"] for p in available]
 
-    # Set default if only one available
-    default_provider = None
-    if len(available) == 1:
-        default_provider = available[0]["name"]
+    # Get custom (mounted) providers
+    custom_available = [p for p in custom_providers if p["available"]]
+    custom_available_names = [p["name"] for p in custom_available]
 
-    # Determine status
+    # Get DEFAULT_PROVIDER from environment
+    env_default_provider = os.getenv("DEFAULT_PROVIDER")
+
+    # Determine default provider with various logic
+    default_provider = None
+
     if len(available) == 0:
         status = "no_providers_available"
     elif len(available) == 1:
+        # One provider available
+        default_provider = available[0]["name"]
+
+        # If DEFAULT_PROVIDER is set but doesn't match, log warning
+        if env_default_provider and env_default_provider != default_provider:
+            logger.warning(
+                f"DEFAULT_PROVIDER env '{env_default_provider}' does not match "
+                f"the only available provider '{default_provider}'. "
+                f"Using '{default_provider}'."
+            )
+
         status = "one_provider_available"
     else:
-        status = "multiple_providers_available"
+        # Multiple providers available
+        if env_default_provider:
+            # DEFAULT_PROVIDER is set
+            if env_default_provider in available_names:
+                # Valid: DEFAULT_PROVIDER matches one of the providers
+                default_provider = env_default_provider
+                status = "multiple_providers_available"
+            else:
+                # Error: DEFAULT_PROVIDER doesn't match any available provider
+                raise RuntimeError(
+                    f"DEFAULT_PROVIDER env '{env_default_provider}' does not match "
+                    f"any available provider. Available providers: {available_names}"
+                )
+        else:
+            # DEFAULT_PROVIDER not set
+            if len(custom_available) == 1:
+                # Only one mounted provider - use it as default
+                default_provider = custom_available[0]["name"]
+                logger.info(
+                    f"Multiple providers available but only one mounted provider "
+                    f"'{default_provider}'. Using it as default."
+                )
+                status = "multiple_providers_available"
+            else:
+                # Multiple providers, no clear default
+                logger.warning(
+                    f"Multiple providers available ({available_names}) "
+                    f"but no DEFAULT_PROVIDER env set. No default provider selected."
+                )
+                status = "multiple_providers_available"
 
     return {
         "providers": all_providers,

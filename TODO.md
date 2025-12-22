@@ -1,5 +1,8 @@
+- [ ] Finish logic / protocol for the default provider
+- [ ] Finish the default logic and test the chat endpoints with Mistral
+- [ ] Implement the system message and the memory logic
+- [ ] Implement the streamlit interface
 - [ ] Add github actions, reformat and commit
 - [ ] Add option to configure LiteLLM-style providers, through config.yaml https://medium.com/the-guy-wire/make-all-your-llms-openai-compatible-with-docker-litellm-337a73b9b79d
 - [ ] Add option to add System Message through YAML-base config.
 - [ ] Add option to add python Code "Lobe" through YAML-base config.
-- [ ] Finish logic / protocol for the default provider

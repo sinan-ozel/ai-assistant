@@ -41,6 +41,7 @@ def test_provider_context_window(mistral_api_key_available):
     assert response.status_code == 200
     data = response.json()
 
+    # TODO: This is going to change, go over this.
     # Get the default provider (should be pixtral)
     provider_name = data["default"]
     assert provider_name == "pixtral"

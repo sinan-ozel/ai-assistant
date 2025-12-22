@@ -49,6 +49,7 @@ services:
       - QDRANT_PORT=6333
       - EMBEDDING_HOST=embedding-test
       - EMBEDDING_PORT=11434
+      - DEFAULT_PROVIDER=mistral-7b
     env_file:
       - .env
     depends_on:
