@@ -10,6 +10,7 @@ RUN apt-get update \
         dnsutils \
         netcat-openbsd \
         wget \
+        tree \
         jq \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
