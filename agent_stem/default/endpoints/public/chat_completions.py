@@ -1,7 +1,11 @@
 """Chat completions endpoint - OpenAI-compatible API."""
 
+import time
+import uuid
 from jsonschema import validate, ValidationError
 from fastapi import HTTPException
+
+from common.llm import call_llm_by_model
 
 
 async def handler(request: dict, providers_state: dict):
@@ -17,32 +21,61 @@ async def handler(request: dict, providers_state: dict):
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
-    # Access request fields as dict keys
+    # Extract request parameters
     model = request.get("model")
     messages = request.get("messages", [])
+    temperature = request.get("temperature")
+    max_tokens = request.get("max_tokens")
+    top_p = request.get("top_p")
+    stop = request.get("stop")
+    stream = request.get("stream", False)
 
-    # Dummy response for now - implementation coming later
-    return {
-        "id": "chatcmpl-dummy123",
-        "object": "chat.completion",
-        "created": 1734700000,
-        "model": model,
-        "choices": [
-            {
-                "index": 0,
-                "message": {
-                    "role": "assistant",
-                    "content": "This is a dummy response. Implementation coming soon."
-                },
-                "finish_reason": "stop"
-            }
-        ],
-        "usage": {
-            "prompt_tokens": 10,
-            "completion_tokens": 10,
-            "total_tokens": 20
+    if stream:
+        raise HTTPException(status_code=501, detail="Streaming not yet implemented")
+
+    try:
+        # Call LLM
+        response = call_llm_by_model(
+            messages=messages,
+            providers_state=providers_state,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            top_p=top_p,
+            stop=stop,
+        )
+
+        # Extract response data
+        choice = response.choices[0]
+
+        # Build OpenAI-format response
+        return {
+            "id": f"chatcmpl-{uuid.uuid4().hex[:24]}",
+            "object": "chat.completion",
+            "created": int(time.time()),
+            "model": model or response.model,
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {
+                        "role": choice.message.role,
+                        "content": choice.message.content,
+                    },
+                    "finish_reason": choice.finish_reason,
+                }
+            ],
+            "usage": {
+                "prompt_tokens": response.usage.prompt_tokens if response.usage else 0,
+                "completion_tokens": response.usage.completion_tokens if response.usage else 0,
+                "total_tokens": response.usage.total_tokens if response.usage else 0,
+            },
         }
-    }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except NotImplementedError as e:
+        raise HTTPException(status_code=501, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"LLM call failed: {str(e)}")
 
 
 spec = {

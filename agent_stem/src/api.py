@@ -40,7 +40,6 @@ async def run_provider_discovery():
     # Run synchronous provider discovery in executor to avoid blocking
     loop = asyncio.get_event_loop()
     providers_state = await loop.run_in_executor(None, discover_providers)
-    print(providers_state)
 
     logger.info(
         f"Found {len(providers_state['available_providers'])} available providers"

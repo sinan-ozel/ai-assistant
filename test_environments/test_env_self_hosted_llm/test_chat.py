@@ -3,7 +3,6 @@ import requests
 import litellm
 import os
 
-
 litellm.set_verbose = False
 litellm.verbose = False
 litellm.suppress_debug_info = True
@@ -21,7 +20,7 @@ def test_chat_completions_basic(ollama_server_available):
 
     # Ask a trivial question
     payload = {
-        "model": "gemma3_on_vpn",
+        "model": "ollama/gemma3:4b",
         "messages": [
             {"role": "user", "content": "What is 2+2? Answer with only the number."}
         ],

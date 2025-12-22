@@ -1,7 +1,10 @@
 """Ollama generate endpoint - Ollama-native API."""
 
+import time
 from jsonschema import validate, ValidationError
 from fastapi import HTTPException
+
+from common.llm import call_llm_by_model
 
 
 async def handler(request: dict, providers_state: dict):
@@ -17,24 +20,61 @@ async def handler(request: dict, providers_state: dict):
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
-    # Access request fields as dict keys
+    # Extract request parameters
     model = request.get("model")
     prompt = request.get("prompt")
+    temperature = request.get("temperature")
+    top_p = request.get("top_p")
+    top_k = request.get("top_k")
+    stream = request.get("stream", False)
 
-    # Dummy response for now - implementation coming later
-    return {
-        "model": model,
-        "created_at": "2024-12-20T00:00:00.000000Z",
-        "response": "This is a dummy response. Implementation coming soon.",
-        "done": True,
-        "context": [1, 2, 3],
-        "total_duration": 1000000000,
-        "load_duration": 500000000,
-        "prompt_eval_count": 10,
-        "prompt_eval_duration": 200000000,
-        "eval_count": 10,
-        "eval_duration": 300000000
-    }
+    if stream:
+        raise HTTPException(status_code=501, detail="Streaming not yet implemented")
+
+    try:
+        # Convert prompt to messages format for LiteLLM
+        messages = [{"role": "user", "content": prompt}]
+
+        # Build kwargs for LiteLLM
+        kwargs = {}
+        if top_k is not None:
+            kwargs["top_k"] = top_k
+
+        # Call LLM
+        response = call_llm_by_model(
+            messages=messages,
+            providers_state=providers_state,
+            model=model,
+            temperature=temperature,
+            top_p=top_p,
+            **kwargs,
+        )
+
+        # Extract response content
+        choice = response.choices[0]
+        response_text = choice.message.content
+
+        # Build Ollama-format response
+        # Note: Some fields are approximated since LiteLLM doesn't provide all Ollama metrics
+        return {
+            "model": model or response.model,
+            "created_at": time.strftime("%Y-%m-%dT%H:%M:%S.%fZ", time.gmtime()),
+            "response": response_text,
+            "done": True,
+            "context": [],  # LiteLLM doesn't provide this
+            "total_duration": 0,  # Would need timing instrumentation
+            "load_duration": 0,
+            "prompt_eval_count": response.usage.prompt_tokens if response.usage else 0,
+            "prompt_eval_duration": 0,
+            "eval_count": response.usage.completion_tokens if response.usage else 0,
+            "eval_duration": 0,
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except NotImplementedError as e:
+        raise HTTPException(status_code=501, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"LLM call failed: {str(e)}")
 
 
 spec = {
