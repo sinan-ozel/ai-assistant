@@ -1,0 +1,3 @@
+api_base: https://api.mistral.ai
+model: mistral/magistral-small-2509
+api_key: ${MISTRAL_API_KEY}

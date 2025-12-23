@@ -28,9 +28,9 @@ def test_providers(mistral_api_key_available):
     assert "available" in data
     assert "default" in data
     assert "total" in data
-    assert len(data["available"]) == 1
+    assert len(data["available"]) == 11
     assert "pixtral" in data["available"]
-    assert data["default"] == "pixtral"
+    assert data["default"] == "mistral-7b"
 
 
 def test_provider_context_window(mistral_api_key_available):
@@ -44,7 +44,7 @@ def test_provider_context_window(mistral_api_key_available):
     # TODO: This is going to change, go over this.
     # Get the default provider (should be pixtral)
     provider_name = data["default"]
-    assert provider_name == "pixtral"
+    assert provider_name == "mistral-7b"
 
     # Query the context window endpoint
     context_url = f"{BASE_URL}/private/v1/providers/{provider_name}/max-context-window"
@@ -54,6 +54,6 @@ def test_provider_context_window(mistral_api_key_available):
     context_data = response.json()
     assert "provider" in context_data
     assert "max_context_window" in context_data
-    assert context_data["provider"] == "pixtral"
+    assert context_data["provider"] == "mistral-7b"
     assert isinstance(context_data["max_context_window"], int)
-    assert context_data["max_context_window"] == 4096
+    assert context_data["max_context_window"] == 512

@@ -1,0 +1,3 @@
+api_base: https://api.mistral.ai
+model: mistral/voxtral-mini-2507
+api_key: ${MISTRAL_API_KEY}

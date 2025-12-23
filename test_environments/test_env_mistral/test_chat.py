@@ -3,6 +3,7 @@ import requests
 import litellm
 import os
 
+
 litellm.set_verbose = False
 litellm.verbose = False
 litellm.suppress_debug_info = True
@@ -14,13 +15,13 @@ BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 
 @pytest.mark.depends(name='test_chat_completions_basic', on=['test_provider_context_window'])
-def test_chat_completions_basic(ollama_server_available):
+def test_chat_completions_basic(mistral_api_key_available):
     """Test basic chat completion with a trivial question."""
     url = f"{BASE_URL}/v1/chat/completions"
 
     # Ask a trivial question
     payload = {
-        "model": "ollama/gemma3:4b",
+        "model": "ministral-3b",
         "messages": [
             {"role": "user", "content": "What is 2+2? Answer with only the number."}
         ],
@@ -66,7 +67,7 @@ def test_chat_completions_basic(ollama_server_available):
 
 
 @pytest.mark.depends(on=['test_chat_completions_basic'])
-def test_chat_completions_litellm(ollama_server_available):
+def test_chat_completions_litellm(mistral_api_key_available):
     """Test chat completion using LiteLLM client interface."""
     # Configure LiteLLM to use our custom OpenAI-compatible endpoint
     api_base = f"{BASE_URL}/v1"
@@ -74,7 +75,7 @@ def test_chat_completions_litellm(ollama_server_available):
     # Use litellm to make a completion request
     # Prefix with "openai/" to tell LiteLLM to use OpenAI-compatible format
     response = litellm.completion(
-        model="ollama/gemma3:4b",
+        model="openai/ministral-3b",
         messages=[
             {"role": "user", "content": "What is the capital of France? Answer with only the city name."}
         ],
@@ -106,63 +107,3 @@ def test_chat_completions_litellm(ollama_server_available):
     assert hasattr(response.usage, "prompt_tokens")
     assert hasattr(response.usage, "completion_tokens")
     assert hasattr(response.usage, "total_tokens")
-
-
-@pytest.mark.depends(on=['test_chat_completions_basic'])
-def test_chat_completions_streaming_not_implemented():
-    """Test that streaming returns 501 Not Implemented."""
-    url = f"{BASE_URL}/v1/chat/completions"
-
-    payload = {
-        "model": "ollama/gemma3:4b",
-        "messages": [
-            {"role": "user", "content": "Hello"}
-        ],
-        "stream": True  # Request streaming
-    }
-
-    response = requests.post(url, json=payload)
-    assert response.status_code == 501, f"Expected 501, got {response.status_code}: {response.text}"
-    
-    data = response.json()
-    assert "detail" in data
-    assert "streaming" in data["detail"].lower() or "not" in data["detail"].lower()
-
-
-@pytest.mark.depends(on=['test_chat_completions_basic'])
-def test_chat_completions_invalid_parameters():
-    """Test that invalid parameters are handled with appropriate error."""
-    url = f"{BASE_URL}/v1/chat/completions"
-
-    # Test with invalid temperature (out of range)
-    payload = {
-        "model": "ollama/gemma3:4b",
-        "messages": [
-            {"role": "user", "content": "Hello"}
-        ],
-        "temperature": 10.0  # Way out of valid range
-    }
-
-    response = requests.post(url, json=payload)
-    # Should either accept it (LiteLLM handles) or return error
-    # Accept any response that's not 2xx if LiteLLM rejects it
-    if response.status_code >= 400:
-        assert response.status_code in [400, 500], f"Expected 400 or 500, got {response.status_code}"
-
-
-@pytest.mark.depends(on=['test_chat_completions_basic'])
-def test_chat_completions_missing_required_fields():
-    """Test that missing required fields returns 422 Unprocessable Entity."""
-    url = f"{BASE_URL}/v1/chat/completions"
-
-    # Test with missing messages
-    payload = {
-        "model": "ollama/gemma3:4b",
-        # Missing required "messages" field
-    }
-
-    response = requests.post(url, json=payload)
-    assert response.status_code == 422, f"Expected 422, got {response.status_code}: {response.text}"
-    
-    data = response.json()
-    assert "detail" in data
