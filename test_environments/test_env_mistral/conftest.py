@@ -4,6 +4,12 @@ import os
 
 
 @pytest.fixture(scope="session")
+def base_url():
+    """Get the base URL for the test environment."""
+    return os.getenv("BASE_URL", "http://app:8000")
+
+
+@pytest.fixture(scope="session")
 def mistral_api_key_available():
     """Check if the MISTRAL_API_KEY environment variable is set.
 

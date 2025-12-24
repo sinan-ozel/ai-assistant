@@ -1,41 +1,35 @@
 """Provider context window endpoint."""
 
 from fastapi import HTTPException
+from situational.awareness import get_provider_context_window
 
 
 async def handler(provider: str, providers_state: dict):
     """Get the maximum context window for a specific provider."""
-    # Find the provider in the providers list
-    providers = providers_state.get("providers", [])
+    # Get cached context window
+    context_window = get_provider_context_window(providers_state, provider)
 
-    for p in providers:
-        if p["name"] == provider:
-            # Check if provider is available
-            if not p.get("available", False):
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"Provider '{provider}' is not available"
-                )
+    if context_window is None:
+        # Check if provider exists
+        providers = providers_state.get("providers", [])
+        provider_exists = any(p["name"] == provider for p in providers)
 
-            # Get context window from llm_responses
-            context_window = p.get("llm_responses", {}).get("context_window")
+        if not provider_exists:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Provider '{provider}' not found"
+            )
 
-            if context_window is None:
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"Context window information not available for provider '{provider}'"
-                )
+        # Provider exists but context window not available
+        raise HTTPException(
+            status_code=404,
+            detail=f"Context window information not available for provider '{provider}'"
+        )
 
-            return {
-                "provider": provider,
-                "max_context_window": context_window
-            }
-
-    # Provider not found
-    raise HTTPException(
-        status_code=404,
-        detail=f"Provider '{provider}' not found"
-    )
+    return {
+        "provider": provider,
+        "max_context_window": context_window
+    }
 
 
 spec = {

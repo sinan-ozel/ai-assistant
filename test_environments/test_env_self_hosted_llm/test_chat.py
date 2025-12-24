@@ -123,7 +123,7 @@ def test_chat_completions_streaming_not_implemented():
 
     response = requests.post(url, json=payload)
     assert response.status_code == 501, f"Expected 501, got {response.status_code}: {response.text}"
-    
+
     data = response.json()
     assert "detail" in data
     assert "streaming" in data["detail"].lower() or "not" in data["detail"].lower()
@@ -145,9 +145,9 @@ def test_chat_completions_invalid_parameters():
 
     response = requests.post(url, json=payload)
     # Should either accept it (LiteLLM handles) or return error
-    # Accept any response that's not 2xx if LiteLLM rejects it
+    # Accept 400 (bad request), 422 (validation error), or 500 (server error)
     if response.status_code >= 400:
-        assert response.status_code in [400, 500], f"Expected 400 or 500, got {response.status_code}"
+        assert response.status_code in [400, 422, 500], f"Expected 400, 422, or 500, got {response.status_code}"
 
 
 @pytest.mark.depends(on=['test_chat_completions_basic'])
@@ -163,6 +163,6 @@ def test_chat_completions_missing_required_fields():
 
     response = requests.post(url, json=payload)
     assert response.status_code == 422, f"Expected 422, got {response.status_code}: {response.text}"
-    
+
     data = response.json()
     assert "detail" in data

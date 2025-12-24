@@ -131,7 +131,9 @@ def test_openapi_request_examples(method, path, request_example, response_exampl
     # Accept any documented response code as valid
     assert resp.status_code in all_response_codes, (
         f"Endpoint {method.upper()} {url} returned {resp.status_code}. "
-        f"Expected one of {all_response_codes}. Response: {resp.text}"
+        f"Expected one of {all_response_codes}. "
+        f"Request: {request_example}. "
+        f"Response: {resp.text}"
     )
 
     # If we got a 200 response, validate it matches the expected structure
