@@ -145,9 +145,9 @@ def test_chat_completions_invalid_parameters():
 
     response = requests.post(url, json=payload)
     # Should either accept it (LiteLLM handles) or return error
-    # Accept 400 (bad request), 422 (validation error), or 500 (server error)
+    # Accept 400 (bad request), or 422 (validation error)
     if response.status_code >= 400:
-        assert response.status_code in [400, 422, 500], f"Expected 400, 422, or 500, got {response.status_code}"
+        assert response.status_code in [400, 422], f"Expected 400 or 422, got {response.status_code}"
 
 
 @pytest.mark.depends(on=['test_chat_completions_basic'])
