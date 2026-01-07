@@ -11,15 +11,6 @@ echo ""
 echo "=========================================="
 echo "Running docformatter (docstring formatter)..."
 echo "=========================================="
-# First check
-docformatter \
-  --check \
-  --recursive \
-  --wrap-summaries 72 \
-  --wrap-descriptions 72 \
-  src/
-
-# Then apply changes
 docformatter \
   --in-place \
   --recursive \

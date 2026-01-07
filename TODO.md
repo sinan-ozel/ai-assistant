@@ -1,3 +1,4 @@
+- [ ] Add some sort of agent_id and use as a prefix. agent:short-term-memory:<user_id>:<convo_id>
 - [ ] Finish logic / protocol for the default provider
 - [ ] Finish the default logic and test the chat endpoints with Mistral
 - [ ] Implement the system message and the memory logic

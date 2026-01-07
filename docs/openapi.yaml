@@ -1,0 +1,438 @@
+openapi: 3.1.0
+info:
+  title: FastAPI
+  version: 0.1.0
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Check if the API is running and healthy
+      operationId: handler_health_get
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: string
+                  providers_loading:
+                    type: boolean
+                type: object
+                required:
+                - status
+              example:
+                status: ok
+                providers_loading: false
+  /private/v1/providers/{provider}/max-context-window:
+    get:
+      summary: Get provider's maximum context window
+      description: Retrieve the maximum context window size in tokens for a specific
+        provider
+      operationId: handler_private_v1_providers__provider__max_context_window_get
+      parameters:
+      - name: provider
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Provider
+      responses:
+        '200':
+          description: Context window information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provider:
+                    type: string
+                  max_context_window:
+                    type: integer
+                required:
+                - provider
+                - max_context_window
+              example:
+                provider: pixtral
+                max_context_window: 128000
+        '404':
+          description: Provider not found, not available, or context window information
+            not available
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /private/v1/providers:
+    get:
+      summary: Get providers information
+      description: Retrieve information about available LLM providers, including which
+        are available and the default provider
+      operationId: handler_private_v1_providers_get
+      responses:
+        '200':
+          description: Provider information retrieved successfully
+          content:
+            application/json:
+              schema:
+                properties:
+                  available:
+                    items:
+                      type: string
+                    type: array
+                  default:
+                    type: string
+                    nullable: true
+                  total:
+                    type: integer
+                  status:
+                    type: string
+                type: object
+                required:
+                - available
+                - default
+                - total
+                - status
+              example:
+                available:
+                - pixtral
+                - gemma3_on_vpn
+                default: pixtral
+                total: 2
+                status: ready
+  /v1/chat/completions:
+    post:
+      summary: Create chat completion
+      description: Creates a model response for the given chat conversation. Compatible
+        with OpenAI's Chat Completion API format.
+      operationId: handler_v1_chat_completions_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatCompletionRequest'
+        required: true
+      responses:
+        '200':
+          description: Chat completion response
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: string
+                    description: Unique identifier for the completion
+                  object:
+                    type: string
+                    description: Object type, always 'chat.completion'
+                  created:
+                    type: integer
+                    description: Unix timestamp of when the completion was created
+                  model:
+                    type: string
+                    description: The model used for completion
+                  choices:
+                    items:
+                      properties:
+                        index:
+                          type: integer
+                          description: Choice index
+                        message:
+                          properties:
+                            role:
+                              type: string
+                              description: Role of the message author
+                            content:
+                              type: string
+                              description: Content of the message
+                          type: object
+                          description: The generated message
+                        finish_reason:
+                          type: string
+                          description: Reason for completion finish (stop, length,
+                            etc.)
+                      type: object
+                    type: array
+                    description: List of completion choices
+                  usage:
+                    properties:
+                      prompt_tokens:
+                        type: integer
+                        description: Number of tokens in the prompt
+                      completion_tokens:
+                        type: integer
+                        description: Number of tokens in the completion
+                      total_tokens:
+                        type: integer
+                        description: Total tokens used
+                    type: object
+                    description: Token usage statistics
+                type: object
+                required:
+                - id
+                - object
+                - created
+                - model
+                - choices
+              example:
+                id: chatcmpl-abc123
+                object: chat.completion
+                created: 1734700000
+                model: pixtral
+                choices:
+                - index: 0
+                  message:
+                    role: assistant
+                    content: Hello! How can I help you today?
+                  finish_reason: stop
+                usage:
+                  prompt_tokens: 20
+                  completion_tokens: 10
+                  total_tokens: 30
+        '400':
+          description: Bad request - invalid parameters
+        '404':
+          description: Model not found or not available
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/api/generate:
+    post:
+      summary: Generate completion (Ollama format)
+      description: Generates a completion for a prompt using Ollama's native API format.
+        Compatible with Ollama clients.
+      operationId: handler_v1_api_generate_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OllamaGenerateRequest'
+        required: true
+      responses:
+        '200':
+          description: Completion generated successfully
+          content:
+            application/json:
+              schema:
+                properties:
+                  model:
+                    type: string
+                    description: The model used
+                  created_at:
+                    type: string
+                    description: Timestamp of creation
+                  response:
+                    type: string
+                    description: The generated text
+                  done:
+                    type: boolean
+                    description: Whether generation is complete
+                  context:
+                    items:
+                      type: integer
+                    type: array
+                    description: Context tokens
+                  total_duration:
+                    type: integer
+                    description: Total duration in nanoseconds
+                  load_duration:
+                    type: integer
+                    description: Model load duration in nanoseconds
+                  prompt_eval_count:
+                    type: integer
+                    description: Number of tokens in the prompt
+                  prompt_eval_duration:
+                    type: integer
+                    description: Prompt evaluation duration in nanoseconds
+                  eval_count:
+                    type: integer
+                    description: Number of tokens generated
+                  eval_duration:
+                    type: integer
+                    description: Generation duration in nanoseconds
+                type: object
+                required:
+                - model
+                - created_at
+                - response
+                - done
+              example:
+                model: gemma3:4b
+                created_at: '2024-12-20T00:00:00.000000Z'
+                response: The capital of France is Paris.
+                done: true
+                context:
+                - 1
+                - 2
+                - 3
+                total_duration: 1000000000
+                load_duration: 500000000
+                prompt_eval_count: 10
+                prompt_eval_duration: 200000000
+                eval_count: 10
+                eval_duration: 300000000
+        '400':
+          description: Bad request - invalid parameters
+        '404':
+          description: Model not found or not available
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    ChatCompletionRequest:
+      properties:
+        model:
+          type: string
+          title: Model
+          description: ID of the model to use
+        messages:
+          items:
+            $ref: '#/components/schemas/Message'
+          type: array
+          title: Messages
+          description: List of messages in the conversation
+        temperature:
+          anyOf:
+          - type: number
+            maximum: 2.0
+            minimum: 0.0
+          - type: 'null'
+          title: Temperature
+          description: Sampling temperature between 0 and 2
+          default: 1.0
+        max_tokens:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Max Tokens
+          description: Maximum number of tokens to generate
+        stream:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Stream
+          description: Whether to stream the response
+          default: false
+        top_p:
+          anyOf:
+          - type: number
+            maximum: 1.0
+            minimum: 0.0
+          - type: 'null'
+          title: Top P
+          description: Nucleus sampling parameter
+          default: 1.0
+        stop:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Stop
+          description: Stop sequences
+      type: object
+      required:
+      - model
+      - messages
+      title: ChatCompletionRequest
+      description: Request body for chat completion.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    Message:
+      properties:
+        role:
+          type: string
+          title: Role
+          description: Role of the message author (system, user, assistant)
+        content:
+          type: string
+          title: Content
+          description: Content of the message
+      type: object
+      required:
+      - role
+      - content
+      title: Message
+      description: Chat message.
+    OllamaGenerateRequest:
+      properties:
+        model:
+          type: string
+          title: Model
+          description: Model name to use
+        prompt:
+          type: string
+          title: Prompt
+          description: The prompt to generate completion for
+        stream:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Stream
+          description: Whether to stream the response
+          default: false
+        temperature:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Temperature
+          description: Temperature for sampling
+          default: 0.8
+        top_p:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Top P
+          description: Top-p sampling parameter
+          default: 0.9
+        top_k:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Top K
+          description: Top-k sampling parameter
+          default: 40
+      type: object
+      required:
+      - model
+      - prompt
+      title: OllamaGenerateRequest
+      description: Request body for Ollama generate.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+
