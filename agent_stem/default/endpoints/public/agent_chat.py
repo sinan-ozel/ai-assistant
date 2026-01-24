@@ -290,17 +290,42 @@ spec = {
                     "schema": {
                         "type": "object",
                         "properties": {
-                            "conversation_id": {"type": "string"},
-                            "user_id": {"type": "string"},
-                            "message": {"type": "string"},
-                            "role": {"type": "string"},
-                            "created": {"type": "integer"},
+                            "conversation_id": {
+                                "type": "string",
+                                "description": "Unique identifier for the conversation"
+                            },
+                            "user_id": {
+                                "type": "string",
+                                "description": "User identifier for conversation isolation"
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "The assistant's response message"
+                            },
+                            "role": {
+                                "type": "string",
+                                "description": "Message role (always 'assistant' for responses)"
+                            },
+                            "created": {
+                                "type": "integer",
+                                "description": "Unix timestamp when the response was created"
+                            },
                             "usage": {
                                 "type": "object",
+                                "description": "Token usage statistics for the request",
                                 "properties": {
-                                    "prompt_tokens": {"type": "integer"},
-                                    "completion_tokens": {"type": "integer"},
-                                    "total_tokens": {"type": "integer"}
+                                    "prompt_tokens": {
+                                        "type": "integer",
+                                        "description": "Number of tokens in the prompt"
+                                    },
+                                    "completion_tokens": {
+                                        "type": "integer",
+                                        "description": "Number of tokens in the completion"
+                                    },
+                                    "total_tokens": {
+                                        "type": "integer",
+                                        "description": "Total number of tokens used"
+                                    }
                                 }
                             }
                         },

@@ -262,6 +262,12 @@ spec = {
         },
         404: {
             "description": "Model not found or not available"
+        },
+        422: {
+            "description": "Validation error - request does not match schema"
+        },
+        501: {
+            "description": "Not implemented - streaming is not yet supported"
         }
     }
 }

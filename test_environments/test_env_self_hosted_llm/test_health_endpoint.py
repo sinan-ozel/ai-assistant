@@ -14,7 +14,7 @@ def test_health_endpoint():
     while True:
         try:
             response = requests.get(url)
-            if response.status_code == 200 and response.json() == {"status": "ok"}:
+            if response.status_code == 200 and response.json().get("status") == "ok":
                 break
         except Exception:
             pass

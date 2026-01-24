@@ -37,6 +37,17 @@ spec = {
     "methods": ["GET"],
     "summary": "Get provider's maximum context window",
     "description": "Retrieve the maximum context window size in tokens for a specific provider",
+    "parameters": [
+        {
+            "name": "provider",
+            "in": "path",
+            "required": True,
+            "schema": {
+                "type": "string",
+                "example": "pixtral"
+            }
+        }
+    ],
     "responses": {
         200: {
             "description": "Context window information retrieved successfully",
@@ -45,8 +56,14 @@ spec = {
                     "schema": {
                         "type": "object",
                         "properties": {
-                            "provider": {"type": "string"},
-                            "max_context_window": {"type": "integer"},
+                            "provider": {
+                                "type": "string",
+                                "description": "Name of the provider"
+                            },
+                            "max_context_window": {
+                                "type": "integer",
+                                "description": "Maximum context window size in tokens"
+                            },
                         },
                         "required": ["provider", "max_context_window"],
                     },

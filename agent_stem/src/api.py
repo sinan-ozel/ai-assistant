@@ -39,7 +39,10 @@ async def run_provider_discovery():
 
     # Run synchronous provider discovery in executor to avoid blocking
     loop = asyncio.get_event_loop()
-    providers_state = await loop.run_in_executor(None, discover_providers)
+    discovery_result = await loop.run_in_executor(None, discover_providers)
+
+    # Update the existing dict instead of replacing it to maintain references
+    providers_state.update(discovery_result)
 
     logger.info(
         f"Found {len(providers_state['available_providers'])} available providers"

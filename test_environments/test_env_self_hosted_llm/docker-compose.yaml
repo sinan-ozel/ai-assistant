@@ -57,11 +57,11 @@ services:
       embedding-test:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/8000' || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health | grep -q '\"providers_loading\":false' || exit 1"]
       interval: 5s
       timeout: 3s
-      retries: 10
-      start_period: 30s
+      retries: 20
+      start_period: 60s
     volumes:
       - ./cortex:/app/cortex
 

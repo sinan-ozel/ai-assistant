@@ -27,10 +27,21 @@ spec = {
                             "available": {
                                 "type": "array",
                                 "items": {"type": "string"},
+                                "description": "List of available provider names"
                             },
-                            "default": {"type": "string", "nullable": True},
-                            "total": {"type": "integer"},
-                            "status": {"type": "string"},
+                            "default": {
+                                "type": "string",
+                                "nullable": True,
+                                "description": "Default provider name, or null if none set"
+                            },
+                            "total": {
+                                "type": "integer",
+                                "description": "Total number of configured providers"
+                            },
+                            "status": {
+                                "type": "string",
+                                "description": "Provider discovery status"
+                            },
                         },
                         "required": ["available", "default", "total", "status"],
                     },

@@ -9,10 +9,11 @@ services:
     networks:
       - test-network
     healthcheck:
-      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/8000' || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health | grep -q '\"providers_loading\":false' || exit 1"]
       interval: 5s
       timeout: 3s
-      retries: 10
+      retries: 20
+      start_period: 60s
 
   # Test runner
   tests:

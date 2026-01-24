@@ -89,6 +89,10 @@ def validate_provider(config: Dict[str, Any]) -> tuple[bool, str]:
     kwargs["messages"] = [{"role": "user", "content": "Hi"}]
     kwargs["max_tokens"] = kwargs.get("max_tokens", 10)
 
+    # Add timeout to prevent hanging indefinitely on slow providers
+    # Allow up to 30 seconds for model loading and response
+    kwargs["timeout"] = 30
+
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")

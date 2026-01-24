@@ -1,6 +1,7 @@
 """Ollama generate endpoint - Ollama-native API."""
 
 import time
+from datetime import datetime, timezone
 from jsonschema import validate, ValidationError
 from fastapi import HTTPException
 
@@ -58,7 +59,7 @@ async def handler(request: dict, providers_state: dict):
         # Note: Some fields are approximated since LiteLLM doesn't provide all Ollama metrics
         return {
             "model": model or response.model,
-            "created_at": time.strftime("%Y-%m-%dT%H:%M:%S.%fZ", time.gmtime()),
+            "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "response": response_text,
             "done": True,
             "context": [],  # LiteLLM doesn't provide this
@@ -195,13 +196,13 @@ spec = {
                         "created_at": "2024-12-20T00:00:00.000000Z",
                         "response": "The capital of France is Paris.",
                         "done": True,
-                        "context": [1, 2, 3],
-                        "total_duration": 1000000000,
-                        "load_duration": 500000000,
+                        "context": [],
+                        "total_duration": 0,
+                        "load_duration": 0,
                         "prompt_eval_count": 10,
-                        "prompt_eval_duration": 200000000,
+                        "prompt_eval_duration": 0,
                         "eval_count": 10,
-                        "eval_duration": 300000000
+                        "eval_duration": 0
                     }
                 }
             }
@@ -211,6 +212,12 @@ spec = {
         },
         404: {
             "description": "Model not found or not available"
+        },
+        422: {
+            "description": "Validation error - request does not match schema"
+        },
+        501: {
+            "description": "Not implemented - streaming is not yet supported"
         }
     }
 }
