@@ -41,5 +41,5 @@
             ]
         }
     },
-    "postStartCommand": "nohup dockerd > /var/log/dockerd.log 2>&1 & sleep 5 && echo 'Docker daemon started' && echo 'DevContainer ready!'"
+    // "postStartCommand": "nohup dockerd > /var/log/dockerd.log 2>&1 & sleep 5 && echo 'Docker daemon started' && echo 'DevContainer ready!'"
 }
