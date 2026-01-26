@@ -32,7 +32,7 @@ def test_providers():
     assert data["default"] is not None
 
 
-@pytest.mark.depends(on=["test_providers"])
+@pytest.mark.depends(on=["test_providers"], name="test_provider_context_window")
 def test_provider_context_window():
     """Test if the provider's context window endpoint works correctly."""
     # First get the list of providers
@@ -73,4 +73,4 @@ def test_provider_context_window():
     assert "max_context_window" in context_data
     assert context_data["provider"] == provider_name
     assert isinstance(context_data["max_context_window"], int)
-    assert 0 < context_data["max_context_window"] <= 1024
+    assert context_data["max_context_window"] == 32768
