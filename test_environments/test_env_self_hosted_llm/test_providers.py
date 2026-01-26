@@ -73,4 +73,7 @@ def test_provider_context_window(ollama_server_available):
     assert "max_context_window" in context_data
     assert context_data["provider"] == provider_name
     assert isinstance(context_data["max_context_window"], int)
-    assert context_data["max_context_window"] == 2048
+
+    # Get expected context window from environment or use default
+    expected_window = int(os.getenv("EXPECTED_CONTEXT_WINDOW", "2048"))
+    assert context_data["max_context_window"] == expected_window

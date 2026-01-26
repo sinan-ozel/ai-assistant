@@ -4,8 +4,7 @@ services:
     image: redis:7.4.2-alpine
     container_name: redis-test-self-hosted-llm
     command: redis-server --appendonly yes
-    networks:
-      - test-network
+    network_mode: "host"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -15,23 +14,11 @@ services:
   qdrant-test:
     image: qdrant/qdrant:v1.12.1
     container_name: qdrant-test-self-hosted-llm
-    networks:
-      - test-network
+    network_mode: "host"
     healthcheck:
       test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1"]
       interval: 5s
       timeout: 3s
-      retries: 5
-
-  embedding-test:
-    image: sinanozel/ollama.0.12.11:all-minilm-33m
-    container_name: embedding-test-self-hosted-llm
-    networks:
-      - test-network
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/11434' || exit 1"]
-      interval: 10s
-      timeout: 5s
       retries: 5
 
   # Application under test
@@ -40,21 +27,18 @@ services:
       context: ../..
       dockerfile: agent_stem/Dockerfile
     container_name: app-test-self-hosted-llm
-    networks:
-      - test-network
+    network_mode: "host"
     environment:
-      - REDIS_HOST=redis-test
+      - REDIS_HOST=localhost
       - REDIS_PORT=6379
-      - QDRANT_HOST=qdrant-test
+      - QDRANT_HOST=localhost
       - QDRANT_PORT=6333
-      - EMBEDDING_HOST=embedding-test
+      - EMBEDDING_HOST=localhost
       - EMBEDDING_PORT=11434
     depends_on:
       redis-test:
         condition: service_healthy
       qdrant-test:
-        condition: service_healthy
-      embedding-test:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8000/health | grep -q '\"providers_loading\":false' || exit 1"]
@@ -71,12 +55,11 @@ services:
       context: ../..
       dockerfile: test_environments/Dockerfile
     container_name: tests-runner-self-hosted-llm
-    networks:
-      - test-network
+    network_mode: "host"
     env_file:
       - .env
     environment:
-      - BASE_URL=http://app:8000
+      - BASE_URL=http://localhost:8000
       - OLLAMA_HOST
     depends_on:
       app:
@@ -84,7 +67,7 @@ services:
     volumes:
       - .:/tests
       - test-results:/tests/test-results
-    command: ["pytest", "-v", "--tb=short"]
+    command: ["pytest", "--openapi=http://localhost:8000", "--openapi-no-strict-example-checking", "--openapi-markdown-output=report.md", "--openapi-no-stdout", "-v"]
 
 networks:
   test-network:
