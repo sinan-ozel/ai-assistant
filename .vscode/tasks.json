@@ -15,7 +15,7 @@
             }
         },
         {
-            "label": "Run Container",
+            "label": "Run Test Agent 01",
             "type": "shell",
             "command": "docker",
             "args": [
@@ -24,7 +24,12 @@
                 "up"
             ],
             "dependsOn": ["Build Container"],
-            "problemMatcher": []
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/agents/test_agent_01"
+                }
+            },
         },
         {
             "label": "Run Tests (No LLM)",

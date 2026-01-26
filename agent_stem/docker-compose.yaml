@@ -4,10 +4,12 @@ services:
     container_name: agent-stem-dev
     volumes:
       - ..:/workspace
+      - ${AGENT_FOLDER:-./cortex}:/app/cortex
     working_dir: /workspace
     ports:
       - "8000:8000"
       - "8501:8501"
+      - "11434:11434"
     networks:
       - agent-dev-network
     depends_on:
@@ -40,10 +42,24 @@ services:
   embedding:
     image: sinanozel/ollama.0.12.11:all-minilm-33m
     container_name: embedding
-    ports:
-      - "11434:11434"
     networks:
       - agent-dev-network
+
+  ollama:
+    image: sinanozel/ollama.0.12.11:gemma3-270m
+    container_name: ollama
+    networks:
+      - agent-dev-network
+    deploy:
+      resources:
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/11434' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 
 networks:
   agent-dev-network:
