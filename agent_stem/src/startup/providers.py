@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import yaml
-from litellm import acompletion, completion
+from litellm import acompletion, completion, get_model_info
 
 from common import CUSTOMIZATION_FOLDER, DEFAULTS_FOLDER
 
@@ -90,8 +90,8 @@ def validate_provider(config: Dict[str, Any]) -> tuple[bool, str]:
     kwargs["max_tokens"] = kwargs.get("max_tokens", 10)
 
     # Add timeout to prevent hanging indefinitely on slow providers
-    # Allow up to 30 seconds for model loading and response
-    kwargs["timeout"] = 30
+    # Allow up to 60 seconds for model loading and response (larger models can be slow)
+    kwargs["timeout"] = 60
 
     try:
         with warnings.catch_warnings():
@@ -289,42 +289,8 @@ def discover_providers() -> Dict[str, Any]:
     }
 
 
-def parse_context_window(response_text: str) -> int | None:
-    """Parse context window from LLM response.
-
-    Args:
-        response_text: Raw response text from LLM
-
-    Returns:
-        Context window size as integer, or None if parsing fails
-    """
-    if not response_text:
-        return None
-
-    # Strip whitespace
-    text = response_text.strip()
-
-    # Try direct int conversion
-    try:
-        return int(text)
-    except ValueError:
-        pass
-
-    # Look for a single number pattern in the text
-    # Pattern matches numbers with optional whitespace around them
-    numbers = re.findall(r'\b(\d+)\b', text)
-
-    if len(numbers) == 1:
-        try:
-            return int(numbers[0])
-        except ValueError:
-            pass
-
-    return None
-
-
 async def query_context_window(provider_data: Dict[str, Any]) -> int | None:
-    """Query a provider for their context window size.
+    """Query a provider for their context window size using LiteLLM's get_model_info.
 
     Args:
         provider_data: Provider dictionary with config
@@ -333,37 +299,43 @@ async def query_context_window(provider_data: Dict[str, Any]) -> int | None:
         Context window size as integer, or None if query fails
     """
     config = provider_data.get("config", {})
+    model = config.get("model")
 
-    # Build kwargs for litellm
-    kwargs = {}
-    for key in ALLOWED_KEYS:
-        if config.get(key):
-            kwargs[key] = config[key]
-
-    # Prompt asking for context window
-    kwargs["messages"] = [
-        {
-            "role": "user",
-            "content": (
-                "What is your maximum context window size in tokens? "
-                "Please respond with only the number, nothing else."
-            ),
-        }
-    ]
-    kwargs["max_tokens"] = kwargs.get("max_tokens", 50)
+    if not model:
+        return None
 
     try:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            response = await acompletion(**kwargs)
+        # Set OLLAMA_API_BASE if api_base is configured for Ollama
+        api_base = config.get("api_base")
+        env_backup = None
 
-        # Extract text from response
-        response_text = response.choices[0].message.content
-        logger.info(f"Context window query response: {response_text}")
+        if api_base and "ollama" in model.lower():
+            # Temporarily set environment variable for Ollama API base
+            env_backup = os.environ.get("OLLAMA_API_BASE")
+            os.environ["OLLAMA_API_BASE"] = api_base
 
-        return parse_context_window(response_text)
+        try:
+            # Use LiteLLM's get_model_info to get context window
+            model_info = get_model_info(model)
 
-    except Exception:
+            # Extract max_tokens (context window) from model info
+            context_window = model_info.get("max_tokens") or model_info.get("max_input_tokens")
+
+            if context_window:
+                logger.info(f"Context window from model info: {context_window}")
+                return context_window
+
+            return None
+
+        finally:
+            # Restore environment variable
+            if env_backup is not None:
+                os.environ["OLLAMA_API_BASE"] = env_backup
+            elif api_base and "OLLAMA_API_BASE" in os.environ:
+                del os.environ["OLLAMA_API_BASE"]
+
+    except Exception as e:
+        logger.debug(f"Failed to get context window via model info: {e}")
         return None
 
 

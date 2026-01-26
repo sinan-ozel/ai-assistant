@@ -43,7 +43,7 @@ spec = {
                                 "description": "Provider discovery status"
                             },
                         },
-                        "required": ["available", "default", "total", "status"],
+                        "required": ["available", "total", "status"],
                     },
                     "example": {
                         "available": ["pixtral", "gemma3_on_vpn"],
