@@ -1,9 +1,13 @@
 - [ ] Add some sort of agent_id and use as a prefix. agent:short-term-memory:<user_id>:<convo_id>
 - [ ] Finish logic / protocol for the default provider
 - [ ] Finish the default logic and test the chat endpoints with Mistral
-- [ ] Implement the system message and the memory logic
-- [ ] Implement the streamlit interface
 - [ ] Add github actions, reformat and commit
 - [ ] Add option to configure LiteLLM-style providers, through config.yaml https://medium.com/the-guy-wire/make-all-your-llms-openai-compatible-with-docker-litellm-337a73b9b79d
 - [ ] Add option to add System Message through YAML-base config.
 - [ ] Add option to add python Code "Lobe" through YAML-base config.
+- [ ] Add dark/light mode to the streamlit app
+- [ ] Create an agent with a system message
+- [ ] Think about how loops work
+- [ ] Think about how endpoints work
+- [ ] Put in an evaluation scheme
+- [ ] Put in the markdown ingestion
