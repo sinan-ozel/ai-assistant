@@ -73,6 +73,7 @@ def test_agent_chat_with_conversation_id(base_url):
     assert isinstance(data2["message"], str)
 
 
+# TODO: If the sporadic faillures continue, change this and use pytest-repeated.
 def test_agent_chat_memory_retention(base_url):
     """Test that agent remembers context from earlier in the conversation."""
     conversation_id = "test-memory-conv"
