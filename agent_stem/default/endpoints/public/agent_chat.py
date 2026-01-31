@@ -183,62 +183,64 @@ async def handler(request: dict, providers_state: dict):
     # TODO: Refactor this to add user, make sure that there are some reserved usernames, __admin and __default
     # Get or create conversation memory
     conv_key = get_conversation_key(user_id, conversation_id)
-    memory = ConversationMemory(conversation_id=conv_key)
 
-    # Get existing messages or initialize
-    if not hasattr(memory, "messages"):
-        memory.messages = []
+    # Use context manager to ensure Redis flush before returning
+    with ConversationMemory(conversation_id=conv_key) as memory:
+        # Get existing messages or initialize
+        if not hasattr(memory, "messages"):
+            memory.messages = []
 
-    messages = memory.messages
-    # TODO: Upgrade memory and re-implement
-    if not isinstance(messages, list):
-        messages = []
-        memory.messages = messages
+        messages = memory.messages
 
-    # Fit messages to context window
-    fitted_history = fit_messages_to_context(
-        messages,
-        max_context_window,
-        system_message
-    )
+        # TODO: Upgrade memory and re-implement
+        if not isinstance(messages, list):
+            messages = []
+            memory.messages = messages
 
-    # Build prompt with system message
-    prompt_messages = [{"role": "system", "content": system_message}]
-    prompt_messages.extend(fitted_history)
+        # Fit messages to context window
+        fitted_history = fit_messages_to_context(
+            messages,
+            max_context_window,
+            system_message
+        )
 
-    # Add current user message to prompt
-    user_msg = {"role": "user", "content": message}
-    prompt_messages.append(user_msg)
+        # Build prompt with system message
+        prompt_messages = [{"role": "system", "content": system_message}]
+        prompt_messages.extend(fitted_history)
 
-    # Call LLM with default provider
-    response = call_llm_by_model(
-        messages=prompt_messages,
-        providers_state=providers_state,
-        model=None,  # Use default provider
-    )
+        # Add current user message to prompt
+        user_msg = {"role": "user", "content": message}
+        prompt_messages.append(user_msg)
 
-    # Extract response
-    choice = response.choices[0]
-    assistant_message = choice.message.content
+        # Call LLM with default provider
+        response = call_llm_by_model(
+            messages=prompt_messages,
+            providers_state=providers_state,
+            model=None,  # Use default provider
+        )
 
-    # Store user message and assistant response in memory
-    # Use redis-memory's append() which handles persistence
-    memory.messages.append({"role": "user", "content": message})
-    memory.messages.append({"role": "assistant", "content": assistant_message})
+        # Extract response
+        choice = response.choices[0]
+        assistant_message = choice.message.content
 
-    # Build response
-    return {
-        "conversation_id": conversation_id,
-        "user_id": user_id,
-        "message": assistant_message,
-        "role": "assistant",
-        "created": int(time.time()),
-        "usage": {
-            "prompt_tokens": response.usage.prompt_tokens if response.usage else 0,
-            "completion_tokens": response.usage.completion_tokens if response.usage else 0,
-            "total_tokens": response.usage.total_tokens if response.usage else 0,
-        },
-    }
+        # Store user message and assistant response in memory
+        # Use redis-memory's append() which handles persistence
+        memory.messages.append({"role": "user", "content": message})
+        memory.messages.append({"role": "assistant", "content": assistant_message})
+
+        # Build response
+        return {
+            "conversation_id": conversation_id,
+            "user_id": user_id,
+            "message": assistant_message,
+            "role": "assistant",
+            "created": int(time.time()),
+            "usage": {
+                "prompt_tokens": response.usage.prompt_tokens if response.usage else 0,
+                "completion_tokens": response.usage.completion_tokens if response.usage else 0,
+                "total_tokens": response.usage.total_tokens if response.usage else 0,
+            },
+        }
 
 
 spec = {

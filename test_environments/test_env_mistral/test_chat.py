@@ -80,6 +80,7 @@ def test_chat_completions_litellm(mistral_api_key_available):
             {"role": "user", "content": "What is the capital of France? Answer with only the city name."}
         ],
         api_base=api_base,
+        api_key="dummy",  # Dummy key since authentication is handled by our server
         temperature=0.1,
         max_tokens=10
     )

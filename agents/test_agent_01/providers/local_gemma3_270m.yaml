@@ -1,2 +1,0 @@
-api_base: http://ollama:11434
-model: ollama/gemma3:270m

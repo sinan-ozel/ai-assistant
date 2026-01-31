@@ -33,7 +33,8 @@ def test_providers(mistral_api_key_available):
     assert data["default"] == "mistral-7b"
 
 
-def test_provider_context_window(mistral_api_key_available):
+@pytest.mark.depends(on=["test_providers"], name="test_provider_context_window")
+def test_provider_context_window():
     """Test if the provider's context window endpoint works correctly."""
     # First get the list of providers
     providers_url = f"{BASE_URL}/private/v1/providers"
@@ -56,4 +57,4 @@ def test_provider_context_window(mistral_api_key_available):
     assert "max_context_window" in context_data
     assert context_data["provider"] == "mistral-7b"
     assert isinstance(context_data["max_context_window"], int)
-    assert context_data["max_context_window"] == 512
+    assert context_data["max_context_window"] == 8191

@@ -3,11 +3,17 @@
 
 async def handler(providers_state: dict):
     """Get information about available providers."""
+    # Check if discovery is still in progress
+    if providers_state.get("loading", False):
+        status = "initializing"
+    else:
+        status = providers_state.get("status", "unknown")
+
     return {
         "available": providers_state.get("available_providers", []),
         "default": providers_state.get("default_provider"),
         "total": len(providers_state.get("providers", [])),
-        "status": providers_state.get("status", "unknown"),
+        "status": status,
     }
 
 
@@ -40,7 +46,14 @@ spec = {
                             },
                             "status": {
                                 "type": "string",
-                                "description": "Provider discovery status"
+                                "enum": [
+                                    "initializing",
+                                    "no_providers_available",
+                                    "one_provider_available",
+                                    "multiple_providers_available",
+                                    "unknown"
+                                ],
+                                "description": "Provider discovery status: 'initializing' (discovery in progress), 'no_providers_available' (no working providers found), 'one_provider_available' (exactly one provider available), 'multiple_providers_available' (multiple providers available), 'unknown' (unexpected state)"
                             },
                         },
                         "required": ["available", "total", "status"],
@@ -49,7 +62,7 @@ spec = {
                         "available": ["pixtral", "gemma3_on_vpn"],
                         "default": "pixtral",
                         "total": 2,
-                        "status": "ready",
+                        "status": "multiple_providers_available",
                     },
                 }
             },

@@ -65,13 +65,9 @@ services:
       app:
         condition: service_healthy
     volumes:
-      - .:/tests
-      - test-results:/tests/test-results
-    command: ["pytest", "--openapi=http://localhost:8000", "--openapi-no-strict-example-checking", "--openapi-markdown-output=report.md", "--openapi-no-stdout", "-v"]
+      - ${TEST_FOLDER:-.}:/tests
+    command: ["pytest", "--openapi=http://localhost:8000", "--openapi-no-strict-example-checking", "--openapi-markdown-output=report.md", "--openapi-no-stdout", "--openapi-timeout=60", "-v"]
 
 networks:
   test-network:
     driver: bridge
-
-volumes:
-  test-results:

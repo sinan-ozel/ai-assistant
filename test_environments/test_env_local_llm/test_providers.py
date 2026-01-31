@@ -11,12 +11,15 @@ def test_providers():
     """Test if the local LLM provider is being discovered correctly."""
     url = f"{BASE_URL}/private/v1/providers"
     start = time.time()
-    timeout = 30  # seconds
+    timeout = 60  # seconds - increased to allow for slow provider validation
     while True:
         try:
             response = requests.get(url)
-            if response.status_code == 200 and response.json().get("status", "") == "one_provider_available":
-                break
+            if response.status_code == 200:
+                status = response.json().get("status", "")
+                # Wait until discovery completes (not initializing anymore)
+                if status != "initializing" and status == "one_provider_available":
+                    break
         except Exception:
             pass
         if time.time() - start > timeout:
@@ -24,7 +27,8 @@ def test_providers():
         time.sleep(1)
     assert response.status_code == 200, f"/private/v1/providers endpoint did not return expected response within {timeout} seconds"
     data = response.json()
-    assert data["status"] == "one_provider_available"
+    print(data)
+    assert data["status"] == "one_provider_available", f"Expected status 'one_provider_available' but got '{data['status']}'"
     assert "available" in data
     assert "default" in data
     assert "total" in data

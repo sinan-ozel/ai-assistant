@@ -93,17 +93,17 @@ services:
       - test-network
     environment:
       - BASE_URL=http://app:8000
+      - REDIS_HOST=redis-test
+      - REDIS_PORT=6379
     depends_on:
+      redis-test:
+        condition: service_healthy
       app:
         condition: service_healthy
     volumes:
-      - .:/tests
-      - test-results:/tests/test-results
+      - ${TEST_FOLDER:-.}:/tests
     command: ["pytest", "--openapi=http://app:8000", "--openapi-no-strict-example-checking", "--openapi-markdown-output=report.md", "--openapi-no-stdout", "-v"]
 
 networks:
   test-network:
     driver: bridge
-
-volumes:
-  test-results:

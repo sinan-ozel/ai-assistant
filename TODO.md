@@ -11,3 +11,6 @@
 - [ ] Think about how endpoints work
 - [ ] Put in an evaluation scheme
 - [ ] Put in the markdown ingestion
+- [ ] Create agent with endpoints, test
+- [ ] Rename `cortex` to `runtime`.
+- [ ] Rename `providers` to `models`.

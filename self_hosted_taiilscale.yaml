@@ -1,2 +1,0 @@
-api_base: http://localhost:11434
-model: ollama/gemma3:gemma3-4b-it-qat

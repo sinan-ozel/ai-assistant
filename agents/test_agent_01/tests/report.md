@@ -150,13 +150,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "Okay, let\u2019s check the weather for **Tokyo, Japan**. \n\nHere\u2019s the forecast:\n\nCurrently, Tokyo is under a light rain shower with a temperature of 18\u00b0C (64\u00b0F). It\u2019s expected to continue with a high of 20\u00b0C (68\u00b0F) later today.",
+  "message": "Okay, let\u2019s check the weather for **London, England**. \n\nHere\u2019s the forecast:\n\nCurrently, London is experiencing light rain with a temperature of 15\u00b0C (59\u00b0F). It's expected to continue with a high of 18\u00b0C (64\u00b0F) later today.",
   "role": "assistant",
-  "created": 1769830595,
+  "created": 1769830780,
   "usage": {
-    "prompt_tokens": 504,
-    "completion_tokens": 72,
-    "total_tokens": 576
+    "prompt_tokens": 682,
+    "completion_tokens": 70,
+    "total_tokens": 752
   }
 }
 ```
@@ -255,13 +255,13 @@
 {
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
-  "message": "Okay, let\u2019s start with the origin. It\u2019s believed to have originated as a placeholder text in the 1960s by Matthew J. Murphy, a printer\u2019s apprentice. He created it to allow printers to fill the pages of a book without needing to worry about the precise layout. It was designed to be easily editable and didn't have any specific meaning beyond that.",
+  "message": "That\u2019s a really good explanation! Thanks. Do you have any more information about its history or purpose?",
   "role": "assistant",
-  "created": 1769830600,
+  "created": 1769830785,
   "usage": {
-    "prompt_tokens": 219,
-    "completion_tokens": 82,
-    "total_tokens": 301
+    "prompt_tokens": 315,
+    "completion_tokens": 23,
+    "total_tokens": 338
   }
 }
 ```
@@ -360,13 +360,13 @@
 {
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Test with 'single' quotes",
-  "message": "Okay! Let\u2019s dive into the origin of Lorem Ipsum. It\u2019s fascinating! It actually *did* originate from the type founders in Spain. They used it to create a way to test the visual impact of different fonts and layouts before actually producing the text for a book. Basically, they needed to see how the text looked with various fonts and arrangements without having to physically type it out.\n\nIt was a really ingenious solution for this testing process!  It\u2019s a testament to their design philosophy \u2013 creating a placeholder that serves a practical purpose beyond just looking like text.\n\nDo you want to know more about *how* it was used initially, or perhaps the history behind its development?",
+  "message": "Okay! Let\u2019s delve deeper into the history. It\u2019s a great example of how a seemingly simple placeholder can have surprisingly significant origins.\n\nSo, you\u2019re asking about how the Lorem Ipsum text evolved from its initial purpose as a testing tool for typography? It started as a way for the type founders to test how different fonts and layouts looked together. They\u2019d create a massive block of text \u2013 hundreds of pages \u2013 and use it to see what the overall look and feel of a book\u2019s text would be. They\u2019d then drastically reduce the text to just a few lines, effectively creating a placeholder that didn\u2019t contain any actual content.\n\nEssentially, it was a way to quickly assess the visual impact of typography without the cost and time of actually writing the text. It was a brilliant, pragmatic solution for their testing process!\n\nDo you want to hear about a specific example of how it was used in a test, or perhaps how the text evolved over time?",
   "role": "assistant",
-  "created": 1769830607,
+  "created": 1769830797,
   "usage": {
-    "prompt_tokens": 359,
-    "completion_tokens": 142,
-    "total_tokens": 501
+    "prompt_tokens": 515,
+    "completion_tokens": 201,
+    "total_tokens": 716
   }
 }
 ```
@@ -465,13 +465,13 @@
 {
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Test with \"double\" quotes",
-  "message": "Okay, let\u2019s just acknowledge that you\u2019ve provided the placeholder text. It\u2019s a very common placeholder! \ud83d\ude0a\n\nIs there anything specific you\u2019d like to do with it, or are you just acknowledging its presence?",
+  "message": "Okay, I understand. You\u2019ve provided the placeholder text again. It\u2019s a common placeholder! \ud83d\ude0a\n\nLet's just acknowledge that you've provided the placeholder text. It\u2019s a very common placeholder! \ud83d\ude0a\n\nIs there anything specific you\u2019d like to do with it, or are you just acknowledging its presence?",
   "role": "assistant",
-  "created": 1769830614,
+  "created": 1769830804,
   "usage": {
-    "prompt_tokens": 582,
-    "completion_tokens": 48,
-    "total_tokens": 630
+    "prompt_tokens": 644,
+    "completion_tokens": 69,
+    "total_tokens": 713
   }
 }
 ```
@@ -572,11 +572,11 @@
   "user_id": "Test:with:colons",
   "message": "Okay, you\u2019ve provided the input \u2013 \u201cLorem ipsum dolor sit amet\u201d. How can I assist you today?",
   "role": "assistant",
-  "created": 1769830621,
+  "created": 1769830811,
   "usage": {
-    "prompt_tokens": 626,
+    "prompt_tokens": 664,
     "completion_tokens": 24,
-    "total_tokens": 650
+    "total_tokens": 688
   }
 }
 ```
@@ -677,11 +677,11 @@
   "user_id": "Test\\with\\backslashes",
   "message": "That\u2019s right! It\u2019s a placeholder text. \ud83d\ude0a",
   "role": "assistant",
-  "created": 1769830626,
+  "created": 1769830818,
   "usage": {
-    "prompt_tokens": 569,
+    "prompt_tokens": 597,
     "completion_tokens": 14,
-    "total_tokens": 583
+    "total_tokens": 611
   }
 }
 ```
@@ -744,24 +744,24 @@
 
 ```json
 {
-  "id": "chatcmpl-bc46a3fa50544e64b54af00d",
+  "id": "chatcmpl-c3e481843b924d999715b3e6",
   "object": "chat.completion",
-  "created": 1769830628,
+  "created": 1769830820,
   "model": "pixtral",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is **Paris**. \n\n\ud83d\ude0a"
+        "content": "The capital of France is **Paris**. \n\nIt\u2019s a great question! \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 21,
-    "completion_tokens": 12,
-    "total_tokens": 33
+    "completion_tokens": 19,
+    "total_tokens": 40
   }
 }
 ```
@@ -1430,9 +1430,9 @@
 
 ```json
 {
-  "id": "chatcmpl-3d2dd87da3d04709a22c5696",
+  "id": "chatcmpl-c5d0d8004b8f4356abfd6cd2",
   "object": "chat.completion",
-  "created": 1769830629,
+  "created": 1769830821,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1498,15 +1498,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-01-31T03:37:11.416214Z",
-  "response": "The capital of France is **Paris**. \n\nDo you want to know more about Paris? For example, would you like to know:\n\n*   About its history?\n*   About famous landmarks?\n*   Or something else?",
+  "created_at": "2026-01-31T03:40:24.049794Z",
+  "response": "The capital of France is **Paris**. \n\nDo you want to know more about Paris?",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 21,
   "prompt_eval_duration": 0,
-  "eval_count": 50,
+  "eval_count": 20,
   "eval_duration": 0
 }
 ```

@@ -85,7 +85,7 @@
   ],
   "default": "pixtral",
   "total": 2,
-  "status": "ready"
+  "status": "multiple_providers_available"
 }
 ```
 
@@ -150,13 +150,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "The weather is sunny.\n",
+  "message": "The weather is currently sunny with a high of 75 degrees Fahrenheit.\n",
   "role": "assistant",
-  "created": 1769225994,
+  "created": 1769820423,
   "usage": {
-    "prompt_tokens": 46,
-    "completion_tokens": 7,
-    "total_tokens": 53
+    "prompt_tokens": 383,
+    "completion_tokens": 17,
+    "total_tokens": 400
   }
 }
 ```
@@ -255,13 +255,13 @@
 {
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
-  "message": "Lorem ipsum dolor sit amet\n",
+  "message": "Lorem ipsum dolor sit amet.\n",
   "role": "assistant",
-  "created": 1769225994,
+  "created": 1769820425,
   "usage": {
-    "prompt_tokens": 45,
-    "completion_tokens": 7,
-    "total_tokens": 52
+    "prompt_tokens": 284,
+    "completion_tokens": 8,
+    "total_tokens": 292
   }
 }
 ```
@@ -360,13 +360,13 @@
 {
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Test with 'single' quotes",
-  "message": "Lorem ipsum dolor sit amet. \n",
+  "message": "Lorem ipsum dolor sit amet\n",
   "role": "assistant",
-  "created": 1769225995,
+  "created": 1769820427,
   "usage": {
-    "prompt_tokens": 45,
-    "completion_tokens": 9,
-    "total_tokens": 54
+    "prompt_tokens": 275,
+    "completion_tokens": 7,
+    "total_tokens": 282
   }
 }
 ```
@@ -465,13 +465,13 @@
 {
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Test with \"double\" quotes",
-  "message": "",
+  "message": "Lorem ipsum dolor sit amet\n",
   "role": "assistant",
-  "created": 1769225996,
+  "created": 1769820429,
   "usage": {
-    "prompt_tokens": 45,
-    "completion_tokens": 1,
-    "total_tokens": 46
+    "prompt_tokens": 273,
+    "completion_tokens": 7,
+    "total_tokens": 280
   }
 }
 ```
@@ -570,13 +570,13 @@
 {
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Test:with:colons",
-  "message": "",
+  "message": "Lorem ipsum dolor sit amet\n",
   "role": "assistant",
-  "created": 1769225996,
+  "created": 1769820431,
   "usage": {
-    "prompt_tokens": 45,
-    "completion_tokens": 1,
-    "total_tokens": 46
+    "prompt_tokens": 263,
+    "completion_tokens": 7,
+    "total_tokens": 270
   }
 }
 ```
@@ -675,13 +675,13 @@
 {
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Test\\with\\backslashes",
-  "message": "Lorem ipsum dolor sit amet.\n",
+  "message": "Lorem ipsum dolor sit amet\n",
   "role": "assistant",
-  "created": 1769225997,
+  "created": 1769820433,
   "usage": {
-    "prompt_tokens": 45,
-    "completion_tokens": 8,
-    "total_tokens": 53
+    "prompt_tokens": 275,
+    "completion_tokens": 7,
+    "total_tokens": 282
   }
 }
 ```
@@ -744,9 +744,9 @@
 
 ```json
 {
-  "id": "chatcmpl-8159bc8b55874942be33009b",
+  "id": "chatcmpl-dec5690b446a4c0aa924ef20",
   "object": "chat.completion",
-  "created": 1769225997,
+  "created": 1769820434,
   "model": "pixtral",
   "choices": [
     {
@@ -1430,9 +1430,9 @@
 
 ```json
 {
-  "id": "chatcmpl-45cb57fe2a8841d3a936e576",
+  "id": "chatcmpl-f40f213e112948fe968f0529",
   "object": "chat.completion",
-  "created": 1769225998,
+  "created": 1769820435,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1498,7 +1498,7 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-01-24T03:39:58.703537Z",
+  "created_at": "2026-01-31T00:47:16.305068Z",
   "response": "The capital of France is Paris.",
   "done": true,
   "context": [],
