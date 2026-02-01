@@ -9,6 +9,7 @@ from typing import Dict, Any
 from startup.providers import (discover_providers,
                                discover_context_windows)
 from startup.endpoints import discover_endpoints
+from startup.workflows import discover_workflows
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -151,5 +152,53 @@ async def startup_event():
                 openapi_extra=openapi_extra,
             )
             logger.info(f"Registered {method} {spec['path']} from {name}")
+
+    # Discover and register workflow endpoints
+    logger.info("Discovering and registering workflow endpoints...")
+    async for name, handler, spec in discover_workflows():
+        # Workflow handlers always need providers_state and request body
+        sig = inspect.signature(handler)
+        
+        # Extract request schema from spec
+        request_body_spec = spec.get("requestBody", {})
+        content = request_body_spec.get("content", {})
+        json_content = content.get("application/json", {})
+        example = json_content.get("example")
+        
+        # Create wrapper that injects providers_state
+        async def create_workflow_wrapper(original_handler):
+            async def wrapper(request: Dict[str, Any] = Body(..., openapi_examples={"example": {"value": example}} if example else None)):
+                return await original_handler(request=request, providers_state=providers_state)
+            
+            # Create signature without providers_state
+            wrapper.__signature__ = inspect.Signature(parameters=[
+                inspect.Parameter(
+                    "request",
+                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                    annotation=Dict[str, Any]
+                )
+            ])
+            wrapper.__name__ = original_handler.__name__
+            wrapper.__doc__ = original_handler.__doc__
+            return wrapper
+        
+        route_handler = await create_workflow_wrapper(handler)
+        
+        # Register the route
+        for method in spec["methods"]:
+            openapi_extra = {}
+            if request_body_spec:
+                openapi_extra["requestBody"] = request_body_spec
+            
+            app.add_api_route(
+                spec["path"],
+                route_handler,
+                methods=[method],
+                summary=spec.get("summary"),
+                description=spec.get("description"),
+                responses=spec.get("responses", {}),
+                openapi_extra=openapi_extra,
+            )
+            logger.info(f"Registered {method} {spec['path']} from workflow {name}")
 
     logger.info("API ready - provider discovery running in background")

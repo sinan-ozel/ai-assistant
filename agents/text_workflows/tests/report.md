@@ -2,9 +2,9 @@
 
 ## Summary
 
-- **Total Tests:** 36
+- **Total Tests:** 47
 - **Passed:** ✅ 36
-- **Failed:** ❌ 0
+- **Failed:** ❌ 11
 
 ---
 
@@ -95,12 +95,10 @@
 
 ```json
 {
-  "available": [
-    "ollama_on_tailscale"
-  ],
-  "default": "ollama_on_tailscale",
+  "available": [],
+  "default": null,
   "total": 12,
-  "status": "one_provider_available"
+  "status": "no_providers_available"
 }
 ```
 
@@ -144,20 +142,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
 {
-  "conversation_id": "conv-123",
-  "user_id": "user-456",
-  "message": "Okay, let\u2019s check the weather for **London, England**. \n\nHere\u2019s the forecast:\n\nCurrently, London is experiencing light rain with a temperature of 15\u00b0C (59\u00b0F). It's expected to continue with a high of 18\u00b0C (64\u00b0F) later today.",
-  "role": "assistant",
-  "created": 1769830780,
-  "usage": {
-    "prompt_tokens": 682,
-    "completion_tokens": 70,
-    "total_tokens": 752
-  }
+  "detail": "No default provider available"
 }
 ```
 
@@ -249,20 +238,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
 {
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Lorem ipsum dolor sit amet",
-  "message": "That\u2019s a really good explanation! Thanks. Do you have any more information about its history or purpose?",
-  "role": "assistant",
-  "created": 1769830785,
-  "usage": {
-    "prompt_tokens": 315,
-    "completion_tokens": 23,
-    "total_tokens": 338
-  }
+  "detail": "No default provider available"
 }
 ```
 
@@ -354,20 +334,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
 {
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test with 'single' quotes",
-  "message": "Okay! Let\u2019s delve deeper into the history. It\u2019s a great example of how a seemingly simple placeholder can have surprisingly significant origins.\n\nSo, you\u2019re asking about how the Lorem Ipsum text evolved from its initial purpose as a testing tool for typography? It started as a way for the type founders to test how different fonts and layouts looked together. They\u2019d create a massive block of text \u2013 hundreds of pages \u2013 and use it to see what the overall look and feel of a book\u2019s text would be. They\u2019d then drastically reduce the text to just a few lines, effectively creating a placeholder that didn\u2019t contain any actual content.\n\nEssentially, it was a way to quickly assess the visual impact of typography without the cost and time of actually writing the text. It was a brilliant, pragmatic solution for their testing process!\n\nDo you want to hear about a specific example of how it was used in a test, or perhaps how the text evolved over time?",
-  "role": "assistant",
-  "created": 1769830797,
-  "usage": {
-    "prompt_tokens": 515,
-    "completion_tokens": 201,
-    "total_tokens": 716
-  }
+  "detail": "No default provider available"
 }
 ```
 
@@ -459,20 +430,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
 {
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test with \"double\" quotes",
-  "message": "Okay, I understand. You\u2019ve provided the placeholder text again. It\u2019s a common placeholder! \ud83d\ude0a\n\nLet's just acknowledge that you've provided the placeholder text. It\u2019s a very common placeholder! \ud83d\ude0a\n\nIs there anything specific you\u2019d like to do with it, or are you just acknowledging its presence?",
-  "role": "assistant",
-  "created": 1769830804,
-  "usage": {
-    "prompt_tokens": 644,
-    "completion_tokens": 69,
-    "total_tokens": 713
-  }
+  "detail": "No default provider available"
 }
 ```
 
@@ -564,20 +526,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
 {
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test:with:colons",
-  "message": "Okay, you\u2019ve provided the input \u2013 \u201cLorem ipsum dolor sit amet\u201d. How can I assist you today?",
-  "role": "assistant",
-  "created": 1769830811,
-  "usage": {
-    "prompt_tokens": 664,
-    "completion_tokens": 24,
-    "total_tokens": 688
-  }
+  "detail": "No default provider available"
 }
 ```
 
@@ -669,20 +622,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
 {
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test\\with\\backslashes",
-  "message": "That\u2019s right! It\u2019s a placeholder text. \ud83d\ude0a",
-  "role": "assistant",
-  "created": 1769830818,
-  "usage": {
-    "prompt_tokens": 597,
-    "completion_tokens": 14,
-    "total_tokens": 611
-  }
+  "detail": "No default provider available"
 }
 ```
 
@@ -698,15 +642,12 @@
 
 ```json
 {
-  "model": "pixtral",
   "messages": [
     {
       "role": "user",
       "content": "What is the capital of France?"
     }
-  ],
-  "temperature": 0.7,
-  "max_tokens": 100
+  ]
 }
 ```
 
@@ -740,29 +681,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `400`
 
 ```json
 {
-  "id": "chatcmpl-c3e481843b924d999715b3e6",
-  "object": "chat.completion",
-  "created": 1769830820,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "The capital of France is **Paris**. \n\nIt\u2019s a great question! \ud83d\ude0a"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 21,
-    "completion_tokens": 19,
-    "total_tokens": 40
-  }
+  "detail": "No LLM providers available"
 }
 ```
 
@@ -784,12 +707,7 @@
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ],
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": true,
-  "top_p": 0.0,
-  "stop": []
+  ]
 }
 ```
 
@@ -823,11 +741,11 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `400`
 
 ```json
 {
-  "detail": "Streaming not yet implemented"
+  "detail": "No LLM providers available"
 }
 ```
 
@@ -849,13 +767,6 @@
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ],
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": true,
-  "top_p": 0.0,
-  "stop": [
-    "Lorem ipsum dolor sit amet"
   ]
 }
 ```
@@ -890,11 +801,11 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `400`
 
 ```json
 {
-  "detail": "Streaming not yet implemented"
+  "detail": "No LLM providers available"
 }
 ```
 
@@ -915,16 +826,15 @@
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
+    },
+    {
+      "role": "system",
+      "content": "Test with 'single' quotes"
+    },
+    {
+      "role": "system",
+      "content": "Test with \"double\" quotes"
     }
-  ],
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": true,
-  "top_p": 0.0,
-  "stop": [
-    "Lorem ipsum dolor sit amet",
-    "Test with 'single' quotes",
-    "Test with \"double\" quotes"
   ]
 }
 ```
@@ -959,11 +869,11 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `400`
 
 ```json
 {
-  "detail": "Streaming not yet implemented"
+  "detail": "No LLM providers available"
 }
 ```
 
@@ -979,18 +889,13 @@
 
 ```json
 {
-  "model": "Lorem ipsum dolor sit amet",
+  "model": "Test with 'single' quotes",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ],
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": true,
-  "top_p": 0.5,
-  "stop": []
+  ]
 }
 ```
 
@@ -1024,11 +929,11 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `400`
 
 ```json
 {
-  "detail": "Streaming not yet implemented"
+  "detail": "No LLM providers available"
 }
 ```
 
@@ -1044,19 +949,12 @@
 
 ```json
 {
-  "model": "Lorem ipsum dolor sit amet",
+  "model": "Test with 'single' quotes",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ],
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": true,
-  "top_p": 0.5,
-  "stop": [
-    "Lorem ipsum dolor sit amet"
   ]
 }
 ```
@@ -1091,11 +989,11 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `400`
 
 ```json
 {
-  "detail": "Streaming not yet implemented"
+  "detail": "No LLM providers available"
 }
 ```
 
@@ -1111,21 +1009,20 @@
 
 ```json
 {
-  "model": "Lorem ipsum dolor sit amet",
+  "model": "Test with 'single' quotes",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
+    },
+    {
+      "role": "system",
+      "content": "Test with 'single' quotes"
+    },
+    {
+      "role": "system",
+      "content": "Test with \"double\" quotes"
     }
-  ],
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": true,
-  "top_p": 0.5,
-  "stop": [
-    "Lorem ipsum dolor sit amet",
-    "Test with 'single' quotes",
-    "Test with \"double\" quotes"
   ]
 }
 ```
@@ -1160,11 +1057,11 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `400`
 
 ```json
 {
-  "detail": "Streaming not yet implemented"
+  "detail": "No LLM providers available"
 }
 ```
 
@@ -1180,18 +1077,13 @@
 
 ```json
 {
-  "model": "Lorem ipsum dolor sit amet",
+  "model": "Test with \"double\" quotes",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ],
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": true,
-  "top_p": 1.0,
-  "stop": []
+  ]
 }
 ```
 
@@ -1225,11 +1117,11 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `400`
 
 ```json
 {
-  "detail": "Streaming not yet implemented"
+  "detail": "No LLM providers available"
 }
 ```
 
@@ -1245,19 +1137,12 @@
 
 ```json
 {
-  "model": "Lorem ipsum dolor sit amet",
+  "model": "Test with \"double\" quotes",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ],
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": true,
-  "top_p": 1.0,
-  "stop": [
-    "Lorem ipsum dolor sit amet"
   ]
 }
 ```
@@ -1292,11 +1177,11 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `400`
 
 ```json
 {
-  "detail": "Streaming not yet implemented"
+  "detail": "No LLM providers available"
 }
 ```
 
@@ -1312,21 +1197,20 @@
 
 ```json
 {
-  "model": "Lorem ipsum dolor sit amet",
+  "model": "Test with \"double\" quotes",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
+    },
+    {
+      "role": "system",
+      "content": "Test with 'single' quotes"
+    },
+    {
+      "role": "system",
+      "content": "Test with \"double\" quotes"
     }
-  ],
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": true,
-  "top_p": 1.0,
-  "stop": [
-    "Lorem ipsum dolor sit amet",
-    "Test with 'single' quotes",
-    "Test with \"double\" quotes"
   ]
 }
 ```
@@ -1361,11 +1245,11 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `400`
 
 ```json
 {
-  "detail": "Streaming not yet implemented"
+  "detail": "No LLM providers available"
 }
 ```
 
@@ -1381,18 +1265,13 @@
 
 ```json
 {
-  "model": "Lorem ipsum dolor sit amet",
+  "model": "Test:with:colons",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ],
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": false,
-  "top_p": 0.0,
-  "stop": []
+  ]
 }
 ```
 
@@ -1426,29 +1305,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `400`
 
 ```json
 {
-  "id": "chatcmpl-c5d0d8004b8f4356abfd6cd2",
-  "object": "chat.completion",
-  "created": 1769830821,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": ""
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 19,
-    "completion_tokens": 1,
-    "total_tokens": 20
-  }
+  "detail": "No LLM providers available"
 }
 ```
 
@@ -1493,21 +1354,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `400`
 
 ```json
 {
-  "model": "gemma3:4b",
-  "created_at": "2026-01-31T03:40:24.049794Z",
-  "response": "The capital of France is **Paris**. \n\nDo you want to know more about Paris?",
-  "done": true,
-  "context": [],
-  "total_duration": 0,
-  "load_duration": 0,
-  "prompt_eval_count": 21,
-  "prompt_eval_duration": 0,
-  "eval_count": 20,
-  "eval_duration": 0
+  "detail": "No LLM providers available"
 }
 ```
 
@@ -2019,6 +1870,538 @@
 {
   "detail": "Streaming not yet implemented"
 }
+```
+
+---
+
+## Test #37 ❌
+
+📋 *Test case from OpenAPI example*
+
+**Endpoint:** `POST /v1/summarize-text`
+
+### Request Body
+
+```json
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "Your message here"
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 4096
+}
+```
+
+### Expected Response
+
+**Status:** `200`
+
+```json
+{
+  "result": "example",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `500`
+
+```json
+"{\"detail\":\"LLM call failed: No LLM providers available\"}"
+```
+
+### ❌ Error
+
+```
+Expected status 200/201, got 500. Response: {"detail":"LLM call failed: No LLM providers available"}
+```
+
+---
+
+## Test #38 ❌
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/summarize-text`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.0,
+  "max_tokens": 1
+}
+```
+
+### Expected Response
+
+**Status:** `200`
+
+```json
+{
+  "result": "example",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `500`
+
+```json
+"{\"detail\":\"LLM call failed: No LLM providers available\"}"
+```
+
+### ❌ Error
+
+```
+Expected status 200/201, got 500. Response: {"detail":"LLM call failed: No LLM providers available"}
+```
+
+---
+
+## Test #39 ❌
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/summarize-text`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.0,
+  "max_tokens": 500000
+}
+```
+
+### Expected Response
+
+**Status:** `200`
+
+```json
+{
+  "result": "example",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `500`
+
+```json
+"{\"detail\":\"LLM call failed: No LLM providers available\"}"
+```
+
+### ❌ Error
+
+```
+Expected status 200/201, got 500. Response: {"detail":"LLM call failed: No LLM providers available"}
+```
+
+---
+
+## Test #40 ❌
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/summarize-text`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.0,
+  "max_tokens": 1000000
+}
+```
+
+### Expected Response
+
+**Status:** `200`
+
+```json
+{
+  "result": "example",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `500`
+
+```json
+"{\"detail\":\"LLM call failed: No LLM providers available\"}"
+```
+
+### ❌ Error
+
+```
+Expected status 200/201, got 500. Response: {"detail":"LLM call failed: No LLM providers available"}
+```
+
+---
+
+## Test #41 ❌
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/summarize-text`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.123456789,
+  "max_tokens": 1
+}
+```
+
+### Expected Response
+
+**Status:** `200`
+
+```json
+{
+  "result": "example",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `500`
+
+```json
+"{\"detail\":\"LLM call failed: No LLM providers available\"}"
+```
+
+### ❌ Error
+
+```
+Expected status 200/201, got 500. Response: {"detail":"LLM call failed: No LLM providers available"}
+```
+
+---
+
+## Test #42 ❌
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/summarize-text`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.123456789,
+  "max_tokens": 500000
+}
+```
+
+### Expected Response
+
+**Status:** `200`
+
+```json
+{
+  "result": "example",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `500`
+
+```json
+"{\"detail\":\"LLM call failed: No LLM providers available\"}"
+```
+
+### ❌ Error
+
+```
+Expected status 200/201, got 500. Response: {"detail":"LLM call failed: No LLM providers available"}
+```
+
+---
+
+## Test #43 ❌
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/summarize-text`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.123456789,
+  "max_tokens": 1000000
+}
+```
+
+### Expected Response
+
+**Status:** `200`
+
+```json
+{
+  "result": "example",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `500`
+
+```json
+"{\"detail\":\"LLM call failed: No LLM providers available\"}"
+```
+
+### ❌ Error
+
+```
+Expected status 200/201, got 500. Response: {"detail":"LLM call failed: No LLM providers available"}
+```
+
+---
+
+## Test #44 ❌
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/summarize-text`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.999999999,
+  "max_tokens": 1
+}
+```
+
+### Expected Response
+
+**Status:** `200`
+
+```json
+{
+  "result": "example",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `500`
+
+```json
+"{\"detail\":\"LLM call failed: No LLM providers available\"}"
+```
+
+### ❌ Error
+
+```
+Expected status 200/201, got 500. Response: {"detail":"LLM call failed: No LLM providers available"}
+```
+
+---
+
+## Test #45 ❌
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/summarize-text`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.999999999,
+  "max_tokens": 500000
+}
+```
+
+### Expected Response
+
+**Status:** `200`
+
+```json
+{
+  "result": "example",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `500`
+
+```json
+"{\"detail\":\"LLM call failed: No LLM providers available\"}"
+```
+
+### ❌ Error
+
+```
+Expected status 200/201, got 500. Response: {"detail":"LLM call failed: No LLM providers available"}
+```
+
+---
+
+## Test #46 ❌
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/summarize-text`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.999999999,
+  "max_tokens": 1000000
+}
+```
+
+### Expected Response
+
+**Status:** `200`
+
+```json
+{
+  "result": "example",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `500`
+
+```json
+"{\"detail\":\"LLM call failed: No LLM providers available\"}"
+```
+
+### ❌ Error
+
+```
+Expected status 200/201, got 500. Response: {"detail":"LLM call failed: No LLM providers available"}
+```
+
+---
+
+## Test #47 ❌
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/summarize-text`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 1.0,
+  "max_tokens": 1
+}
+```
+
+### Expected Response
+
+**Status:** `200`
+
+```json
+{
+  "result": "example",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `500`
+
+```json
+"{\"detail\":\"LLM call failed: No LLM providers available\"}"
+```
+
+### ❌ Error
+
+```
+Expected status 200/201, got 500. Response: {"detail":"LLM call failed: No LLM providers available"}
 ```
 
 ---

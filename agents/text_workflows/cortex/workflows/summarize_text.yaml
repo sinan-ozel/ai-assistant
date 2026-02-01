@@ -1,0 +1,12 @@
+name: summarize_text_small
+path: /v1/summarize-text
+description: Summarizes the given text into a concise summary.
+
+output_schema:
+  type: string
+
+execution:
+
+  type: prompt
+  prompt: |
+    Clean up and summarize the user message in less than 50 words.
