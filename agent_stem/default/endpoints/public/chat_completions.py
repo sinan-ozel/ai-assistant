@@ -53,7 +53,7 @@ async def handler(request: dict, providers_state: dict):
             "id": f"chatcmpl-{uuid.uuid4().hex[:24]}",
             "object": "chat.completion",
             "created": int(time.time()),
-            "model": model or response.model,
+            "model": model or response.model,  # TODO: Consider model usage - if the model does not exist, are we using the default? Return the model that's actually used.
             "choices": [
                 {
                     "index": 0,
@@ -114,45 +114,46 @@ spec = {
                             },
                             "minItems": 1
                         },
-                        "temperature": {
-                            "type": "number",
-                            "minimum": 0.0,
-                            "maximum": 2.0,
-                            "default": 1.0,
-                            "description": "Sampling temperature. Higher values make output more random, lower values more deterministic"
-                        },
-                        "max_tokens": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "description": "Maximum number of tokens to generate in the completion"
-                        },
-                        "stream": {
-                            "type": "boolean",
-                            "default": False,
-                            "description": "Whether to stream the response incrementally"
-                        },
-                        "top_p": {
-                            "type": "number",
-                            "minimum": 0.0,
-                            "maximum": 1.0,
-                            "default": 1.0,
-                            "description": "Nucleus sampling parameter. Alternative to temperature"
-                        },
-                        "stop": {
-                            "type": "array",
-                            "items": {"type": "string"},
-                            "description": "Up to 4 sequences where the API will stop generating tokens"
-                        }
+                        # "temperature": {
+                        #     "type": "number",
+                        #     "minimum": 0.0,
+                        #     "maximum": 2.0,
+                        #     "default": 1.0,
+                        #     "description": "Sampling temperature. Higher values make output more random, lower values more deterministic"
+                        # },
+                        # "max_tokens": {
+                        #     "type": "integer",
+                        #     "minimum": 1,
+                        #     "description": "Maximum number of tokens to generate in the completion"
+                        # },
+                        # "stream": {
+                        #     "type": "boolean",
+                        #     "default": False,
+                        #     "description": "Whether to stream the response incrementally"
+                        # },
+                        # "top_p": {
+                        #     "type": "number",
+                        #     "exclusiveMinimum": 0.0,
+                        #     "maximum": 1.0,
+                        #     "default": 1.0,
+                        #     "description": "Nucleus sampling parameter. Alternative to temperature. Must be in (0, 1]."
+                        # },
+                        # "stop": {
+                        #     "type": "array",
+                        #     "items": {"type": "string"},
+                        #     "maxItems": 4,
+                        #     "description": "Up to 4 sequences where the API will stop generating tokens"
+                        # }
                     },
-                    "required": ["model", "messages"]
+                    "required": ["messages"]
                 },
                 "example": {
-                    "model": "pixtral",
+                    # "model": "pixtral",
                     "messages": [
                         {"role": "user", "content": "What is the capital of France?"}
                     ],
-                    "temperature": 0.7,
-                    "max_tokens": 100
+                    # "temperature": 0.7,
+                    # "max_tokens": 100
                 }
             }
         }
