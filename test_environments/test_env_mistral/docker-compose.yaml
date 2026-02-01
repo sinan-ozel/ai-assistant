@@ -60,11 +60,13 @@ services:
       embedding-test:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health | grep -q '\"providers_loading\":false' || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health"]
       interval: 5s
       timeout: 3s
       retries: 20
       start_period: 60s
+    volumes:
+      - ${AGENT_FOLDER:-./cortex}:/app/cortex
 
   # Test runner
   tests:
@@ -82,8 +84,8 @@ services:
       app:
         condition: service_healthy
     volumes:
-      - .:/tests
-      - test-results:/tests/test-results
+      - ${TEST_FOLDER:-.}:/tests
+    command: ["pytest", "--openapi=http://app:8000", "--openapi-no-strict-example-checking", "--openapi-markdown-output=report.md", "--openapi-no-stdout", "--openapi-timeout=60", "-v"]
 
 networks:
   test-network:

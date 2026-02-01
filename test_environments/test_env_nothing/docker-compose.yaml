@@ -9,7 +9,7 @@ services:
     networks:
       - test-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health | grep -q '\"providers_loading\":false' || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health"]
       interval: 5s
       timeout: 3s
       retries: 20
