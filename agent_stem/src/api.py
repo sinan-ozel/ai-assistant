@@ -35,30 +35,49 @@ provider_discovery_task = None
 async def run_provider_discovery():
     """Background task to discover providers and context windows."""
     global providers_state
-
     logger.info("Starting provider discovery in background...")
 
-    # Run synchronous provider discovery in executor to avoid blocking
+    # Run synchronous provider discovery in executor to avoid blocking.
+    # Retry a few times if provider files exist but no providers are yet available,
+    # to avoid a race where dependent LLM services become ready shortly after startup.
     loop = asyncio.get_event_loop()
-    discovery_result = await loop.run_in_executor(None, discover_providers)
+    max_retries = 5
+    backoff_seconds = 3
 
-    # Update the existing dict instead of replacing it to maintain references
-    providers_state.update(discovery_result)
+    for attempt in range(1, max_retries + 1):
+        discovery_result = await loop.run_in_executor(None, discover_providers)
 
-    logger.info(
-        f"Found {len(providers_state['available_providers'])} available providers"
-    )
+        # Update the existing dict instead of replacing it to maintain references
+        providers_state.update(discovery_result)
 
-    if providers_state["default_provider"]:
-        logger.info(
-            f"Default provider: {providers_state['default_provider']}"
-        )
+        available_count = len(providers_state.get("available_providers", []))
+        total_providers = len(providers_state.get("providers", []))
 
-    # Query context windows from available providers
-    if providers_state["available_providers"]:
-        logger.info("Querying context windows from providers...")
-        await discover_context_windows(providers_state)
-        logger.info("Context window discovery complete")
+        logger.info(f"Found {available_count} available providers (attempt {attempt}/{max_retries})")
+
+        if providers_state.get("default_provider"):
+            logger.info(f"Default provider: {providers_state['default_provider']}")
+
+        # If we have at least one available provider, proceed
+        if available_count > 0:
+            logger.info("Querying context windows from providers...")
+            await discover_context_windows(providers_state)
+            logger.info("Context window discovery complete")
+            break
+
+        # If there are no provider definitions at all, don't retry
+        if total_providers == 0:
+            logger.warning("No provider configuration files found; skipping retries")
+            break
+
+        # If this was the last attempt, stop retrying
+        if attempt == max_retries:
+            logger.warning("Provider discovery completed with no available providers after retries")
+            break
+
+        # Otherwise wait a bit and retry discovery
+        logger.info(f"No providers available yet; retrying in {backoff_seconds}s...")
+        await asyncio.sleep(backoff_seconds)
 
     # Mark discovery as complete
     providers_state["loading"] = False
@@ -158,18 +177,18 @@ async def startup_event():
     async for name, handler, spec in discover_workflows():
         # Workflow handlers always need providers_state and request body
         sig = inspect.signature(handler)
-        
+
         # Extract request schema from spec
         request_body_spec = spec.get("requestBody", {})
         content = request_body_spec.get("content", {})
         json_content = content.get("application/json", {})
         example = json_content.get("example")
-        
+
         # Create wrapper that injects providers_state
         async def create_workflow_wrapper(original_handler):
             async def wrapper(request: Dict[str, Any] = Body(..., openapi_examples={"example": {"value": example}} if example else None)):
                 return await original_handler(request=request, providers_state=providers_state)
-            
+
             # Create signature without providers_state
             wrapper.__signature__ = inspect.Signature(parameters=[
                 inspect.Parameter(
@@ -181,15 +200,15 @@ async def startup_event():
             wrapper.__name__ = original_handler.__name__
             wrapper.__doc__ = original_handler.__doc__
             return wrapper
-        
+
         route_handler = await create_workflow_wrapper(handler)
-        
+
         # Register the route
         for method in spec["methods"]:
             openapi_extra = {}
             if request_body_spec:
                 openapi_extra["requestBody"] = request_body_spec
-            
+
             app.add_api_route(
                 spec["path"],
                 route_handler,
