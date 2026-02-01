@@ -35,7 +35,7 @@ def test_agent_chat_simple_message():
     assert len(data["message"]) > 0
     assert isinstance(data["conversation_id"], str)
 
-    return data["conversation_id"]
+    # return data["conversation_id"]
 
 
 def test_agent_chat_with_conversation_id():
