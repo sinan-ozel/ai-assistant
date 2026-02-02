@@ -14,10 +14,21 @@ def test_health_endpoint():
     while True:
         try:
             response = requests.get(url)
-            if response.status_code == 200 and response.json().get("status") == "ok":
+            if response.status_code == 200:
                 break
         except Exception:
+            raise
             pass
+        if time.time() - start > timeout:
+            raise TimeoutError(f"/health endpoint did not return expected response within {timeout} seconds")
+        time.sleep(1)
+
+    print(response.json())
+
+    while True:
+        response = requests.get(url)
+        if  response.json().get("status") == "ok":
+            break
         if time.time() - start > timeout:
             raise TimeoutError(f"/health endpoint did not return expected response within {timeout} seconds")
         time.sleep(1)
