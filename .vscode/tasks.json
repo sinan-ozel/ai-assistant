@@ -15,7 +15,7 @@
             }
         },
         {
-            "label": "Run Test Agent 01",
+            "label": "Run Agent",
             "type": "shell",
             "command": "docker",
             "args": [
@@ -27,7 +27,7 @@
             "problemMatcher": [],
             "options": {
                 "env": {
-                    "AGENT_FOLDER": "${workspaceFolder}/agents/test_agent_01/cortex"
+                    "AGENT_FOLDER": "${workspaceFolder}/agents/${input:agent}/cortex"
                 }
             },
         },
@@ -112,37 +112,23 @@
             "problemMatcher": []
         },
         {
-            "label": "Run Tests on Agent 01 Using Self-Hosted LLM",
+            "label": "Run Tests on Agent",
             "type": "shell",
             "command": "docker",
             "args": [
                 "compose",
-                "-f", "${workspaceFolder}/test_environments/test_env_self_hosted_llm/docker-compose.yaml",
+                "-f", "${workspaceFolder}/test_environments/test_env_${input:test_env}/docker-compose.yaml",
                 "up",
                 "--build",
-                "--abort-on-container-exit",
                 "--exit-code-from", "tests"
             ],
             "options": {
                 "env": {
-                    "AGENT_FOLDER": "${workspaceFolder}/test_environments/test_env_self_hosted_llm/cortex",
-                    "TEST_FOLDER": "${workspaceFolder}/agents/test_agent_01/tests"
+                    "AGENT_FOLDER": "${workspaceFolder}/agents/${input:agent}/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/agents/${input:agent}/tests"
                 }
             },
             "problemMatcher": []
-        },
-        {
-            "label": "Run All Tests",
-            "type": "shell",
-            "command": "bash",
-            "args": [
-                "${workspaceFolder}/test_environments/run_all_tests.sh"
-            ],
-            "problemMatcher": [],
-            "group": {
-                "kind": "test",
-                "isDefault": true
-            }
         },
         {
             "label": "Reformat Code",
@@ -165,6 +151,29 @@
                 "mkdir -p ${workspaceFolder}/docs && curl -s http://localhost:8000/openapi.json | python3 -c \"import sys, json, yaml; print(yaml.dump(json.load(sys.stdin), default_flow_style=False, sort_keys=False))\" > ${workspaceFolder}/docs/openapi.yaml && echo 'OpenAPI spec written to docs/openapi.yaml'"
             ],
             "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+            "id": "agent",
+            "type": "pickString",
+            "description": "Choose the agent",
+            "options": [
+                "text_workflows",
+                "image_workflows"
+            ],
+            "default": "text_workflows"
+        },
+        {
+            "id": "test_env",
+            "type": "pickString",
+            "description": "Choose the test environment",
+            "options": [
+                "everything",
+                "no_llm",
+                "nothing"
+            ],
+            "default": "everything"
         }
     ]
 }

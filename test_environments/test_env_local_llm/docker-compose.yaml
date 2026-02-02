@@ -2,7 +2,6 @@ services:
   # Test infrastructure services
   redis-test:
     image: redis:7.4.2-alpine
-    container_name: redis-test-local-llm
     command: redis-server --appendonly yes
     networks:
       - test-network
@@ -14,7 +13,6 @@ services:
 
   qdrant-test:
     image: qdrant/qdrant:v1.12.1
-    container_name: qdrant-test-local-llm
     networks:
       - test-network
     healthcheck:
@@ -25,7 +23,6 @@ services:
 
   embedding-test:
     image: sinanozel/ollama.0.12.11:all-minilm-33m
-    container_name: embedding-test-local-llm
     networks:
       - test-network
     healthcheck:
@@ -37,7 +34,6 @@ services:
   # Ollama server with gemma3-270m model
   ollama-test:
     image: sinanozel/ollama.0.12.11:gemma3-270m
-    container_name: ollama-test-local-llm
     networks:
       - test-network
     deploy:
@@ -55,7 +51,6 @@ services:
     build:
       context: ../..
       dockerfile: agent_stem/Dockerfile
-    container_name: app-test-local-llm
     networks:
       - test-network
     environment:
@@ -75,7 +70,16 @@ services:
       ollama-test:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import json,urllib.request,sys; \
+          r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); \
+          d=json.load(r); \
+          sys.exit(0 if (not d.get('providers_loading') and d.get('available_providers',0)>0) else 1)"
+        ]
       interval: 2s
       timeout: 3s
       retries: 30
@@ -88,7 +92,6 @@ services:
     build:
       context: ../..
       dockerfile: test_environments/Dockerfile
-    container_name: tests-runner-local-llm
     networks:
       - test-network
     environment:
