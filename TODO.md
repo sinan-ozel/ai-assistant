@@ -10,7 +10,7 @@
 - [ ] Put in an evaluation scheme
 - [ ] Put in the markdown ingestion
 - [ ] Finish the `workflows`
-- [ ] Fix the environments
+- [ ] Run the mistral and local LLM checks in the everything environment.
 
 
 Plans for the GitHub actions:
