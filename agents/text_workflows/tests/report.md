@@ -48,7 +48,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 404 or 422`
 
 ```json
 {
@@ -127,7 +127,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 501 or 503`
 
 ```json
 {
@@ -152,13 +152,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "Okay! Right now, it\u2019s raining lightly in London, England. The temperature is around 15 degrees Celsius (59 degrees Fahrenheit).",
+  "message": "Okay! To give you the weather, I need to know your location. Could you please tell me where you are? \ud83d\ude0a \n",
   "role": "assistant",
-  "created": 1769931174,
+  "created": 1770008701,
   "usage": {
-    "prompt_tokens": 84,
-    "completion_tokens": 31,
-    "total_tokens": 115
+    "prompt_tokens": 44,
+    "completion_tokens": 28,
+    "total_tokens": 72
   }
 }
 ```
@@ -167,7 +167,7 @@
 
 ## Test #5 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -184,7 +184,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 501 or 503`
 
 ```json
 {
@@ -215,7 +215,7 @@
 
 ## Test #6 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -232,7 +232,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 501 or 503`
 
 ```json
 {
@@ -257,13 +257,13 @@
 {
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
-  "message": "Okay! It\u2019s a classic placeholder text. It\u2019s a placeholder used in design and typesetting to provide text to allow designers to see a page\u2019s layout without the need for actual content. \n\nIs there anything you\u2019d like to do with it?  Perhaps you want to know what it *generally* means, or maybe you want me to generate some text *around* it?",
+  "message": "Okay! I understand. It\u2019s just some placeholder text. Is there anything I can help you with regarding this text or anything else?",
   "role": "assistant",
-  "created": 1769931179,
+  "created": 1770008703,
   "usage": {
-    "prompt_tokens": 128,
-    "completion_tokens": 82,
-    "total_tokens": 210
+    "prompt_tokens": 43,
+    "completion_tokens": 29,
+    "total_tokens": 72
   }
 }
 ```
@@ -272,7 +272,7 @@
 
 ## Test #7 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -289,7 +289,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 501 or 503`
 
 ```json
 {
@@ -320,7 +320,7 @@
 
 ## Test #8 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -337,7 +337,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 501 or 503`
 
 ```json
 {
@@ -362,13 +362,13 @@
 {
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Test with 'single' quotes",
-  "message": "Okay! Let\u2019s just acknowledge that. \u201cLorem ipsum dolor sit amet\u201d is a placeholder text \u2013 a seemingly random string of text used in printing and design to fill space while the final design is being created. \n\nDo you want me to tell you a little bit about its origin?",
+  "message": "Okay, I understand. You\u2019ve provided \u201cLorem ipsum dolor sit amet\u201d. Is there anything I can help you with regarding this text? For example, would you like me to:\n\n*   Explain it?\n*   Translate it?\n*   Suggest a potential use case for it?",
   "role": "assistant",
-  "created": 1769931183,
+  "created": 1770008707,
   "usage": {
-    "prompt_tokens": 115,
-    "completion_tokens": 60,
-    "total_tokens": 175
+    "prompt_tokens": 43,
+    "completion_tokens": 61,
+    "total_tokens": 104
   }
 }
 ```
@@ -377,7 +377,7 @@
 
 ## Test #9 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -394,7 +394,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 501 or 503`
 
 ```json
 {
@@ -425,7 +425,7 @@
 
 ## Test #10 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -442,7 +442,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 501 or 503`
 
 ```json
 {
@@ -467,13 +467,13 @@
 {
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Test with \"double\" quotes",
-  "message": "Okay! It\u2019s a placeholder text, often used in design and marketing to display text in a way that mimics the appearance of real content without requiring actual content. It\u2019s a standard practice to avoid distracting from the design.\n\nDo you want me to explain what it *generally* represents, or would you like me to generate a similar phrase?",
+  "message": "Okay! You've started with the classic placeholder text. What would you like to do with it?  Do you want me to:\n\n*   **Analyze it?** (e.g., identify the word length, letter frequency, etc.)\n*   **Generate something related to it?** (e.g., a sentence, a poem, a story excerpt)\n*   **Just acknowledge it?** (e.g., \u201cOkay, that\u2019s Lorem Ipsum.\u201d)\n\nLet me know how I can help!",
   "role": "assistant",
-  "created": 1769931189,
+  "created": 1770008713,
   "usage": {
-    "prompt_tokens": 124,
-    "completion_tokens": 72,
-    "total_tokens": 196
+    "prompt_tokens": 43,
+    "completion_tokens": 110,
+    "total_tokens": 153
   }
 }
 ```
@@ -482,7 +482,7 @@
 
 ## Test #11 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -499,7 +499,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 501 or 503`
 
 ```json
 {
@@ -530,7 +530,7 @@
 
 ## Test #12 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -547,7 +547,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 501 or 503`
 
 ```json
 {
@@ -572,13 +572,13 @@
 {
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Test:with:colons",
-  "message": "Okay, let's explore it further! It\u2019s a frequently used placeholder, and it\u2019s more than just a placeholder. It\u2019s a test text that\u2019s used in design and printing to fill space on a page before the final design is finalized. \n\nDo you want to know about:\n\n*   **The history of Lorem Ipsum?** (How it was originally created?)\n*   **Why it's used?** (Its purpose and benefits)\n*   **Different variations of Lorem Ipsum?** (e.g., with different fonts and styles)\n*   **How it\u2019s used in design?** (A little bit about its role in design workflows?)\n*   **Something else entirely?**",
+  "message": "Okay, I understand. You've provided the classic \"Lorem Ipsum\" placeholder text. \n\nIs there anything I can help you with regarding it, or is there something else you'd like to discuss? For example, would you like me to:\n\n*   Explain its purpose?\n*   Generate some variations?\n*   Answer a question about it?",
   "role": "assistant",
-  "created": 1769931198,
+  "created": 1770008717,
   "usage": {
-    "prompt_tokens": 93,
-    "completion_tokens": 154,
-    "total_tokens": 247
+    "prompt_tokens": 43,
+    "completion_tokens": 76,
+    "total_tokens": 119
   }
 }
 ```
@@ -587,7 +587,7 @@
 
 ## Test #13 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -604,7 +604,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 501 or 503`
 
 ```json
 {
@@ -635,7 +635,7 @@
 
 ## Test #14 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -652,7 +652,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 501 or 503`
 
 ```json
 {
@@ -677,13 +677,13 @@
 {
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Test\\with\\backslashes",
-  "message": "Okay! It\u2019s perfectly fine to just acknowledge it. It\u2019s a classic placeholder text. \n\nDo you want me to do anything with it?",
+  "message": "Okay, I understand. You\u2019ve provided the text \"Lorem ipsum dolor sit amet\". \n\nIs there anything I can help you with regarding this text? For example, would you like me to:\n\n*   Analyze it?\n*   Generate text based on it?\n*   Answer a question about it?",
   "role": "assistant",
-  "created": 1769931201,
+  "created": 1770008721,
   "usage": {
-    "prompt_tokens": 124,
-    "completion_tokens": 33,
-    "total_tokens": 157
+    "prompt_tokens": 43,
+    "completion_tokens": 66,
+    "total_tokens": 109
   }
 }
 ```
@@ -711,7 +711,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -743,24 +743,24 @@
 
 ```json
 {
-  "id": "chatcmpl-01097419cd80489eb8dd9119",
+  "id": "chatcmpl-2da41d2275d94366be0c7a8f",
   "object": "chat.completion",
-  "created": 1769931203,
+  "created": 1770008723,
   "model": "ollama/gemma3:1b",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is **Paris**. \n\nWould you like to know more about Paris?"
+        "content": "The capital of France is Paris. \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 21,
-    "completion_tokens": 20,
-    "total_tokens": 41
+    "completion_tokens": 9,
+    "total_tokens": 30
   }
 }
 ```
@@ -769,7 +769,7 @@
 
 ## Test #16 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -789,7 +789,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -821,24 +821,24 @@
 
 ```json
 {
-  "id": "chatcmpl-09fa0a506e6b41e3af55b81f",
+  "id": "chatcmpl-cb1b58076dec41a59bd38589",
   "object": "chat.completion",
-  "created": 1769931211,
+  "created": 1770008729,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic placeholder text: \u201cLorem ipsum dolor sit amet.\u201d \n\nIt's a common placeholder text used in printing and design to provide a visual placeholder while typesetting and preparing a document. \n\nIs there anything specific you'd like me to do with this text? For example, would you like me to:\n\n*   **Translate it?** (It's Latin, but it's often used as a placeholder.)\n*   **Generate similar text?** (If you wanted to create a similar-looking placeholder for another purpose.)\n*   **Explain its purpose?** (It's a standard practice and has a specific historical context.)\n*   **Just acknowledge it?**"
+        "content": "Okay, I understand. You've provided the classic \"Lorem Ipsum\" placeholder text. \n\nIs there anything I can help you with regarding it? For example, would you like me to:\n\n*   **Explain its purpose?** (It's a placeholder text used in book design and printing to simulate the appearance of text without needing actual content.)\n*   **Give you some examples of how it's used?** \n*   **Generate some text *using* Lorem Ipsum?** (I can create a short paragraph, or even a longer piece of text.)"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 154,
-    "total_tokens": 173
+    "completion_tokens": 121,
+    "total_tokens": 140
   }
 }
 ```
@@ -847,7 +847,7 @@
 
 ## Test #17 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -867,7 +867,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -899,500 +899,16 @@
 
 ```json
 {
-  "id": "chatcmpl-7a473086e2e14ee5822cd3bd",
+  "id": "chatcmpl-d69d865c7eb74b5b8392e284",
   "object": "chat.completion",
-  "created": 1769931219,
+  "created": 1770008736,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic placeholder text: \"Lorem ipsum dolor sit amet.\" \n\nIt's a common placeholder text used in graphic design and typesetting to show a page layout without needing actual content. \n\nIs there anything you'd like me to do with this text?  For example, would you like me to:\n\n*   **Translate it?** (It's Latin, but often used as a placeholder)\n*   **Explain it?** (It's a placeholder, not actual text)\n*   **Generate a similar text?** (Perhaps a paragraph that fits the context)\n*   **Do something else with it?**"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 19,
-    "completion_tokens": 143,
-    "total_tokens": 162
-  }
-}
-```
-
----
-
-## Test #18 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/chat/completions`
-
-### Request Body
-
-```json
-{
-  "model": "Lorem ipsum dolor sit amet",
-  "messages": [
-    {
-      "role": "system",
-      "content": "Lorem ipsum dolor sit amet"
-    },
-    {
-      "role": "system",
-      "content": "Test with 'single' quotes"
-    },
-    {
-      "role": "system",
-      "content": "Test with \"double\" quotes"
-    }
-  ]
-}
-```
-
-### Expected Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-5f8ab08d09354481af50533c",
-  "object": "chat.completion",
-  "created": 1769931229,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Okay, I understand. You've provided a string containing \"Lorem ipsum dolor sit ametTest with 'single' quotesTest with \\\"double\\\" quotes\". \n\nIt's a classic placeholder text used in print and design to display text without requiring actual content. It's often used to demonstrate the visual layout of a document before the real content is finalized.\n\nDo you have any specific questions or tasks you'd like me to perform with this text? For example, are you looking for:\n\n*   **Analysis?** (e.g., count the number of words, identify specific phrases)\n*   **Translation?** (e.g., convert to another language)\n*   **Modification?** (e.g., make it longer/shorter, change formatting)\n*   **Something else?**\n\nLet me know what you'd like me to do!"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 31,
-    "completion_tokens": 184,
-    "total_tokens": 215
-  }
-}
-```
-
----
-
-## Test #19 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/chat/completions`
-
-### Request Body
-
-```json
-{
-  "model": "Test with 'single' quotes",
-  "messages": [
-    {
-      "role": "system",
-      "content": "Lorem ipsum dolor sit amet"
-    }
-  ]
-}
-```
-
-### Expected Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-c1407b14b1e64f4caf79f372",
-  "object": "chat.completion",
-  "created": 1769931236,
-  "model": "Test with 'single' quotes",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything specific you'd like me to do with it? For example, are you:\n\n*   **Wanting me to continue the text?** (I can continue writing in the same style, or write a different kind of text).\n*   **Looking for a translation?** (I can translate it into other languages if you specify).\n*   **Wanting to know about its purpose?** (It's a placeholder used in typesetting to display text without having to fill it with real content.)\n*   **Something else entirely?**\n\nLet me know how I can assist you!"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 19,
-    "completion_tokens": 147,
-    "total_tokens": 166
-  }
-}
-```
-
----
-
-## Test #20 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/chat/completions`
-
-### Request Body
-
-```json
-{
-  "model": "Test with 'single' quotes",
-  "messages": [
-    {
-      "role": "system",
-      "content": "Lorem ipsum dolor sit amet"
-    }
-  ]
-}
-```
-
-### Expected Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-f779870a618f4d10b62fcaa9",
-  "object": "chat.completion",
-  "created": 1769931243,
-  "model": "Test with 'single' quotes",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything I can do with it? For example, would you like me to:\n\n*   **Analyze it?** (e.g., its structure, its use in a specific context)\n*   **Generate text around it?** (e.g., a paragraph of similar text)\n*   **Convert it to a different format?** (e.g., HTML, Markdown)\n*   **Just acknowledge it?** (Like \"That's a standard placeholder.\")\n\nLet me know what you have in mind."
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 19,
-    "completion_tokens": 133,
-    "total_tokens": 152
-  }
-}
-```
-
----
-
-## Test #21 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/chat/completions`
-
-### Request Body
-
-```json
-{
-  "model": "Test with 'single' quotes",
-  "messages": [
-    {
-      "role": "system",
-      "content": "Lorem ipsum dolor sit amet"
-    },
-    {
-      "role": "system",
-      "content": "Test with 'single' quotes"
-    },
-    {
-      "role": "system",
-      "content": "Test with \"double\" quotes"
-    }
-  ]
-}
-```
-
-### Expected Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-553180dc9a8641938d718fb8",
-  "object": "chat.completion",
-  "created": 1769931252,
-  "model": "Test with 'single' quotes",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Okay, I understand. You've provided a string of text:\n\n\"Lorem ipsum dolor sit ametTest with 'single' quotesTest with \"double\" quotes\"\n\nThis is a common practice in the printing and design industry, particularly for placeholder text. It's a non-meaningful text meant to provide a visual structure and space for the final text to flow within.\n\nIs there anything specific you'd like me to do with this text? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify keywords, check for specific patterns?)\n*   **Generate text based on it?** (e.g., a short story or paragraph?)\n*   **Convert it to another format?** (e.g., a markdown list?)\n*   **Explain its purpose?**"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 31,
-    "completion_tokens": 175,
-    "total_tokens": 206
-  }
-}
-```
-
----
-
-## Test #22 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/chat/completions`
-
-### Request Body
-
-```json
-{
-  "model": "Test with \"double\" quotes",
-  "messages": [
-    {
-      "role": "system",
-      "content": "Lorem ipsum dolor sit amet"
-    }
-  ]
-}
-```
-
-### Expected Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-b2c916f2e93e4ccdaa58604d",
-  "object": "chat.completion",
-  "created": 1769931259,
-  "model": "Test with \"double\" quotes",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Okay, I understand. You've provided the standard placeholder text \"Lorem ipsum dolor sit amet\". \n\nIs there anything I can help you with regarding this text? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify its common use in typesetting)\n*   **Generate something related to it?** (e.g., a sentence using it?)\n*   **Explain its purpose?** (it's often used to demonstrate page layout without meaning)\n*   **Something else?** \n\nLet me know what you're interested in!"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 19,
-    "completion_tokens": 127,
-    "total_tokens": 146
-  }
-}
-```
-
----
-
-## Test #23 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/chat/completions`
-
-### Request Body
-
-```json
-{
-  "model": "Test with \"double\" quotes",
-  "messages": [
-    {
-      "role": "system",
-      "content": "Lorem ipsum dolor sit amet"
-    }
-  ]
-}
-```
-
-### Expected Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-a6eaffefb4f24072b5af3300",
-  "object": "chat.completion",
-  "created": 1769931267,
-  "model": "Test with \"double\" quotes",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic placeholder text \"Lorem ipsum dolor sit amet\". \n\nIs there anything you'd like me to do with it?  For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify its structure, or suggest possible interpretations?)\n*   **Generate text based on it?** (e.g., write a story, a poem, or a response to a prompt?)\n*   **Explain its purpose?** (It's a placeholder text \u2013 it doesn't *mean* anything, but it's used for design because it's meaningless.)\n*   **Something else?**"
+        "content": "Okay, I understand. You've provided the classic placeholder text, \"Lorem ipsum dolor sit amet.\" \n\nIs there anything I can do with this text? For example, would you like me to:\n\n*   **Translate it?** (It's Latin, so it's not a direct translation)\n*   **Analyze it?** (For example, determine its purpose - it's often used for placeholder text in print design)\n*   **Generate a continuation?** (If you give me a starting point, I could try to continue the text in a similar style)\n*   **Something else?**\n\nLet me know what you'd like me to do."
       },
       "finish_reason": "stop"
     }
@@ -1407,9 +923,493 @@
 
 ---
 
+## Test #18 ✅
+
+📋 *Test case from OpenAPI example*
+
+**Endpoint:** `POST /v1/chat/completions`
+
+### Request Body
+
+```json
+{
+  "model": "Lorem ipsum dolor sit amet",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Lorem ipsum dolor sit amet"
+    },
+    {
+      "role": "system",
+      "content": "Test with 'single' quotes"
+    },
+    {
+      "role": "system",
+      "content": "Test with \"double\" quotes"
+    }
+  ]
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 422 or 400 or 404 or 501`
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1734700000,
+  "model": "pixtral",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! How can I help you today?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 20,
+    "completion_tokens": 10,
+    "total_tokens": 30
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+{
+  "id": "chatcmpl-c8d022cff8834881a95ed6f7",
+  "object": "chat.completion",
+  "created": 1770008743,
+  "model": "Lorem ipsum dolor sit amet",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Okay, I understand. You've provided a sample of Lorem ipsum text, formatted with single and double quotes. \n\nThis is a common practice in the printing and design industry for placeholder text. It's used during the initial stages of preparing a document to showcase the design and layout without the actual content.\n\nIs there anything specific you'd like me to do with this text? For example, would you like me to:\n\n*   Analyze it? (e.g., identify the stylistic choices?)\n*   Generate similar text?\n*   Convert it to a different format?\n*   Explain its purpose?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 31,
+    "completion_tokens": 129,
+    "total_tokens": 160
+  }
+}
+```
+
+---
+
+## Test #19 ✅
+
+📋 *Test case from OpenAPI example*
+
+**Endpoint:** `POST /v1/chat/completions`
+
+### Request Body
+
+```json
+{
+  "model": "Test with 'single' quotes",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Lorem ipsum dolor sit amet"
+    }
+  ]
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 422 or 400 or 404 or 501`
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1734700000,
+  "model": "pixtral",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! How can I help you today?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 20,
+    "completion_tokens": 10,
+    "total_tokens": 30
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+{
+  "id": "chatcmpl-3a2354be347e4194b91ebb8f",
+  "object": "chat.completion",
+  "created": 1770008749,
+  "model": "Test with 'single' quotes",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIt's a placeholder text often used in design and printing to show the visual layout of a document without relying on actual content. \n\nIs there anything you'd like me to do with it? For example, would you like me to:\n\n*   **Generate more Lorem Ipsum text?** (e.g., a longer passage)\n*   **Analyze it?** (e.g., identify key words?)\n*   **Explain its purpose?**\n*   **Something else?**"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 19,
+    "completion_tokens": 125,
+    "total_tokens": 144
+  }
+}
+```
+
+---
+
+## Test #20 ✅
+
+📋 *Test case from OpenAPI example*
+
+**Endpoint:** `POST /v1/chat/completions`
+
+### Request Body
+
+```json
+{
+  "model": "Test with 'single' quotes",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Lorem ipsum dolor sit amet"
+    }
+  ]
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 422 or 400 or 404 or 501`
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1734700000,
+  "model": "pixtral",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! How can I help you today?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 20,
+    "completion_tokens": 10,
+    "total_tokens": 30
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+{
+  "id": "chatcmpl-ca290da644574bf1a0e86438",
+  "object": "chat.completion",
+  "created": 1770008756,
+  "model": "Test with 'single' quotes",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Okay, I understand. You've provided the classic placeholder text: \"Lorem ipsum dolor sit amet\". \n\nIt's a common placeholder text used in the printing and design industries to provide visual filler in documents without needing actual content. \n\nIs there anything you'd like me to do with it? For example, would you like me to:\n\n*   **Translate it?** (It's Latin, but it's often used as a placeholder.)\n*   **Explain its purpose?** (It's a stylistic placeholder designed to show the layout and structure of a document, without meaning anything.)\n*   **Generate variations or alternatives?** (Perhaps suggest a slightly different phrasing?)\n*   **Something else entirely?**"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 19,
+    "completion_tokens": 155,
+    "total_tokens": 174
+  }
+}
+```
+
+---
+
+## Test #21 ✅
+
+📋 *Test case from OpenAPI example*
+
+**Endpoint:** `POST /v1/chat/completions`
+
+### Request Body
+
+```json
+{
+  "model": "Test with 'single' quotes",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Lorem ipsum dolor sit amet"
+    },
+    {
+      "role": "system",
+      "content": "Test with 'single' quotes"
+    },
+    {
+      "role": "system",
+      "content": "Test with \"double\" quotes"
+    }
+  ]
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 422 or 400 or 404 or 501`
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1734700000,
+  "model": "pixtral",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! How can I help you today?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 20,
+    "completion_tokens": 10,
+    "total_tokens": 30
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+{
+  "id": "chatcmpl-c61f4cb590d44ebe861d15d7",
+  "object": "chat.completion",
+  "created": 1770008766,
+  "model": "Test with 'single' quotes",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Okay, I understand. You've provided a seemingly random string of text: \"Lorem ipsum dolor sit ametTest with 'single' quotesTest with \\\"double\\\" quotes.\" \n\nIt's a classic example used in the printing industry to display text in a placeholder format while the final text content is created.  It's designed to mimic the appearance of real text but with no meaningful content. \n\nIs there anything specific you'd like me to do with this?  For example, would you like me to:\n\n*   **Analyze the text?** (e.g., identify patterns, analyze its structure)\n*   **Generate text based on this example?** (e.g., create a paragraph using this style)\n*   **Answer a question about it?** (e.g., \"What does this usually signify?\")\n*   **Just acknowledge the text?**"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 31,
+    "completion_tokens": 186,
+    "total_tokens": 217
+  }
+}
+```
+
+---
+
+## Test #22 ✅
+
+📋 *Test case from OpenAPI example*
+
+**Endpoint:** `POST /v1/chat/completions`
+
+### Request Body
+
+```json
+{
+  "model": "Test with \"double\" quotes",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Lorem ipsum dolor sit amet"
+    }
+  ]
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 422 or 400 or 404 or 501`
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1734700000,
+  "model": "pixtral",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! How can I help you today?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 20,
+    "completion_tokens": 10,
+    "total_tokens": 30
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+{
+  "id": "chatcmpl-16e862df0aae4fe4ad863354",
+  "object": "chat.completion",
+  "created": 1770008772,
+  "model": "Test with \"double\" quotes",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Okay, I understand. You've provided the classic \"Lorem Ipsum\" text. \n\nIs there anything you'd like me to do with it? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify its purpose, or explain its linguistic properties)\n*   **Generate text based on it?** (e.g., a paragraph or short story)\n*   **Answer a question about it?** (e.g., \"What does it represent?\")\n*   **Something else entirely?**"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 19,
+    "completion_tokens": 118,
+    "total_tokens": 137
+  }
+}
+```
+
+---
+
+## Test #23 ✅
+
+📋 *Test case from OpenAPI example*
+
+**Endpoint:** `POST /v1/chat/completions`
+
+### Request Body
+
+```json
+{
+  "model": "Test with \"double\" quotes",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Lorem ipsum dolor sit amet"
+    }
+  ]
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 422 or 400 or 404 or 501`
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1734700000,
+  "model": "pixtral",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! How can I help you today?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 20,
+    "completion_tokens": 10,
+    "total_tokens": 30
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+{
+  "id": "chatcmpl-1d5b91948efe4997bcaa530b",
+  "object": "chat.completion",
+  "created": 1770008780,
+  "model": "Test with \"double\" quotes",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIt's a placeholder text used in the printing and design industries to display text in a way that mimics the appearance of the final printed document without showing the actual content. \n\nIs there anything you'd like me to do with it? For example, would you like me to:\n\n*   **Generate more Lorem Ipsum text?** (e.g., a longer passage, a specific style)\n*   **Explain the purpose of Lorem Ipsum?**\n*   **Translate it to another language?** (though it's not really a translation)\n*   **Do something else with it?**"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 19,
+    "completion_tokens": 147,
+    "total_tokens": 166
+  }
+}
+```
+
+---
+
 ## Test #24 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -1437,7 +1437,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -1469,24 +1469,24 @@
 
 ```json
 {
-  "id": "chatcmpl-c66cdd913398441784330265",
+  "id": "chatcmpl-5ce1019680294cf0be25402d",
   "object": "chat.completion",
-  "created": 1769931276,
+  "created": 1770008791,
   "model": "Test with \"double\" quotes",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided a string of text:\n\n`Lorem ipsum dolor sit ametTest with 'single' quotesTest with \"double\" quotes`\n\nThis is a common practice in graphic design and printing when creating placeholder text. It's a large, seemingly random text block used to fill space in a document before the actual content is finalized.  \n\n**Essentially, it's a placeholder that allows designers to see how the text will look in a real document.**\n\nDo you want me to do anything with this text? For example, would you like me to:\n\n*   Analyze it? (e.g., identify words, phrases, common patterns)\n*   Generate text that *looks* like this? (e.g., create a paragraph with similar style)\n*   Do something else with it?"
+        "content": "Okay, I understand. You've provided a classic example of Lorem Ipsum text, which is frequently used in typesetting and design. It's placeholder text that doesn't have a meaningful visual appearance.\n\n**Here's a slightly more expanded version of the text you provided:**\n\nLorem ipsum dolor sit ametTest with 'single' quotesTest with \"double\" quotes \n\n**Why this is used:**\n\n* **Placeholder Text:** It's used to fill out document templates before the actual content is finalized.\n* **Readability:** It provides a consistent and easily-readable block of text that allows designers and developers to focus on layout and visual appearance without worrying about a visible sentence.\n* **Testing:**  It's employed to test fonts, layouts, and visual effects before using actual content.\n\nDo you have any specific questions about Lorem Ipsum or want me to do anything with this text?  For example, would you like me to:\n\n*   Analyze it?\n*   Generate some variations?\n*   Explain its purpose in more detail?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 31,
-    "completion_tokens": 173,
-    "total_tokens": 204
+    "completion_tokens": 219,
+    "total_tokens": 250
   }
 }
 ```
@@ -1495,7 +1495,7 @@
 
 ## Test #25 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -1515,7 +1515,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -1547,24 +1547,24 @@
 
 ```json
 {
-  "id": "chatcmpl-dd9b810ae2cc4eb19699d211",
+  "id": "chatcmpl-b2db142c351f45538f23c756",
   "object": "chat.completion",
-  "created": 1769931283,
+  "created": 1770008796,
   "model": "Test:with:colons",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic placeholder text: \"Lorem ipsum dolor sit amet\". \n\nIs there anything I can help you with regarding this text? For example, are you:\n\n*   **Looking for a translation?** (It's a placeholder \u2013 it doesn't have a meaning in any language.)\n*   **Trying to understand its purpose?** (It's a common practice in typesetting and design to provide a visually similar text to a full document without needing actual content.)\n*   **Wanting to generate something similar?** (If you're creating a test or a placeholder text for a document.)"
+        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" text. \n\nIs there anything I can do with it? For example, would you like me to:\n\n*   **Generate some text based on it?** (e.g., a story, a poem, a paragraph)\n*   **Explain what it is?**\n*   **Provide some related information?**\n*   **Simply acknowledge it?**"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 135,
-    "total_tokens": 154
+    "completion_tokens": 93,
+    "total_tokens": 112
   }
 }
 ```
@@ -1590,7 +1590,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -1615,7 +1615,7 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-01T07:34:45.233586Z",
+  "created_at": "2026-02-02T05:06:38.097961Z",
   "response": "The capital of France is **Paris**. \n\nIt\u2019s a great city! \ud83d\ude0a \n\nWould you like to know more about Paris?",
   "done": true,
   "context": [],
@@ -1632,7 +1632,7 @@
 
 ## Test #27 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1651,7 +1651,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -1683,7 +1683,7 @@
 
 ## Test #28 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1702,7 +1702,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -1734,7 +1734,7 @@
 
 ## Test #29 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1753,7 +1753,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -1785,7 +1785,7 @@
 
 ## Test #30 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1804,7 +1804,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -1836,7 +1836,7 @@
 
 ## Test #31 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1855,7 +1855,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -1887,7 +1887,7 @@
 
 ## Test #32 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1906,7 +1906,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -1938,7 +1938,7 @@
 
 ## Test #33 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1957,7 +1957,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -1989,7 +1989,7 @@
 
 ## Test #34 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -2008,7 +2008,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -2040,7 +2040,7 @@
 
 ## Test #35 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -2059,7 +2059,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -2091,7 +2091,7 @@
 
 ## Test #36 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -2110,7 +2110,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422 or 400 or 404 or 501`
 
 ```json
 {
@@ -2163,7 +2163,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422`
 
 ```json
 {
@@ -2182,11 +2182,11 @@
 
 ```json
 {
-  "result": "Please provide the user message you want me to summarize. I need the text of the message to fulfill your request.",
+  "result": "Please provide the user message you would like me to summarize.",
   "usage": {
     "prompt_tokens": 50,
-    "completion_tokens": 24,
-    "total_tokens": 74
+    "completion_tokens": 13,
+    "total_tokens": 63
   }
 }
 ```
@@ -2195,7 +2195,7 @@
 
 ## Test #38 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/summarize-text`
 
@@ -2212,7 +2212,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422`
 
 ```json
 {
@@ -2244,7 +2244,7 @@
 
 ## Test #39 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/summarize-text`
 
@@ -2261,7 +2261,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422`
 
 ```json
 {
@@ -2293,7 +2293,7 @@
 
 ## Test #40 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/summarize-text`
 
@@ -2310,7 +2310,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422`
 
 ```json
 {
@@ -2342,7 +2342,7 @@
 
 ## Test #41 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/summarize-text`
 
@@ -2359,7 +2359,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422`
 
 ```json
 {
@@ -2391,7 +2391,7 @@
 
 ## Test #42 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/summarize-text`
 
@@ -2408,7 +2408,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422`
 
 ```json
 {
@@ -2440,7 +2440,7 @@
 
 ## Test #43 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/summarize-text`
 
@@ -2457,7 +2457,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422`
 
 ```json
 {
@@ -2489,7 +2489,7 @@
 
 ## Test #44 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/summarize-text`
 
@@ -2506,7 +2506,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422`
 
 ```json
 {
@@ -2538,7 +2538,7 @@
 
 ## Test #45 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/summarize-text`
 
@@ -2555,56 +2555,7 @@
 
 ### Expected Response
 
-**Status:** `200`
-
-```json
-{
-  "result": "example",
-  "usage": {
-    "prompt_tokens": 0,
-    "completion_tokens": 0,
-    "total_tokens": 0
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `200`
-
-```json
-{
-  "result": "Please provide the user message you would like me to clean up and summarize.",
-  "usage": {
-    "prompt_tokens": 42,
-    "completion_tokens": 16,
-    "total_tokens": 58
-  }
-}
-```
-
----
-
-## Test #46 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/summarize-text`
-
-### Request Body
-
-```json
-{
-  "messages": [],
-  "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.999999999,
-  "max_tokens": 1000000
-}
-```
-
-### Expected Response
-
-**Status:** `200`
+**Status:** `200 or 422`
 
 ```json
 {
@@ -2634,9 +2585,58 @@
 
 ---
 
+## Test #46 ✅
+
+📋 *Test case from OpenAPI example*
+
+**Endpoint:** `POST /v1/summarize-text`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.999999999,
+  "max_tokens": 1000000
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 422`
+
+```json
+{
+  "result": "example",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+{
+  "result": "Please provide the user message you want me to summarize.",
+  "usage": {
+    "prompt_tokens": 42,
+    "completion_tokens": 12,
+    "total_tokens": 54
+  }
+}
+```
+
+---
+
 ## Test #47 ✅
 
-🔧 *Test case generated from schema*
+📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/summarize-text`
 
@@ -2653,7 +2653,7 @@
 
 ### Expected Response
 
-**Status:** `200`
+**Status:** `200 or 422`
 
 ```json
 {
