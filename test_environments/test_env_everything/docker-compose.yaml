@@ -65,6 +65,8 @@ services:
       - QDRANT_PORT=6333
       - EMBEDDING_HOST=embedding-test
       - EMBEDDING_PORT=11434
+    env_file:
+      - .env
     depends_on:
       redis-test:
         condition: service_healthy

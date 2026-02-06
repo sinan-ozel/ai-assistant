@@ -134,16 +134,20 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
         max_tokens = request.get("max_tokens", 4096)
         stream = request.get("stream", False)
 
+        # Validate input
+        if not messages or len(messages) == 0:
+            raise HTTPException(status_code=422, detail="messages array cannot be empty")
+
         # Streaming not supported
         if stream:
             raise HTTPException(status_code=501, detail="Streaming not supported for workflows")
+
 
         # Build messages for LLM
         prompt_messages = [{"role": "system", "content": system_message}]
 
         # Add user messages from request
-        if messages:
-            prompt_messages.extend(messages)
+        prompt_messages.extend(messages)
 
         # Determine which provider to use
         # Priority: workflow-specified provider > request model > default provider
@@ -164,6 +168,12 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
                 model=provider_to_use,
                 temperature=temperature,
                 max_tokens=max_tokens,
+            )
+        except litellm.RateLimitError as e:
+            logger.warning(f"Rate limit exceeded for workflow {workflow_name}: {e}")
+            raise HTTPException(
+                status_code=429,
+                detail="Rate limit exceeded. Please try again later."
             )
         except Exception as e:
             logger.error(f"LLM call failed for workflow {workflow_name}: {e}")
@@ -245,6 +255,14 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
     path = workflow['path']
     description = workflow['description']
     output_schema = workflow['output_schema']
+    input_requirements = workflow.get('input_requirements', {})
+    content_types = input_requirements.get('content_types', ['text'])
+    input_desc = input_requirements.get('description', '')
+
+    # Enhance description with input requirements
+    full_description = description
+    if input_desc:
+        full_description = f"{description}\n\n**Input Requirements:** {input_desc}"
 
     # Build response schema
     if output_schema.get("type") == "string":
@@ -367,19 +385,13 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
         "path": path,
         "methods": ["POST"],
         "summary": workflow['name'],
-        "description": description,
+        "description": full_description,
         "requestBody": {
             "required": True,
             "content": {
                 "application/json": {
                     "schema": request_schema,
-                    "example": {
-                        "messages": [
-                            {"role": "user", "content": "Your message here"}
-                        ],
-                        "temperature": 0.7,
-                        "max_tokens": 4096
-                    }
+                    "example": None  # Will be set below based on input requirements
                 }
             }
         },

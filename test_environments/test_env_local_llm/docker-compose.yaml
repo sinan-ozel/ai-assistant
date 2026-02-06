@@ -31,6 +31,23 @@ services:
       timeout: 5s
       retries: 5
 
+  llamacpp-test:
+    # image: sinanozel/llama-cuda.b7902:gemma3-1b-it-qat
+    image: sinanozel/llama.cuda:qwen3-0.6b
+    networks:
+      - test-network
+    # command: ["-m", "/models/model.gguf", "--host", "0.0.0.0", "--port", "8080", "-ngl", "999", "-c", "4096", "--no-jinja"]
+    deploy:
+      resources:
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 120s
+
   # Ollama server with gemma3-270m model
   ollama-test:
     image: sinanozel/ollama.0.12.11:gemma3-270m
@@ -60,6 +77,8 @@ services:
       - QDRANT_PORT=6333
       - EMBEDDING_HOST=embedding-test
       - EMBEDDING_PORT=11434
+    env_file:
+      - .env
     depends_on:
       redis-test:
         condition: service_healthy
@@ -67,7 +86,7 @@ services:
         condition: service_healthy
       embedding-test:
         condition: service_healthy
-      ollama-test:
+      llamacpp-test:
         condition: service_healthy
     healthcheck:
       test:
@@ -105,7 +124,7 @@ services:
         condition: service_healthy
     volumes:
       - ${TEST_FOLDER:-.}:/tests
-    command: ["pytest", "--openapi=http://app:8000", "--openapi-no-strict-example-checking", "--openapi-markdown-output=report.md", "--openapi-no-stdout", "-v"]
+    command: ["pytest", "--openapi=http://app:8000", "--openapi-no-strict-example-checking", "--openapi-markdown-output=report.md", "--openapi-no-stdout", "--openapi-timeout=60", "-v"]
 
 networks:
   test-network:
