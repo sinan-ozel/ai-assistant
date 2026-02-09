@@ -95,6 +95,7 @@ def call_llm_by_model(
     max_tokens: Optional[int] = None,
     top_p: Optional[float] = None,
     stop: Optional[list[str]] = None,
+    timeout: Optional[float] = None,
     **kwargs,
 ) -> Dict[str, Any]:
     """
@@ -108,6 +109,7 @@ def call_llm_by_model(
         max_tokens: Maximum tokens to generate
         top_p: Nucleus sampling parameter
         stop: Stop sequences
+        timeout: Request timeout in seconds (overrides provider config)
         **kwargs: Additional parameters for litellm.completion
 
     Returns:
@@ -115,6 +117,7 @@ def call_llm_by_model(
 
     Raises:
         ValueError: If no providers available
+        litellm.Timeout: If request times out
         Exception: If LLM call fails
     """
     # Get provider configuration
@@ -131,6 +134,12 @@ def call_llm_by_model(
         litellm_kwargs["api_base"] = provider_config["api_base"]
     if provider_config.get("api_key"):
         litellm_kwargs["api_key"] = provider_config["api_key"]
+
+    # Add timeout - prioritize request parameter, then provider config, then no timeout
+    if timeout is not None:
+        litellm_kwargs["timeout"] = timeout
+    elif provider_config.get("timeout"):
+        litellm_kwargs["timeout"] = provider_config["timeout"]
 
     # Add optional parameters if provided
     if temperature is not None:

@@ -15,7 +15,7 @@ from common import CUSTOMIZATION_FOLDER, DEFAULTS_FOLDER
 logger = logging.getLogger(__name__)
 
 # Allowed configuration keys for provider validation
-ALLOWED_KEYS = ["model", "api_base", "api_key", "max_tokens"]
+ALLOWED_KEYS = ["model", "api_base", "api_key", "max_tokens", "timeout"]
 
 # Base directories for providers
 DEFAULT_PROVIDERS_DIR = DEFAULTS_FOLDER / "providers"

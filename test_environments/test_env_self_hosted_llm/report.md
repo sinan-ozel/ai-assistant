@@ -127,7 +127,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -152,13 +152,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "Okay, let\u2019s check the weather for **London, England**. \n\nHere\u2019s the forecast:\n\nCurrently, London is experiencing light rain with a temperature of 15\u00b0C (59\u00b0F). It's expected to continue with a high of 18\u00b0C (64\u00b0F) later today.",
+  "message": "Okay, let\u2019s check the weather for **London, England**. \n\nHere\u2019s the forecast:\n\nCurrently, London is experiencing light rain with a temperature of 15\u00b0C (59\u00b0F). It\u2019s expected to continue with a high of 18\u00b0C (64\u00b0F) later today.",
   "role": "assistant",
-  "created": 1770009989,
+  "created": 1770507297,
   "usage": {
-    "prompt_tokens": 1532,
+    "prompt_tokens": 2807,
     "completion_tokens": 70,
-    "total_tokens": 1602
+    "total_tokens": 2877
   }
 }
 ```
@@ -178,13 +178,15 @@
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
-  "stream": true
+  "stream": true,
+  "timeout": 0.0,
+  "max_tokens": 1
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -226,13 +228,15 @@
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
-  "stream": false
+  "stream": true,
+  "timeout": 0.0,
+  "max_tokens": 500000
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -251,20 +255,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `501`
 
 ```json
 {
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Lorem ipsum dolor sit amet",
-  "message": "### Assistant:\nExcellent! Elaborating on the \u201cfiller text\u201d concept \u2013 it\u2019s a brilliant strategy. It\u2019s essentially a way to build a visual skeleton for the page, allowing designers to quickly evaluate the impact of different elements without needing to create fully designed pages. The lack of meaning, coupled with the ability to change text and formatting, makes it incredibly useful for quickly understanding and testing visual layouts. It\u2019s a cornerstone of many design processes, even when full design documents are finalized. Would you like me to share some statistics or examples of how it's used in different design contexts, or perhaps discuss its relationship to other placeholder text techniques?",
-  "role": "assistant",
-  "created": 1770010007,
-  "usage": {
-    "prompt_tokens": 1265,
-    "completion_tokens": 134,
-    "total_tokens": 1399
-  }
+  "detail": "Streaming not yet implemented"
 }
 ```
 
@@ -282,14 +277,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test with 'single' quotes",
-  "stream": true
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 0.0,
+  "max_tokens": 1000000
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -330,14 +327,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test with 'single' quotes",
-  "stream": false
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 0.123456789,
+  "max_tokens": 1
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -356,20 +355,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `501`
 
 ```json
 {
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test with 'single' quotes",
-  "message": "### Assistant:\n\nOkay, fantastic! Let\u2019s really dive into how this grid system influenced the typography. It\u2019s a really compelling point. The grid, as you\u2019ve noted, wasn\u2019t just about arranging words; it was about establishing a *visual rhythm* and a deliberate \u2018lens\u2019 for the reader. They used the three points \u2013 top, bottom, and middle \u2013 to guide the eye through the text, creating a sense of balance and emphasis.\n\nConsider this: they often placed key phrases or ideas at the intersection of the columns. This wasn\u2019t random placement; it was strategically positioned to draw attention to crucial information.  The grid, in essence, acted as a framework for the text\u2019s visual hierarchy.\n\nIt\u2019s a stark example of early design thinking \u2013 a minimalist system that dictated the *direction* of the reader\u2019s gaze. They were creating a visual map for the text, influencing how the reader perceived the content. It\u2019s clear they were prioritizing certain elements \u2013 highlighting key phrases, creating a sense of visual balance, and guiding the reader\u2019s eye through the text.\n\nWould you like me to analyze a specific example of how they used the grid to create particular visual groupings \u2013 perhaps a focus on a certain phrase or concept? Or would you prefer to discuss the overall effect of this early testing method on the book\u2019s typography choices?",
-  "role": "assistant",
-  "created": 1770010039,
-  "usage": {
-    "prompt_tokens": 1954,
-    "completion_tokens": 283,
-    "total_tokens": 2237
-  }
+  "detail": "Streaming not yet implemented"
 }
 ```
 
@@ -387,14 +377,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test with \"double\" quotes",
-  "stream": true
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 0.123456789,
+  "max_tokens": 500000
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -435,14 +427,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test with \"double\" quotes",
-  "stream": false
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 0.123456789,
+  "max_tokens": 1000000
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -461,20 +455,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `501`
 
 ```json
 {
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test with \"double\" quotes",
-  "message": "Okay, let\u2019s just acknowledge the placeholder text. It\u2019s a very common placeholder! \ud83d\ude0a  It\u2019s a placeholder, and I\u2019m here to help if you need anything else with it.",
-  "role": "assistant",
-  "created": 1770010052,
-  "usage": {
-    "prompt_tokens": 1187,
-    "completion_tokens": 43,
-    "total_tokens": 1230
-  }
+  "detail": "Streaming not yet implemented"
 }
 ```
 
@@ -492,14 +477,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test:with:colons",
-  "stream": true
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 0.999999999,
+  "max_tokens": 1
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -540,14 +527,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test:with:colons",
-  "stream": false
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 0.999999999,
+  "max_tokens": 500000
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -566,20 +555,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `501`
 
 ```json
 {
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test:with:colons",
-  "message": "Okay, I understand. You\u2019re just providing the text. How can I help you with it, or perhaps with something else related to writing or placeholder text?",
-  "role": "assistant",
-  "created": 1770010063,
-  "usage": {
-    "prompt_tokens": 1037,
-    "completion_tokens": 34,
-    "total_tokens": 1071
-  }
+  "detail": "Streaming not yet implemented"
 }
 ```
 
@@ -597,14 +577,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test\\with\\backslashes",
-  "stream": true
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 0.999999999,
+  "max_tokens": 1000000
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -645,14 +627,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test\\with\\backslashes",
-  "stream": false
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 1.111111111,
+  "max_tokens": 1
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -671,20 +655,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `501`
 
 ```json
 {
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test\\with\\backslashes",
-  "message": "That\u2019s right! It\u2019s a placeholder text. \ud83d\ude0a",
-  "role": "assistant",
-  "created": 1770010072,
-  "usage": {
-    "prompt_tokens": 849,
-    "completion_tokens": 14,
-    "total_tokens": 863
-  }
+  "detail": "Streaming not yet implemented"
 }
 ```
 
@@ -711,7 +686,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -743,24 +718,24 @@
 
 ```json
 {
-  "id": "chatcmpl-2176311d67614e38bdb5160d",
+  "id": "chatcmpl-d735b8617539405294d18bb9",
   "object": "chat.completion",
-  "created": 1770010074,
+  "created": 1770507298,
   "model": "ollama/gemma3:1b",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is **Paris**. \n\n\ud83d\ude0a"
+        "content": "The capital of France is **Paris**. \n\n\ud83c\uddeb\ud83c\uddf7\n"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 21,
-    "completion_tokens": 12,
-    "total_tokens": 33
+    "completion_tokens": 14,
+    "total_tokens": 35
   }
 }
 ```
@@ -783,13 +758,14 @@
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ]
+  ],
+  "timeout": 0.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -821,24 +797,24 @@
 
 ```json
 {
-  "id": "chatcmpl-cf152bd59e2747d0b1f5fa06",
+  "id": "chatcmpl-6e4ac6fdbda94b06a5f081db",
   "object": "chat.completion",
-  "created": 1770010079,
+  "created": 1770507300,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic placeholder text \"Lorem ipsum dolor sit amet.\" \n\nIt's a common practice when creating documents like books or articles to display text without requiring a meaningful content. It's purely for visual purposes and doesn't have any actual meaning. \n\nDo you have any questions about it, or would you like me to do anything with it (like:\n\n*   Explain it?\n*   Provide some context about its use?\n*   Generate similar text?)"
+        "content": "Okay, I understand. You've provided the classic placeholder text. \n\nIt's a common starting point for typesetting when you don't have a full document yet. \ud83d\ude0a \n\nIs there anything you'd like me to do with this text? For example, would you like me to:\n\n*   **Repeat it?** (Just typing it over)\n*   **Generate a longer example?** (Like a few lines of placeholder text?)\n*   **Explain its purpose?** (It's used to create the visual layout of a document without the content.)"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 107,
-    "total_tokens": 126
+    "completion_tokens": 122,
+    "total_tokens": 141
   }
 }
 ```
@@ -861,13 +837,14 @@
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ]
+  ],
+  "timeout": 0.123456789
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -895,29 +872,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `408`
 
 ```json
 {
-  "id": "chatcmpl-c831348ba2094408bbb7ce2f",
-  "object": "chat.completion",
-  "created": 1770010085,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Okay, I understand. You've provided the standard \"Lorem ipsum\" text. \n\nIs there anything I can do with it? For example, would you like me to:\n\n*   **Analyze it?** (e.g., count words, identify patterns)\n*   **Generate text based on it?** (e.g., a short story, a paragraph)\n*   **Provide a different context?** (e.g., a description of its purpose) \n\nLet me know what you'd like me to do!"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 19,
-    "completion_tokens": 115,
-    "total_tokens": 134
-  }
+  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 0.123456789 seconds."
 }
 ```
 
@@ -938,22 +897,15 @@
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
-    },
-    {
-      "role": "system",
-      "content": "Test with 'single' quotes"
-    },
-    {
-      "role": "system",
-      "content": "Test with \"double\" quotes"
     }
-  ]
+  ],
+  "timeout": 0.999999999
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -981,29 +933,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `408`
 
 ```json
 {
-  "id": "chatcmpl-f8918470d3984bcf99f5d529",
-  "object": "chat.completion",
-  "created": 1770010092,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Okay, I understand. You've provided a text snippet consisting of two instances of \"single\" and \"double\" quotes. \n\nIs there anything specific you'd like me to do with this text? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify the words, count characters, etc.)\n*   **Generate text *using* these quotes?** (e.g., create a sentence using \"single\" and \"double\" quotes)\n*   **Something else?**\n\nLet me know how I can help."
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 31,
-    "completion_tokens": 123,
-    "total_tokens": 154
-  }
+  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 0.999999999 seconds."
 }
 ```
 
@@ -1019,19 +953,20 @@
 
 ```json
 {
-  "model": "Test with 'single' quotes",
+  "model": "Lorem ipsum dolor sit amet",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ]
+  ],
+  "timeout": 1.111111111
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1059,29 +994,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `408`
 
 ```json
 {
-  "id": "chatcmpl-c2baed541e35465d81c9a519",
-  "object": "chat.completion",
-  "created": 1770010099,
-  "model": "Test with 'single' quotes",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic placeholder text: \"Lorem ipsum dolor sit amet\". \n\nIs there anything specific you'd like me to do with it? For example, would you like me to:\n\n*   **Explain it?** (It's a placeholder, typically used in typesetting to fill a page with text while the final content is developed.)\n*   **Generate text based on it?** (I could write a short paragraph, a sentence, or a story using the placeholder.)\n*   **Suggest a translation?** (It's Latin, and generally means \"pain is not felt\" \u2013 a common placeholder for typesetting.)\n*   **Something else entirely?**\n\nLet me know how I can help!"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 19,
-    "completion_tokens": 157,
-    "total_tokens": 176
-  }
+  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 1.111111111 seconds."
 }
 ```
 
@@ -1097,19 +1014,20 @@
 
 ```json
 {
-  "model": "Test with 'single' quotes",
+  "model": "Lorem ipsum dolor sit amet",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ]
+  ],
+  "timeout": 500000.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1141,24 +1059,24 @@
 
 ```json
 {
-  "id": "chatcmpl-6ef4ec30723b4a38a11f5e41",
+  "id": "chatcmpl-dcb3bd20b3ed4524954b6951",
   "object": "chat.completion",
-  "created": 1770010104,
-  "model": "Test with 'single' quotes",
+  "created": 1770507303,
+  "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "This is the classic placeholder text \u2013 the beginning of a page of Lorem Ipsum. It\u2019s a seemingly random selection of Latin text designed to simulate the appearance of page content in a document without requiring actual text. \n\nIt's a common practice in graphic design and typesetting to provide a placeholder until the final design is finalized. \n\nDo you have any questions about it, or would you like to know anything else related to it?"
+        "content": "Okay, I understand. You've provided the classic placeholder text: \"Lorem ipsum dolor sit amet\". \n\nIs there anything specific you'd like me to do with this text? For example, would you like me to:\n\n*   **Translate it?** (It's Latin, and often used for placeholder text in printing.)\n*   **Analyze it?** (e.g., identify its purpose - it's a placeholder.)\n*   **Generate similar text?** (e.g., a longer paragraph?)\n*   **Something else?**"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 89,
-    "total_tokens": 108
+    "completion_tokens": 120,
+    "total_tokens": 139
   }
 }
 ```
@@ -1175,27 +1093,20 @@
 
 ```json
 {
-  "model": "Test with 'single' quotes",
+  "model": "Lorem ipsum dolor sit amet",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
-    },
-    {
-      "role": "system",
-      "content": "Test with 'single' quotes"
-    },
-    {
-      "role": "system",
-      "content": "Test with \"double\" quotes"
     }
-  ]
+  ],
+  "timeout": 1000000.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1227,24 +1138,24 @@
 
 ```json
 {
-  "id": "chatcmpl-f7d80ef68e034a9ba2ea2482",
+  "id": "chatcmpl-a4bbd41aa0034003bbd86abb",
   "object": "chat.completion",
-  "created": 1770010106,
-  "model": "Test with 'single' quotes",
+  "created": 1770507304,
+  "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, here's the text presented as requested:\n\nLorem ipsum dolor sit ametTest with 'single' quotesTest with \"double\" quotes\n"
+        "content": "Okay! You\u2019ve provided the standard placeholder text \u2013 \u201cLorem ipsum dolor sit amet\u201d. It\u2019s a common placeholder used in publishing and design to fill out a document without requiring actual text. \n\nIs there anything you\u2019d like me to do with this text? For example, would you like me to:\n\n*   **Translate it?**\n*   **Explain its purpose?**\n*   **Analyze its format?**\n*   **Generate something related to it?**"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 31,
-    "completion_tokens": 31,
-    "total_tokens": 62
+    "prompt_tokens": 19,
+    "completion_tokens": 102,
+    "total_tokens": 121
   }
 }
 ```
@@ -1261,19 +1172,20 @@
 
 ```json
 {
-  "model": "Test with \"double\" quotes",
+  "model": "Lorem ipsum dolor sit amet",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ]
+  ],
+  "timeout": 0.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1305,24 +1217,24 @@
 
 ```json
 {
-  "id": "chatcmpl-cd749570e33f453dacceb536",
+  "id": "chatcmpl-78c2b0196e12487eae091239",
   "object": "chat.completion",
-  "created": 1770010113,
-  "model": "Test with \"double\" quotes",
+  "created": 1770507306,
+  "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the standard placeholder text: \"Lorem ipsum dolor sit amet.\" \n\nIs there anything specific you'd like me to do with this text? For example, would you like me to:\n\n*   **Translate it?** (I can provide a basic translation - though it's not very accurate for this purpose.)\n*   **Analyze it?** (Perhaps you want me to identify its purpose - it's a placeholder text used in print design.)\n*   **Generate variations?** (Perhaps you'd like a slightly different version?)\n*   **Something else?**\n\nLet me know how I can help!"
+        "content": "Okay, I understand. You've provided the classic placeholder text \u2013 \"Lorem ipsum dolor sit amet\". \n\nIt's a common way to present text in design and marketing materials to give a visual structure without requiring a full, meaningful document. \n\nIs there anything specific you'd like me to do with this text? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify common words, length, etc.)\n*   **Generate similar text?** (e.g., a short paragraph with a similar style)\n*   **Help you with a task related to it?** (e.g., translate it, interpret its meaning?)"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 140,
-    "total_tokens": 159
+    "completion_tokens": 146,
+    "total_tokens": 165
   }
 }
 ```
@@ -1339,19 +1251,20 @@
 
 ```json
 {
-  "model": "Test with \"double\" quotes",
+  "model": "Lorem ipsum dolor sit amet",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ]
+  ],
+  "timeout": 0.123456789
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1379,29 +1292,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `408`
 
 ```json
 {
-  "id": "chatcmpl-ea3231d36a1e4470a37a8358",
-  "object": "chat.completion",
-  "created": 1770010119,
-  "model": "Test with \"double\" quotes",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything I can do with it? For example, would you like me to:\n\n*   **Analyze it?** (e.g., count words, highlight specific patterns?)\n*   **Generate text based on it?** (e.g., a paragraph, a story, etc.)\n*   **Translate it?**\n*   **Something else?**\n\nJust let me know what you're interested in!"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 19,
-    "completion_tokens": 111,
-    "total_tokens": 130
-  }
+  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 0.123456789 seconds."
 }
 ```
 
@@ -1417,27 +1312,20 @@
 
 ```json
 {
-  "model": "Test with \"double\" quotes",
+  "model": "Lorem ipsum dolor sit amet",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
-    },
-    {
-      "role": "system",
-      "content": "Test with 'single' quotes"
-    },
-    {
-      "role": "system",
-      "content": "Test with \"double\" quotes"
     }
-  ]
+  ],
+  "timeout": 0.999999999
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1465,29 +1353,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `408`
 
 ```json
 {
-  "id": "chatcmpl-9a011bd5914049eb85ee3064",
-  "object": "chat.completion",
-  "created": 1770010127,
-  "model": "Test with \"double\" quotes",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Okay, I understand. You've provided a very short example of Lorem Ipsum and a test with \"single\" and \"double\" quotes. \n\nIs there anything specific you'd like me to do with this? For example, would you like me to:\n\n*   **Generate more Lorem Ipsum text?** (e.g., a paragraph, a set of sentences)\n*   **Explain the purpose of Lorem Ipsum?** (It's used as a placeholder in typesetting to provide a visual structure without requiring actual content)\n*   **Create a test that uses \"single\" and \"double\" quotes?** (Perhaps you'd like to see a little bit of a sentence that incorporates both)?\n*   **Something else entirely?**"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 31,
-    "completion_tokens": 157,
-    "total_tokens": 188
-  }
+  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 0.999999999 seconds."
 }
 ```
 
@@ -1503,19 +1373,20 @@
 
 ```json
 {
-  "model": "Test:with:colons",
+  "model": "Lorem ipsum dolor sit amet",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ]
+  ],
+  "timeout": 1.111111111
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1543,29 +1414,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `408`
 
 ```json
 {
-  "id": "chatcmpl-520c1851668e4c0e917212f8",
-  "object": "chat.completion",
-  "created": 1770010133,
-  "model": "Test:with:colons",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" text. \n\nIs there anything you'd like me to do with it? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify the language, or describe its purpose?)\n*   **Generate variations?** (e.g., different lengths, different fonts?)\n*   **Explain its significance?** \n*   **Something else entirely?**"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 19,
-    "completion_tokens": 102,
-    "total_tokens": 121
-  }
+  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 1.111111111 seconds."
 }
 ```
 
@@ -1590,7 +1443,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1615,15 +1468,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-02T05:28:55.408758Z",
-  "response": "The capital of France is **Paris**. \n\nDo you want to know more about Paris, like its history or famous landmarks?",
+  "created_at": "2026-02-07T23:35:09.310139Z",
+  "response": "The capital of France is **Paris**. \ud83d\ude0a \n\nDo you want to know more about Paris?",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 21,
   "prompt_eval_duration": 0,
-  "eval_count": 27,
+  "eval_count": 21,
   "eval_duration": 0
 }
 ```
@@ -1645,13 +1498,14 @@
   "stream": true,
   "temperature": 0.0,
   "top_p": 0.0,
-  "top_k": 1
+  "top_k": 1,
+  "timeout": 0.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1696,13 +1550,14 @@
   "stream": true,
   "temperature": 0.0,
   "top_p": 0.0,
-  "top_k": 500000
+  "top_k": 1,
+  "timeout": 0.123456789
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1747,13 +1602,14 @@
   "stream": true,
   "temperature": 0.0,
   "top_p": 0.0,
-  "top_k": 1000000
+  "top_k": 1,
+  "timeout": 0.999999999
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1797,14 +1653,15 @@
   "prompt": "Lorem ipsum dolor sit amet",
   "stream": true,
   "temperature": 0.0,
-  "top_p": 0.5,
-  "top_k": 1
+  "top_p": 0.0,
+  "top_k": 1,
+  "timeout": 1.111111111
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1848,14 +1705,15 @@
   "prompt": "Lorem ipsum dolor sit amet",
   "stream": true,
   "temperature": 0.0,
-  "top_p": 0.5,
-  "top_k": 500000
+  "top_p": 0.0,
+  "top_k": 1,
+  "timeout": 500000.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1899,14 +1757,15 @@
   "prompt": "Lorem ipsum dolor sit amet",
   "stream": true,
   "temperature": 0.0,
-  "top_p": 0.5,
-  "top_k": 1000000
+  "top_p": 0.0,
+  "top_k": 1,
+  "timeout": 1000000.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1950,14 +1809,15 @@
   "prompt": "Lorem ipsum dolor sit amet",
   "stream": true,
   "temperature": 0.0,
-  "top_p": 1.0,
-  "top_k": 1
+  "top_p": 0.0,
+  "top_k": 500000,
+  "timeout": 0.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -2001,14 +1861,15 @@
   "prompt": "Lorem ipsum dolor sit amet",
   "stream": true,
   "temperature": 0.0,
-  "top_p": 1.0,
-  "top_k": 500000
+  "top_p": 0.0,
+  "top_k": 500000,
+  "timeout": 0.123456789
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -2052,14 +1913,15 @@
   "prompt": "Lorem ipsum dolor sit amet",
   "stream": true,
   "temperature": 0.0,
-  "top_p": 1.0,
-  "top_k": 1000000
+  "top_p": 0.0,
+  "top_k": 500000,
+  "timeout": 0.999999999
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -2102,15 +1964,16 @@
   "model": "Lorem ipsum dolor sit amet",
   "prompt": "Lorem ipsum dolor sit amet",
   "stream": true,
-  "temperature": 0.123456789,
+  "temperature": 0.0,
   "top_p": 0.0,
-  "top_k": 1
+  "top_k": 500000,
+  "timeout": 1.111111111
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {

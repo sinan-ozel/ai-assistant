@@ -4,6 +4,7 @@ import time
 from datetime import datetime, timezone
 from jsonschema import validate, ValidationError
 from fastapi import HTTPException
+import litellm
 
 from common.llm import call_llm_by_model
 
@@ -28,6 +29,7 @@ async def handler(request: dict, providers_state: dict):
     top_p = request.get("top_p")
     top_k = request.get("top_k")
     stream = request.get("stream", False)
+    timeout = request.get("timeout")
 
     if stream:
         raise HTTPException(status_code=501, detail="Streaming not yet implemented")
@@ -40,6 +42,8 @@ async def handler(request: dict, providers_state: dict):
         kwargs = {}
         if top_k is not None:
             kwargs["top_k"] = top_k
+        if timeout is not None:
+            kwargs["timeout"] = timeout
 
         # Call LLM
         response = call_llm_by_model(
@@ -74,6 +78,21 @@ async def handler(request: dict, providers_state: dict):
         raise HTTPException(status_code=400, detail=str(e))
     except NotImplementedError as e:
         raise HTTPException(status_code=501, detail=str(e))
+    except litellm.Timeout as e:
+        raise HTTPException(
+            status_code=408,
+            detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}"
+        )
+    except litellm.APIConnectionError as e:
+        # Check if this is a timeout error wrapped in APIConnectionError
+        error_msg = str(e).lower()
+        if "timeout" in error_msg or "timed out" in error_msg:
+            raise HTTPException(
+                status_code=408,
+                detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}"
+            )
+        # Otherwise, it's a different connection error
+        raise HTTPException(status_code=500, detail=f"LLM call failed: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM call failed: {str(e)}")
 
@@ -122,6 +141,11 @@ spec = {
                             "minimum": 1,
                             "default": 40,
                             "description": "Top-k sampling parameter. Limits to top k tokens"
+                        },
+                        "timeout": {
+                            "type": "number",
+                            "minimum": 0,
+                            "description": "Request timeout in seconds. Overrides the provider's default timeout if specified."
                         }
                     },
                     "required": ["model", "prompt"]
@@ -212,6 +236,9 @@ spec = {
         },
         404: {
             "description": "Model not found or not available"
+        },
+        408: {
+            "description": "Request timeout - the LLM provider did not respond within the specified timeout period"
         },
         422: {
             "description": "Validation error - request does not match schema"

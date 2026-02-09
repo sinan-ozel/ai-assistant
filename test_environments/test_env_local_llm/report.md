@@ -98,9 +98,9 @@
 ```json
 {
   "available": [
-    "local_llamacpp"
+    "local_gemma3_270m"
   ],
-  "default": "local_llamacpp",
+  "default": "local_gemma3_270m",
   "total": 13,
   "status": "one_provider_available"
 }
@@ -127,7 +127,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -152,13 +152,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "I\u2019d love to know the city you're interested in! Could you please specify where you're asking about the weather? \ud83d\ude0a",
+  "message": "The weather is sunny.\n",
   "role": "assistant",
-  "created": 1770409654,
+  "created": 1770493619,
   "usage": {
-    "prompt_tokens": 411,
-    "completion_tokens": 192,
-    "total_tokens": 603
+    "prompt_tokens": 558,
+    "completion_tokens": 7,
+    "total_tokens": 565
   }
 }
 ```
@@ -178,13 +178,15 @@
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
-  "stream": true
+  "stream": true,
+  "timeout": 0.0,
+  "max_tokens": 1
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -226,13 +228,15 @@
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
-  "stream": false
+  "stream": true,
+  "timeout": 0.0,
+  "max_tokens": 500000
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -251,20 +255,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `501`
 
 ```json
 {
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Lorem ipsum dolor sit amet",
-  "message": "Great! It looks like you're using \"Lorem ipsum dolor sit amet\" frequently. \ud83d\ude0a Is there anything specific you'd like to do with it, or would you like me to help you with something else?",
-  "role": "assistant",
-  "created": 1770409672,
-  "usage": {
-    "prompt_tokens": 546,
-    "completion_tokens": 153,
-    "total_tokens": 699
-  }
+  "detail": "Streaming not yet implemented"
 }
 ```
 
@@ -282,14 +277,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test with 'single' quotes",
-  "stream": true
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 0.0,
+  "max_tokens": 1000000
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -330,14 +327,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test with 'single' quotes",
-  "stream": false
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 0.123456789,
+  "max_tokens": 1
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -356,20 +355,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `501`
 
 ```json
 {
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test with 'single' quotes",
-  "message": "Lorem ipsum dolor sit amet.",
-  "role": "assistant",
-  "created": 1770409690,
-  "usage": {
-    "prompt_tokens": 829,
-    "completion_tokens": 155,
-    "total_tokens": 984
-  }
+  "detail": "Streaming not yet implemented"
 }
 ```
 
@@ -387,14 +377,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test with \"double\" quotes",
-  "stream": true
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 0.123456789,
+  "max_tokens": 500000
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -435,14 +427,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test with \"double\" quotes",
-  "stream": false
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 0.123456789,
+  "max_tokens": 1000000
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -461,20 +455,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `501`
 
 ```json
 {
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test with \"double\" quotes",
-  "message": "Here's a playful take:  \n**\"The rain whispered secrets of summers long past, a melancholic melody carried on the wind. A lone umbrella swayed in the storm, its handle worn smooth by time, as if holding onto a memory that had long since faded.\"**  \n\nWould you like me to continue the story, or is there a different direction you'd like to explore? \ud83d\ude0a",
-  "role": "assistant",
-  "created": 1770409748,
-  "usage": {
-    "prompt_tokens": 668,
-    "completion_tokens": 229,
-    "total_tokens": 897
-  }
+  "detail": "Streaming not yet implemented"
 }
 ```
 
@@ -492,14 +477,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test:with:colons",
-  "stream": true
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 0.999999999,
+  "max_tokens": 1
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -540,14 +527,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test:with:colons",
-  "stream": false
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 0.999999999,
+  "max_tokens": 500000
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -566,20 +555,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `501`
 
 ```json
 {
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test:with:colons",
-  "message": "Great! Just let me know what you'd like me to do next. I'm here to help! \ud83d\ude0a",
-  "role": "assistant",
-  "created": 1770409778,
-  "usage": {
-    "prompt_tokens": 546,
-    "completion_tokens": 225,
-    "total_tokens": 771
-  }
+  "detail": "Streaming not yet implemented"
 }
 ```
 
@@ -597,14 +577,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test\\with\\backslashes",
-  "stream": true
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 0.999999999,
+  "max_tokens": 1000000
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -645,14 +627,16 @@
 {
   "message": "Lorem ipsum dolor sit amet",
   "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test\\with\\backslashes",
-  "stream": false
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "timeout": 1.111111111,
+  "max_tokens": 1
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503`
+**Status:** `200 or 422 or 400 or 501 or 503 or 408`
 
 ```json
 {
@@ -671,20 +655,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `501`
 
 ```json
 {
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Test\\with\\backslashes",
-  "message": "**\"Lorem ipsum dolor sit amet\"** \u2013 it\u2019s a beautiful and iconic placeholder text! Here\u2019s a fun fact: it\u2019s a Latin phrase meaning **\"Let me sleep\"** (from *dormire*). But in design, it\u2019s been used for centuries as a sample, a marketing copy, or even a story!  \n\nWould you like me to explore its history, or brainstorm something creative with it? \ud83d\ude0a",
-  "role": "assistant",
-  "created": 1770409814,
-  "usage": {
-    "prompt_tokens": 759,
-    "completion_tokens": 229,
-    "total_tokens": 988
-  }
+  "detail": "Streaming not yet implemented"
 }
 ```
 
@@ -711,7 +686,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -743,10 +718,10 @@
 
 ```json
 {
-  "id": "chatcmpl-3be1766d765a4791836a1c2c",
+  "id": "chatcmpl-092edaf7c34c4919851bca7e",
   "object": "chat.completion",
-  "created": 1770409839,
-  "model": "model.gguf",
+  "created": 1770493620,
+  "model": "ollama/gemma3:270m",
   "choices": [
     {
       "index": 0,
@@ -758,9 +733,9 @@
     }
   ],
   "usage": {
-    "prompt_tokens": 15,
-    "completion_tokens": 124,
-    "total_tokens": 139
+    "prompt_tokens": 22,
+    "completion_tokens": 8,
+    "total_tokens": 30
   }
 }
 ```
@@ -783,13 +758,14 @@
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ]
+  ],
+  "timeout": 0.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -821,24 +797,24 @@
 
 ```json
 {
-  "id": "chatcmpl-c86a1436a131446382fc9883",
+  "id": "chatcmpl-522359bd7706472dbbdf4577",
   "object": "chat.completion",
-  "created": 1770409880,
+  "created": 1770493622,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupiditate non proin. Morbi ipsum tincidunt, ipsum aliquet feugiat. Nibh ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Ut enim ad minim veniam, quis Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Aenean commodo adipiscing, ipsum aliquet feugiat. Nibh ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        "content": ""
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 13,
-    "completion_tokens": 595,
-    "total_tokens": 608
+    "prompt_tokens": 20,
+    "completion_tokens": 1,
+    "total_tokens": 21
   }
 }
 ```
@@ -861,13 +837,14 @@
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ]
+  ],
+  "timeout": 0.123456789
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -895,29 +872,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `408`
 
 ```json
 {
-  "id": "chatcmpl-8bb69b18b73847c093a11669",
-  "object": "chat.completion",
-  "created": 1770409894,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "1. Set clear goals and priorities.  \n2. Create a structured study schedule.  \n3. Use active learning techniques (e.g., flashcards, summaries).  \n4. Practice regularly to reinforce learning.  \n5. Review and take practice tests to assess understanding."
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 13,
-    "completion_tokens": 274,
-    "total_tokens": 287
-  }
+  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 0.123456789 seconds."
 }
 ```
 
@@ -938,22 +897,15 @@
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
-    },
-    {
-      "role": "system",
-      "content": "Test with 'single' quotes"
-    },
-    {
-      "role": "system",
-      "content": "Test with \"double\" quotes"
     }
-  ]
+  ],
+  "timeout": 0.999999999
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -985,24 +937,24 @@
 
 ```json
 {
-  "id": "chatcmpl-cd532b2909c54f04b2f7ddfa",
+  "id": "chatcmpl-b5b84e16f7a1481e8f871fe9",
   "object": "chat.completion",
-  "created": 1770409926,
+  "created": 1770493623,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Test with \"single\" quotes.  \nTest with \"double\" quotes."
+        "content": ""
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 35,
-    "completion_tokens": 437,
-    "total_tokens": 472
+    "prompt_tokens": 20,
+    "completion_tokens": 1,
+    "total_tokens": 21
   }
 }
 ```
@@ -1019,19 +971,20 @@
 
 ```json
 {
-  "model": "Test with 'single' quotes",
+  "model": "Lorem ipsum dolor sit amet",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ]
+  ],
+  "timeout": 1.111111111
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1063,24 +1016,24 @@
 
 ```json
 {
-  "id": "chatcmpl-c890a34f597442d0b26d01f3",
+  "id": "chatcmpl-996f414db3e340248be9337a",
   "object": "chat.completion",
-  "created": 1770409935,
-  "model": "Test with 'single' quotes",
+  "created": 1770493623,
+  "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The text provided is \"Lorem ipsum dolor sit amet.\" To assist you better, could you clarify what specific task or request you need help with? For example, is this for content generation, data processing, or something else?"
+        "content": ""
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 13,
-    "completion_tokens": 161,
-    "total_tokens": 174
+    "prompt_tokens": 20,
+    "completion_tokens": 1,
+    "total_tokens": 21
   }
 }
 ```
@@ -1097,19 +1050,20 @@
 
 ```json
 {
-  "model": "Test with 'single' quotes",
+  "model": "Lorem ipsum dolor sit amet",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ]
+  ],
+  "timeout": 500000.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1141,24 +1095,24 @@
 
 ```json
 {
-  "id": "chatcmpl-6e8656314ef84ec5b15bc559",
+  "id": "chatcmpl-6aa4bcdbdd0a401dbc0cb584",
   "object": "chat.completion",
-  "created": 1770409960,
-  "model": "Test with 'single' quotes",
+  "created": 1770493624,
+  "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "\u8fd9\u662f\u793a\u4f8b\u6587\u672c\uff0c\u7528\u4e8e\u6d4b\u8bd5\u6216\u6f14\u793a\u7528\u9014\u3002"
+        "content": ""
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 13,
-    "completion_tokens": 428,
-    "total_tokens": 441
+    "prompt_tokens": 20,
+    "completion_tokens": 1,
+    "total_tokens": 21
   }
 }
 ```
@@ -1175,27 +1129,20 @@
 
 ```json
 {
-  "model": "Test with 'single' quotes",
+  "model": "Lorem ipsum dolor sit amet",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
-    },
-    {
-      "role": "system",
-      "content": "Test with 'single' quotes"
-    },
-    {
-      "role": "system",
-      "content": "Test with \"double\" quotes"
     }
-  ]
+  ],
+  "timeout": 1000000.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1227,24 +1174,24 @@
 
 ```json
 {
-  "id": "chatcmpl-b87478b26d9a45678428ebfe",
+  "id": "chatcmpl-b6f74c30cc754e4b92f3e871",
   "object": "chat.completion",
-  "created": 1770409974,
-  "model": "Test with 'single' quotes",
+  "created": 1770493625,
+  "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Test with \"double\" quotes."
+        "content": ""
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 35,
-    "completion_tokens": 248,
-    "total_tokens": 283
+    "prompt_tokens": 20,
+    "completion_tokens": 1,
+    "total_tokens": 21
   }
 }
 ```
@@ -1261,19 +1208,20 @@
 
 ```json
 {
-  "model": "Test with \"double\" quotes",
+  "model": "Lorem ipsum dolor sit amet",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ]
+  ],
+  "timeout": 0.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1305,24 +1253,24 @@
 
 ```json
 {
-  "id": "chatcmpl-2e7f79b91cca46a4b21694f9",
+  "id": "chatcmpl-bf12c79d550244e3b1fc5972",
   "object": "chat.completion",
-  "created": 1770409994,
-  "model": "Test with \"double\" quotes",
+  "created": 1770493626,
+  "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The text provided is all \"Lorem ipsum\" \u2014 a placeholder text used in digital content. Since no specific question or task was completed, I cannot provide an answer. Please clarify your query or provide additional details so I can assist effectively."
+        "content": ""
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 13,
-    "completion_tokens": 305,
-    "total_tokens": 318
+    "prompt_tokens": 20,
+    "completion_tokens": 1,
+    "total_tokens": 21
   }
 }
 ```
@@ -1339,19 +1287,20 @@
 
 ```json
 {
-  "model": "Test with \"double\" quotes",
+  "model": "Lorem ipsum dolor sit amet",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ]
+  ],
+  "timeout": 0.123456789
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1379,29 +1328,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `408`
 
 ```json
 {
-  "id": "chatcmpl-5dcc9f78e39746c3b4bbc577",
-  "object": "chat.completion",
-  "created": 1770410007,
-  "model": "Test with \"double\" quotes",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 13,
-    "completion_tokens": 269,
-    "total_tokens": 282
-  }
+  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 0.123456789 seconds."
 }
 ```
 
@@ -1417,27 +1348,20 @@
 
 ```json
 {
-  "model": "Test with \"double\" quotes",
+  "model": "Lorem ipsum dolor sit amet",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
-    },
-    {
-      "role": "system",
-      "content": "Test with 'single' quotes"
-    },
-    {
-      "role": "system",
-      "content": "Test with \"double\" quotes"
     }
-  ]
+  ],
+  "timeout": 0.999999999
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1469,24 +1393,24 @@
 
 ```json
 {
-  "id": "chatcmpl-b3e1eeb3af53486eabfa9802",
+  "id": "chatcmpl-40dc716ce17c41158a32abb5",
   "object": "chat.completion",
-  "created": 1770410025,
-  "model": "Test with \"double\" quotes",
+  "created": 1770493627,
+  "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "I will test with the **'single' quotes** format (single-line strings) and then the **'double' quotes** format (multi-line strings). Let me know if you'd like to proceed with either!"
+        "content": ""
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 35,
-    "completion_tokens": 320,
-    "total_tokens": 355
+    "prompt_tokens": 20,
+    "completion_tokens": 1,
+    "total_tokens": 21
   }
 }
 ```
@@ -1503,19 +1427,20 @@
 
 ```json
 {
-  "model": "Test:with:colons",
+  "model": "Lorem ipsum dolor sit amet",
   "messages": [
     {
       "role": "system",
       "content": "Lorem ipsum dolor sit amet"
     }
-  ]
+  ],
+  "timeout": 1.111111111
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1547,24 +1472,24 @@
 
 ```json
 {
-  "id": "chatcmpl-cc1f56f9a2a7461dbb94c9ec",
+  "id": "chatcmpl-db37b4793d9a40108f61e751",
   "object": "chat.completion",
-  "created": 1770410032,
-  "model": "Test:with:colons",
+  "created": 1770493628,
+  "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "I'm sorry, but I don't have a specific question to answer. If you have any questions, feel free to ask!"
+        "content": ""
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 13,
-    "completion_tokens": 132,
-    "total_tokens": 145
+    "prompt_tokens": 20,
+    "completion_tokens": 1,
+    "total_tokens": 21
   }
 }
 ```
@@ -1590,7 +1515,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1615,15 +1540,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-06T20:34:01.091948Z",
+  "created_at": "2026-02-07T19:47:10.649513Z",
   "response": "The capital of France is Paris.",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
-  "prompt_eval_count": 15,
+  "prompt_eval_count": 22,
   "prompt_eval_duration": 0,
-  "eval_count": 119,
+  "eval_count": 8,
   "eval_duration": 0
 }
 ```
@@ -1645,13 +1570,14 @@
   "stream": true,
   "temperature": 0.0,
   "top_p": 0.0,
-  "top_k": 1
+  "top_k": 1,
+  "timeout": 0.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1696,13 +1622,14 @@
   "stream": true,
   "temperature": 0.0,
   "top_p": 0.0,
-  "top_k": 500000
+  "top_k": 1,
+  "timeout": 0.123456789
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1747,13 +1674,14 @@
   "stream": true,
   "temperature": 0.0,
   "top_p": 0.0,
-  "top_k": 1000000
+  "top_k": 1,
+  "timeout": 0.999999999
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1797,14 +1725,15 @@
   "prompt": "Lorem ipsum dolor sit amet",
   "stream": true,
   "temperature": 0.0,
-  "top_p": 0.5,
-  "top_k": 1
+  "top_p": 0.0,
+  "top_k": 1,
+  "timeout": 1.111111111
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1848,14 +1777,15 @@
   "prompt": "Lorem ipsum dolor sit amet",
   "stream": true,
   "temperature": 0.0,
-  "top_p": 0.5,
-  "top_k": 500000
+  "top_p": 0.0,
+  "top_k": 1,
+  "timeout": 500000.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1899,14 +1829,15 @@
   "prompt": "Lorem ipsum dolor sit amet",
   "stream": true,
   "temperature": 0.0,
-  "top_p": 0.5,
-  "top_k": 1000000
+  "top_p": 0.0,
+  "top_k": 1,
+  "timeout": 1000000.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -1950,14 +1881,15 @@
   "prompt": "Lorem ipsum dolor sit amet",
   "stream": true,
   "temperature": 0.0,
-  "top_p": 1.0,
-  "top_k": 1
+  "top_p": 0.0,
+  "top_k": 500000,
+  "timeout": 0.0
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -2001,14 +1933,15 @@
   "prompt": "Lorem ipsum dolor sit amet",
   "stream": true,
   "temperature": 0.0,
-  "top_p": 1.0,
-  "top_k": 500000
+  "top_p": 0.0,
+  "top_k": 500000,
+  "timeout": 0.123456789
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -2052,14 +1985,15 @@
   "prompt": "Lorem ipsum dolor sit amet",
   "stream": true,
   "temperature": 0.0,
-  "top_p": 1.0,
-  "top_k": 1000000
+  "top_p": 0.0,
+  "top_k": 500000,
+  "timeout": 0.999999999
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {
@@ -2102,15 +2036,16 @@
   "model": "Lorem ipsum dolor sit amet",
   "prompt": "Lorem ipsum dolor sit amet",
   "stream": true,
-  "temperature": 0.123456789,
+  "temperature": 0.0,
   "top_p": 0.0,
-  "top_k": 1
+  "top_k": 500000,
+  "timeout": 1.111111111
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501`
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
 
 ```json
 {

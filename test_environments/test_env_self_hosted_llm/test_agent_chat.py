@@ -1,7 +1,11 @@
 """Tests for agent chat endpoint."""
 
 import pytest
+import os
 import requests
+
+
+BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 
 def test_agent_chat_simple_message(base_url):
@@ -222,3 +226,23 @@ def test_agent_chat_usage_info(base_url):
     assert usage["prompt_tokens"] >= 0
     assert usage["completion_tokens"] >= 0
     assert usage["total_tokens"] >= 0
+
+
+def test_agent_chat_timeout():
+    """Test that timeout parameter triggers 408 when request times out."""
+    # Request with very short timeout (1 second) that should timeout
+    response = requests.post(
+        f"{BASE_URL}/v1/agent/chat",
+        json={
+            "message": "Write a very long and detailed story about the entire history of the universe from the big bang to today, including all major events.",
+            "user_id": "test-user-timeout",
+            "timeout": 1,  # 1 second timeout - should timeout for this prompt
+            "max_tokens": 1000
+        }
+    )
+
+    assert response.status_code == 408, f"Expected 408 (timeout), got {response.status_code}: {response.text}"
+
+    data = response.json()
+    assert "detail" in data
+    assert "timeout" in data["detail"].lower(), f"Expected timeout message, got: {data['detail']}"

@@ -5,6 +5,7 @@ import uuid
 from jsonschema import validate, ValidationError
 from fastapi import HTTPException
 from redis_memory import ConversationMemory
+import litellm
 
 from common.llm import call_llm_by_model
 from situational.awareness import get_provider_context_window
@@ -141,6 +142,8 @@ async def handler(request: dict, providers_state: dict):
     conversation_id = request.get("conversation_id")
     user_id = request.get("user_id", "default-user")
     stream = request.get("stream", False)
+    timeout = request.get("timeout")
+    max_tokens = request.get("max_tokens")
 
     # Validate required fields
     if not message:
@@ -213,11 +216,35 @@ async def handler(request: dict, providers_state: dict):
         prompt_messages.append(user_msg)
 
         # Call LLM with default provider
-        response = call_llm_by_model(
-            messages=prompt_messages,
-            providers_state=providers_state,
-            model=None,  # Use default provider
-        )
+        try:
+            response = call_llm_by_model(
+                messages=prompt_messages,
+                providers_state=providers_state,
+                model=None,  # Use default provider
+                timeout=timeout,
+                max_tokens=max_tokens,
+            )
+        except litellm.Timeout as e:
+            raise HTTPException(
+                status_code=408,
+                detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}"
+            )
+        except litellm.APIConnectionError as e:
+            # Check if this is a timeout error wrapped in APIConnectionError
+            error_msg = str(e).lower()
+            if "timeout" in error_msg or "timed out" in error_msg:
+                raise HTTPException(
+                    status_code=408,
+                    detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}"
+                )
+            # Otherwise, re-raise to be handled by outer exception handler
+            raise
+        except litellm.InternalServerError as e:
+            # Log the error and crash to expose the issue
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"InternalServerError from LLM provider in agent chat: {e}")
+            raise
 
         # Extract response
         choice = response.choices[0]
@@ -271,6 +298,16 @@ spec = {
                             "type": "boolean",
                             "description": "Whether to stream the response (not yet supported)",
                             "default": False
+                        },
+                        "timeout": {
+                            "type": "number",
+                            "minimum": 0,
+                            "description": "Request timeout in seconds. Overrides the provider's default timeout if specified."
+                        },
+                        "max_tokens": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Maximum number of tokens to generate in the response."
                         }
                     },
                     "required": ["message"]
@@ -350,6 +387,9 @@ spec = {
         },
         400: {
             "description": "Bad request - invalid input"
+        },
+        408: {
+            "description": "Request timeout - the LLM provider did not respond within the specified timeout period"
         },
         422: {
             "description": "Validation error"

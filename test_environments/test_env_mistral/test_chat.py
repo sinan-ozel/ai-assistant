@@ -108,3 +108,26 @@ def test_chat_completions_litellm(mistral_api_key_available):
     assert hasattr(response.usage, "prompt_tokens")
     assert hasattr(response.usage, "completion_tokens")
     assert hasattr(response.usage, "total_tokens")
+
+
+@pytest.mark.depends(on=['test_chat_completions_basic'])
+def test_chat_completions_timeout(mistral_api_key_available):
+    """Test that timeout parameter triggers 408 when request times out."""
+    url = f"{BASE_URL}/v1/chat/completions"
+
+    # Request with very short timeout (1 second) that should timeout
+    payload = {
+        "model": "ministral-3b",
+        "messages": [
+            {"role": "user", "content": "Write a very long story about the history of the universe from the big bang to today."}
+        ],
+        "timeout": 1,  # 1 second timeout - should timeout for this prompt
+        "max_tokens": 1000
+    }
+
+    response = requests.post(url, json=payload)
+    assert response.status_code == 408, f"Expected 408 (timeout), got {response.status_code}: {response.text}"
+
+    data = response.json()
+    assert "detail" in data
+    assert "timeout" in data["detail"].lower(), f"Expected timeout message, got: {data['detail']}"

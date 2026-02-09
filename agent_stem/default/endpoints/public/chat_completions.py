@@ -4,6 +4,7 @@ import time
 import uuid
 from jsonschema import validate, ValidationError
 from fastapi import HTTPException
+import litellm
 
 from common.llm import call_llm_by_model
 
@@ -29,6 +30,7 @@ async def handler(request: dict, providers_state: dict):
     top_p = request.get("top_p")
     stop = request.get("stop")
     stream = request.get("stream", False)
+    timeout = request.get("timeout")
 
     if stream:
         raise HTTPException(status_code=501, detail="Streaming not yet implemented")
@@ -43,6 +45,7 @@ async def handler(request: dict, providers_state: dict):
             max_tokens=max_tokens,
             top_p=top_p,
             stop=stop,
+            timeout=timeout,
         )
 
         # Extract response data
@@ -74,6 +77,33 @@ async def handler(request: dict, providers_state: dict):
         raise HTTPException(status_code=400, detail=str(e))
     except NotImplementedError as e:
         raise HTTPException(status_code=501, detail=str(e))
+    except litellm.Timeout as e:
+        raise HTTPException(
+            status_code=408,
+            detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}"
+        )
+    except litellm.APIConnectionError as e:
+        # Check if this is a timeout error wrapped in APIConnectionError
+        error_msg = str(e).lower()
+        if "timeout" in error_msg or "timed out" in error_msg:
+            raise HTTPException(
+                status_code=408,
+                detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}"
+            )
+        # Otherwise, it's a different connection error
+        raise HTTPException(status_code=500, detail=f"LLM call failed: {str(e)}")
+    except litellm.InternalServerError as e:
+        # If a specific model was requested, inform user that model doesn't support this
+        if model:
+            raise HTTPException(
+                status_code=501,
+                detail=f"The requested model '{model}' does not support this operation. {str(e)}"
+            )
+        # Otherwise, log and crash to expose the issue
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"InternalServerError from LLM provider: {e}")
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM call failed: {str(e)}")
 
@@ -113,6 +143,11 @@ spec = {
                                 "required": ["role", "content"]
                             },
                             "minItems": 1
+                        },
+                        "timeout": {
+                            "type": "number",
+                            "minimum": 0,
+                            "description": "Request timeout in seconds. Overrides the provider's default timeout if specified."
                         },
                         # "temperature": {
                         #     "type": "number",
@@ -263,6 +298,9 @@ spec = {
         },
         404: {
             "description": "Model not found or not available"
+        },
+        408: {
+            "description": "Request timeout - the LLM provider did not respond within the specified timeout period"
         },
         422: {
             "description": "Validation error - request does not match schema"

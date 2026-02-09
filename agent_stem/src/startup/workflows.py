@@ -4,6 +4,8 @@ Discovers YAML workflow definitions and creates dynamic endpoints based on them.
 Workflows are LLM-focused tools with standardized input (messages) and typed outputs.
 """
 
+import base64
+from io import BytesIO
 import json
 import logging
 from pathlib import Path
@@ -11,6 +13,8 @@ from typing import Any, Dict, Optional
 import yaml
 from fastapi import HTTPException
 from jsonschema import validate, ValidationError
+from PIL import Image, ImageDraw, ImageFont
+import litellm
 
 from common.llm import call_llm_by_model
 
@@ -18,6 +22,76 @@ logger = logging.getLogger(__name__)
 
 # Default workflows directory (can be overridden)
 DEFAULT_WORKFLOWS_DIR = Path("/app/cortex/workflows")
+
+
+def generate_example_image() -> str:
+    """Generate a base64-encoded example image for API documentation.
+
+    Creates a 256x32 white box with "this is an image" text.
+
+    Returns:
+        Base64-encoded JPEG image string
+    """
+    # Create a white 256x32 image
+    img = Image.new('RGB', (256, 32), color='white')
+    draw = ImageDraw.Draw(img)
+
+    # Use a font with 24px height
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 24)
+    except:
+        # Fallback to default if font not found
+        font = ImageFont.load_default()
+
+    text = "this is an image"
+    # Get text bounding box for centering
+    bbox = draw.textbbox((0, 0), text, font=font)
+    text_width = bbox[2] - bbox[0]
+    text_height = bbox[3] - bbox[1]
+
+    position = ((256 - text_width) // 2, (32 - text_height) // 2)
+    draw.text(position, text, fill='black', font=font)
+
+    # Convert to base64
+    buffer = BytesIO()
+    img.save(buffer, format='JPEG')
+    buffer.seek(0)
+    return base64.b64encode(buffer.read()).decode('utf-8')
+
+
+def example_from_schema(schema: Dict[str, Any]) -> Any:
+    """Generate a concrete example value from a JSON schema.
+
+    Args:
+        schema: JSON schema dictionary
+
+    Returns:
+        An example value matching the schema or a reasonable fallback.
+    """
+    if schema is None:
+        return None
+    if "example" in schema:
+        return schema["example"]
+    t = schema.get("type")
+    if t == "string":
+        return "example"
+    if t == "integer":
+        return 0
+    if t == "number":
+        return 0.0
+    if t == "boolean":
+        return False
+    if t == "array":
+        items = schema.get("items") or {}
+        return [example_from_schema(items)]
+    if t == "object":
+        props = schema.get("properties") or {}
+        example_obj: Dict[str, Any] = {}
+        for k, v in props.items():
+            example_obj[k] = example_from_schema(v)
+        return example_obj
+    # Fallback
+    return None
 
 
 def json_schema_to_prompt_format(schema: Dict[str, Any]) -> str:
@@ -33,12 +107,17 @@ def json_schema_to_prompt_format(schema: Dict[str, Any]) -> str:
     if schema.get("type") == "string":
         return "Return your response as a plain string with no additional formatting."
 
-    # For object schemas, create a formatted JSON example
-    schema_json = json.dumps(schema, indent=2)
+    # For object schemas, provide a concrete example JSON matching the schema
+    example = example_from_schema(schema)
+    try:
+        example_json = json.dumps(example, indent=2)
+    except Exception:
+        example_json = json.dumps({}, indent=2)
+
     return f"""Use this exact format for your response:
 
 ```json
-{schema_json}
+{example_json}
 ```
 
 Return ONLY valid JSON matching this schema, with no additional text or markdown formatting."""
@@ -162,19 +241,50 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
 
         # Call LLM
         try:
-            response = call_llm_by_model(
-                messages=prompt_messages,
-                providers_state=providers_state,
-                model=provider_to_use,
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
+            # For object schemas, force JSON mode to suppress reasoning content
+            llm_kwargs = {
+                "messages": prompt_messages,
+                "providers_state": providers_state,
+                "model": provider_to_use,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+            }
+
+            if output_schema.get("type") == "object":
+                llm_kwargs["response_format"] = {"type": "json_object"}
+
+            response = call_llm_by_model(**llm_kwargs)
         except litellm.RateLimitError as e:
             logger.warning(f"Rate limit exceeded for workflow {workflow_name}: {e}")
             raise HTTPException(
                 status_code=429,
                 detail="Rate limit exceeded. Please try again later."
             )
+        except litellm.Timeout as e:
+            logger.warning(f"Timeout for workflow {workflow_name}: {e}")
+            raise HTTPException(
+                status_code=408,
+                detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}"
+            )
+        except litellm.APIConnectionError as e:
+            # Check if this is a timeout error wrapped in APIConnectionError
+            error_msg = str(e).lower()
+            if "timeout" in error_msg or "timed out" in error_msg:
+                logger.warning(f"Timeout for workflow {workflow_name}: {e}")
+                raise HTTPException(
+                    status_code=408,
+                    detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}"
+                )
+            # Otherwise, it's a different error
+            logger.error(f"LLM call failed for workflow {workflow_name}: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"LLM call failed: {str(e)}"
+            )
+        except litellm.InternalServerError as e:
+            # Log the error and crash to expose the issue
+            logger.error(f"InternalServerError from LLM provider in workflow {workflow_name}: {e}")
+            raise
         except Exception as e:
             logger.error(f"LLM call failed for workflow {workflow_name}: {e}")
             raise HTTPException(
@@ -185,7 +295,14 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
         # Extract response content
         choice = response.choices[0]
         content = choice.message.content
-
+        # Check for empty content
+        # if not content or content.strip() == "":
+        #     logger.error(f"LLM returned empty content for workflow {workflow_name}")
+        #     logger.error(f"Response choice: {choice}")
+        #     raise HTTPException(
+        #         status_code=500,
+        #         detail="LLM returned empty response. This may indicate the model does not support the requested operation (e.g., image processing without vision capabilities)."
+        #     )
         # For string schemas, return as-is
         if output_schema.get("type") == "string":
             return {
@@ -403,37 +520,63 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
                         "schema": response_schema
                     }
                 }
+            },
+            "422": {
+                "description": "Validation error (e.g., empty messages array)",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "detail": {
+                                    "type": "string",
+                                    "description": "Error message describing the validation failure"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "429": {
+                "description": "Rate limit exceeded",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "detail": {
+                                    "type": "string",
+                                    "description": "Error message indicating rate limit was exceeded"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "501": {
+                "description": "Not implemented (e.g., streaming not supported)",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "detail": {
+                                    "type": "string",
+                                    "description": "Error message indicating the feature is not implemented"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
     # Add a generated example to the successful response so contract
     # validators have a concrete 200/201 example to check against.
+    # Re-use the top-level example helper
     def _example_from_schema(schema: Dict[str, Any]) -> Any:
-        if schema is None:
-            return None
-        if "example" in schema:
-            return schema["example"]
-        t = schema.get("type")
-        if t == "string":
-            return "example"
-        if t == "integer":
-            return 0
-        if t == "number":
-            return 0.0
-        if t == "boolean":
-            return False
-        if t == "array":
-            items = schema.get("items") or {}
-            return [_example_from_schema(items)]
-        if t == "object":
-            props = schema.get("properties") or {}
-            example_obj: Dict[str, Any] = {}
-            for k, v in props.items():
-                example_obj[k] = _example_from_schema(v)
-            return example_obj
-        # Fallback
-        return None
+        return example_from_schema(schema)
 
     # Build response example
     usage_example = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
@@ -445,6 +588,37 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
 
     # Insert the example into the spec
     spec["responses"]["200"]["content"]["application/json"]["example"] = response_example
+
+    # Generate appropriate request example based on input requirements
+    if 'image' in content_types:
+        # Image input example - generate actual example image
+        example_image_base64 = generate_example_image()
+        request_example = {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": f"data:image/jpeg;base64,{example_image_base64}"}
+                        }
+                    ]
+                }
+            ],
+            "temperature": 0.7,
+            "max_tokens": 4096
+        }
+    else:
+        # Text input example
+        request_example = {
+            "messages": [
+                {"role": "user", "content": "Your message here"}
+            ],
+            "temperature": 0.7,
+            "max_tokens": 4096
+        }
+
+    spec["requestBody"]["content"]["application/json"]["example"] = request_example
 
     return spec
 

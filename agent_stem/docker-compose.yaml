@@ -45,6 +45,22 @@ services:
     networks:
       - agent-dev-network
 
+  llamacpp:
+    image: sinanozel/llama.cuda:qwen3-0.6b
+    networks:
+      - agent-dev-network
+    # command: ["-m", "/models/model.gguf", "--host", "0.0.0.0", "--port", "8080", "-ngl", "999", "-c", "4096", "--no-jinja"]
+    deploy:
+      resources:
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 120s
+
   ollama:
     image: sinanozel/ollama.0.12.11:gemma3-270m
     container_name: ollama

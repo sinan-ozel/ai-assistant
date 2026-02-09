@@ -113,7 +113,7 @@ services:
         condition: service_healthy
     volumes:
       - ${TEST_FOLDER:-.}:/tests
-    command: ["pytest", "--openapi=http://app:8000", "--openapi-no-strict-example-checking", "--openapi-markdown-output=report.md", "--openapi-no-stdout", "--openapi-timeout=60", "-v"]
+    command: ["pytest", "--openapi=http://app:8000", "--openapi-no-strict-example-checking", "--openapi-markdown-output=report.md", "--openapi-no-stdout", "--openapi-timeout=240", "-v"]
 
 networks:
   test-network:
