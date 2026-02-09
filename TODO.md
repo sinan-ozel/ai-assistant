@@ -2,15 +2,16 @@
 - [ ] Finish logic / protocol for the default provider
 - [ ] Add github actions, reformat and commit
 - [ ] Add option to configure LiteLLM-style providers, through config.yaml https://medium.com/the-guy-wire/make-all-your-llms-openai-compatible-with-docker-litellm-337a73b9b79d
-- [ ] Add option to add System Message through YAML-base config.
-- [ ] Add option to add python Code "Lobe" through YAML-base config.
+- [x] Add option to add System Message through YAML-base config.
+- [x] Add option to add python Code "Lobe" through YAML-base config.
 - [ ] Add dark/light mode to the streamlit app
 - [ ] Create an agent with a system message
 - [ ] Think about how loops work
 - [ ] Put in an evaluation scheme
 - [ ] Put in the markdown ingestion
-- [ ] Finish the `workflows`
-- [ ] Run the mistral and local LLM checks in the everything environment.
+- [x] Finish the `workflows`
+- [x] Run the mistral and local LLM checks in the everything environment.
+- [ ] Add agent name to logger.
 
 
 Plans for the GitHub actions:

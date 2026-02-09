@@ -77,6 +77,7 @@ def test_agent_chat_with_conversation_id(base_url):
     assert isinstance(data2["message"], str)
 
 
+@pytest.mark.repeated(times=2, threshold=1)
 def test_agent_chat_memory_retention(base_url):
     """Test that agent remembers context from earlier in the conversation."""
     conversation_id = "test-memory-conv"

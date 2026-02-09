@@ -11,18 +11,21 @@ from common.llm import call_llm_by_model
 from situational.awareness import get_provider_context_window
 
 
+import logging
+import tiktoken
+
+
+
 # Default system message
 DEFAULT_SYSTEM_MESSAGE = (
     "You are a helpful assistant. "
     "You have access to conversation history and can maintain context across messages."
 )
 
-# Initialize tiktoken encoding
-try:
-    import tiktoken
-    _encoding = tiktoken.get_encoding("cl100k_base")
-except Exception:
-    _encoding = None
+logger = logging.getLogger(__name__)
+
+
+_encoding = tiktoken.get_encoding("cl100k_base")
 
 
 def get_conversation_key(user_id: str, conversation_id: str) -> str:
@@ -241,8 +244,6 @@ async def handler(request: dict, providers_state: dict):
             raise
         except litellm.InternalServerError as e:
             # Log the error and crash to expose the issue
-            import logging
-            logger = logging.getLogger(__name__)
             logger.error(f"InternalServerError from LLM provider in agent chat: {e}")
             raise
 

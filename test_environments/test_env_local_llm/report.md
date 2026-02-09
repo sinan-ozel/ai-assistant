@@ -154,11 +154,11 @@
   "user_id": "user-456",
   "message": "The weather is sunny.\n",
   "role": "assistant",
-  "created": 1770493619,
+  "created": 1770641188,
   "usage": {
-    "prompt_tokens": 558,
+    "prompt_tokens": 659,
     "completion_tokens": 7,
-    "total_tokens": 565
+    "total_tokens": 666
   }
 }
 ```
@@ -718,9 +718,9 @@
 
 ```json
 {
-  "id": "chatcmpl-092edaf7c34c4919851bca7e",
+  "id": "chatcmpl-a2cacd3596ed4361aeece288",
   "object": "chat.completion",
-  "created": 1770493620,
+  "created": 1770641189,
   "model": "ollama/gemma3:270m",
   "choices": [
     {
@@ -797,9 +797,9 @@
 
 ```json
 {
-  "id": "chatcmpl-522359bd7706472dbbdf4577",
+  "id": "chatcmpl-983f8f93762441caba679082",
   "object": "chat.completion",
-  "created": 1770493622,
+  "created": 1770641189,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -937,9 +937,9 @@
 
 ```json
 {
-  "id": "chatcmpl-b5b84e16f7a1481e8f871fe9",
+  "id": "chatcmpl-5d12e6c2d04340b995c74b81",
   "object": "chat.completion",
-  "created": 1770493623,
+  "created": 1770641191,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1016,9 +1016,9 @@
 
 ```json
 {
-  "id": "chatcmpl-996f414db3e340248be9337a",
+  "id": "chatcmpl-35fe39e940f746a8bcf854fb",
   "object": "chat.completion",
-  "created": 1770493623,
+  "created": 1770641191,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1095,9 +1095,9 @@
 
 ```json
 {
-  "id": "chatcmpl-6aa4bcdbdd0a401dbc0cb584",
+  "id": "chatcmpl-4eae6c4851e848d88ce9fdaa",
   "object": "chat.completion",
-  "created": 1770493624,
+  "created": 1770641191,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1174,9 +1174,9 @@
 
 ```json
 {
-  "id": "chatcmpl-b6f74c30cc754e4b92f3e871",
+  "id": "chatcmpl-6a88624f5c0b4f8e95689ee9",
   "object": "chat.completion",
-  "created": 1770493625,
+  "created": 1770641192,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1253,9 +1253,9 @@
 
 ```json
 {
-  "id": "chatcmpl-bf12c79d550244e3b1fc5972",
+  "id": "chatcmpl-0a3b5684c29147d8afe3dee2",
   "object": "chat.completion",
-  "created": 1770493626,
+  "created": 1770641192,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1389,29 +1389,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `408`
 
 ```json
 {
-  "id": "chatcmpl-40dc716ce17c41158a32abb5",
-  "object": "chat.completion",
-  "created": 1770493627,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": ""
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 1,
-    "total_tokens": 21
-  }
+  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 0.999999999 seconds."
 }
 ```
 
@@ -1468,29 +1450,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `408`
 
 ```json
 {
-  "id": "chatcmpl-db37b4793d9a40108f61e751",
-  "object": "chat.completion",
-  "created": 1770493628,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": ""
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 1,
-    "total_tokens": 21
-  }
+  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 1.111111111 seconds."
 }
 ```
 
@@ -1540,7 +1504,7 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-07T19:47:10.649513Z",
+  "created_at": "2026-02-09T12:46:38.418149Z",
   "response": "The capital of France is Paris.",
   "done": true,
   "context": [],

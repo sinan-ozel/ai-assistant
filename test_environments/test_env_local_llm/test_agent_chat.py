@@ -38,7 +38,7 @@ def test_agent_chat_simple_message():
     # return data["conversation_id"]
 
 
-def test_agent_chat_with_conversation_id():
+def test_agent_chat_with_conversation_id(clear_test_memory):
     """Test sending messages in the same conversation."""
     conversation_id = "test-conv-123"
     user_id = "test-user-2"
@@ -134,7 +134,7 @@ def test_agent_chat_memory_retention(clear_test_memory):
     assert "3" in response_text3 or "three" in response_text3, f"Expected '3' or 'three' in response, got: {data3['message']}"
 
 
-def test_agent_chat_user_isolation():
+def test_agent_chat_user_isolation(clear_test_memory):
     """Test that different users have isolated conversations."""
     conversation_id = "shared-conv-id"
 

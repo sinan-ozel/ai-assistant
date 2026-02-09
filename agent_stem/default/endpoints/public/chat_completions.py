@@ -1,5 +1,6 @@
 """Chat completions endpoint - OpenAI-compatible API."""
 
+import logging
 import time
 import uuid
 from jsonschema import validate, ValidationError
@@ -7,6 +8,8 @@ from fastapi import HTTPException
 import litellm
 
 from common.llm import call_llm_by_model
+
+logger = logging.getLogger(__name__)
 
 
 async def handler(request: dict, providers_state: dict):
@@ -100,8 +103,6 @@ async def handler(request: dict, providers_state: dict):
                 detail=f"The requested model '{model}' does not support this operation. {str(e)}"
             )
         # Otherwise, log and crash to expose the issue
-        import logging
-        logger = logging.getLogger(__name__)
         logger.error(f"InternalServerError from LLM provider: {e}")
         raise
     except Exception as e:

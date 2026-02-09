@@ -32,7 +32,6 @@ services:
       retries: 5
 
   llamacpp-test:
-    # image: sinanozel/llama-cuda.b7902:gemma3-1b-it-qat
     image: sinanozel/llama.cuda:qwen3-0.6b
     networks:
       - test-network

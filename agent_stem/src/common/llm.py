@@ -4,8 +4,12 @@ This module provides an abstraction layer over LiteLLM that can be used
 by all endpoints (chat completions, generate, agent chat, etc.).
 """
 
+import logging
 from typing import Dict, Any, Optional
 from litellm import completion
+import litellm
+
+logger = logging.getLogger(__name__)
 
 
 def get_provider_config(
@@ -153,6 +157,29 @@ def call_llm_by_model(
 
     # Add any extra kwargs
     litellm_kwargs.update(kwargs)
+
+    # Debug: Log what we're sending to the LLM
+    logger.debug("="*80)
+    logger.debug("LLM Call Parameters")
+    logger.debug("="*80)
+    logger.debug(f"Model: {litellm_kwargs.get('model')}")
+    logger.debug(f"API Base: {litellm_kwargs.get('api_base')}")
+    logger.debug(f"Temperature: {litellm_kwargs.get('temperature')}")
+    logger.debug(f"Max Tokens: {litellm_kwargs.get('max_tokens')}")
+    logger.debug(f"Timeout: {litellm_kwargs.get('timeout')}")
+    logger.debug(f"Response Format: {litellm_kwargs.get('response_format')}")
+    logger.debug(f"Messages ({len(messages)} total):")
+    for i, msg in enumerate(messages):
+        role = msg.get('role', 'unknown')
+        content = msg.get('content', '')
+        # Handle both string and structured content
+        if isinstance(content, str):
+            content_preview = content[:100] + "..." if len(content) > 100 else content
+        else:
+            # For structured content (like image URLs), just show the structure
+            content_preview = f"<structured content: {type(content).__name__}>"
+        logger.debug(f"  [{i}] role='{role}' content='{content_preview}'")
+    logger.debug("="*80)
 
     # Call LiteLLM
     response = completion(**litellm_kwargs)
