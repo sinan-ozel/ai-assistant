@@ -137,6 +137,7 @@
             "args": [
                 "compose",
                 "-f", "${workspaceFolder}/reformat/docker-compose.yaml",
+                "--project-directory", "${workspaceFolder}/",
                 "up",
                 "--build"
             ],
