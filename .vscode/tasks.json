@@ -137,10 +137,54 @@
             "args": [
                 "compose",
                 "-f", "${workspaceFolder}/reformat/docker-compose.yaml",
-                "--project-directory", "${workspaceFolder}/",
                 "up",
                 "--build"
             ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Lint",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/lint/docker-compose.yaml",
+                "up",
+                "--build",
+                "--abort-on-container-exit",
+                "--exit-code-from",
+                "linter"
+            ],
+            "dependsOn": ["Reformat Code"],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Local Tests",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "${workspaceFolder}/test_environments/run_all_tests.sh"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Local Checks",
+            "dependsOn": [
+                "Lint",
+                "Run Tests (Local LLM)"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "Local Checks With Self-Hosted",
+            "dependsOn": [
+                "Local Checks",
+                "Run Tests (Self-Hosted LLM)"
+            ],
+            "dependsOrder": "sequence",
             "problemMatcher": []
         },
         {

@@ -1,24 +1,26 @@
 """Ollama generate endpoint - Ollama-native API."""
 
-import time
 from datetime import datetime, timezone
-from jsonschema import validate, ValidationError
-from fastapi import HTTPException
-import litellm
 
+import litellm
 from common.llm import call_llm_by_model
+from fastapi import HTTPException
+from jsonschema import ValidationError, validate
 
 
 async def handler(request: dict, providers_state: dict):
-    """
-    Generate completion using Ollama format.
+    """Generate completion using Ollama format.
 
-    This endpoint follows the Ollama Generate API format,
-    making it compatible with Ollama clients and LiteLLM when using ollama/ prefix.
+    This endpoint follows the Ollama Generate API format, making it
+    compatible with Ollama clients and LiteLLM when using ollama/
+    prefix.
     """
     # Validate request against schema
     try:
-        validate(instance=request, schema=spec["requestBody"]["content"]["application/json"]["schema"])
+        validate(
+            instance=request,
+            schema=spec["requestBody"]["content"]["application/json"]["schema"],
+        )
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
@@ -32,7 +34,9 @@ async def handler(request: dict, providers_state: dict):
     timeout = request.get("timeout")
 
     if stream:
-        raise HTTPException(status_code=501, detail="Streaming not yet implemented")
+        raise HTTPException(
+            status_code=501, detail="Streaming not yet implemented"
+        )
 
     try:
         # Convert prompt to messages format for LiteLLM
@@ -63,15 +67,21 @@ async def handler(request: dict, providers_state: dict):
         # Note: Some fields are approximated since LiteLLM doesn't provide all Ollama metrics
         return {
             "model": model or response.model,
-            "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "created_at": datetime.now(timezone.utc).strftime(
+                "%Y-%m-%dT%H:%M:%S.%fZ"
+            ),
             "response": response_text,
             "done": True,
             "context": [],  # LiteLLM doesn't provide this
             "total_duration": 0,  # Would need timing instrumentation
             "load_duration": 0,
-            "prompt_eval_count": response.usage.prompt_tokens if response.usage else 0,
+            "prompt_eval_count": (
+                response.usage.prompt_tokens if response.usage else 0
+            ),
             "prompt_eval_duration": 0,
-            "eval_count": response.usage.completion_tokens if response.usage else 0,
+            "eval_count": (
+                response.usage.completion_tokens if response.usage else 0
+            ),
             "eval_duration": 0,
         }
     except ValueError as e:
@@ -81,7 +91,7 @@ async def handler(request: dict, providers_state: dict):
     except litellm.Timeout as e:
         raise HTTPException(
             status_code=408,
-            detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}"
+            detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}",
         )
     except litellm.APIConnectionError as e:
         # Check if this is a timeout error wrapped in APIConnectionError
@@ -89,12 +99,16 @@ async def handler(request: dict, providers_state: dict):
         if "timeout" in error_msg or "timed out" in error_msg:
             raise HTTPException(
                 status_code=408,
-                detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}"
+                detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}",
             )
         # Otherwise, it's a different connection error
-        raise HTTPException(status_code=500, detail=f"LLM call failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"LLM call failed: {str(e)}"
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"LLM call failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"LLM call failed: {str(e)}"
+        )
 
 
 spec = {
@@ -111,53 +125,53 @@ spec = {
                     "properties": {
                         "model": {
                             "type": "string",
-                            "description": "Name of the model to use for generation"
+                            "description": "Name of the model to use for generation",
                         },
                         "prompt": {
                             "type": "string",
-                            "description": "Human-readable text prompt to generate a completion for"
+                            "description": "Human-readable text prompt to generate a completion for",
                         },
                         "stream": {
                             "type": "boolean",
                             "default": False,
-                            "description": "Whether to stream the response incrementally"
+                            "description": "Whether to stream the response incrementally",
                         },
                         "temperature": {
                             "type": "number",
                             "minimum": 0.0,
                             "maximum": 2.0,
                             "default": 0.8,
-                            "description": "Temperature for sampling. Higher values increase randomness"
+                            "description": "Temperature for sampling. Higher values increase randomness",
                         },
                         "top_p": {
                             "type": "number",
                             "minimum": 0.0,
                             "maximum": 1.0,
                             "default": 0.9,
-                            "description": "Top-p (nucleus) sampling parameter"
+                            "description": "Top-p (nucleus) sampling parameter",
                         },
                         "top_k": {
                             "type": "integer",
                             "minimum": 1,
                             "default": 40,
-                            "description": "Top-k sampling parameter. Limits to top k tokens"
+                            "description": "Top-k sampling parameter. Limits to top k tokens",
                         },
                         "timeout": {
                             "type": "number",
                             "minimum": 0,
-                            "description": "Request timeout in seconds. Overrides the provider's default timeout if specified."
-                        }
+                            "description": "Request timeout in seconds. Overrides the provider's default timeout if specified.",
+                        },
                     },
-                    "required": ["model", "prompt"]
+                    "required": ["model", "prompt"],
                 },
                 "example": {
                     "model": "gemma3:4b",
                     "prompt": "What is the capital of France?",
                     "stream": False,
-                    "temperature": 0.7
-                }
+                    "temperature": 0.7,
+                },
             }
-        }
+        },
     },
     "responses": {
         200: {
@@ -169,51 +183,51 @@ spec = {
                         "properties": {
                             "model": {
                                 "type": "string",
-                                "description": "The model used"
+                                "description": "The model used",
                             },
                             "created_at": {
                                 "type": "string",
-                                "description": "Timestamp of creation"
+                                "description": "Timestamp of creation",
                             },
                             "response": {
                                 "type": "string",
-                                "description": "The generated text"
+                                "description": "The generated text",
                             },
                             "done": {
                                 "type": "boolean",
-                                "description": "Whether generation is complete"
+                                "description": "Whether generation is complete",
                             },
                             "context": {
                                 "type": "array",
                                 "description": "Context tokens",
-                                "items": {"type": "integer"}
+                                "items": {"type": "integer"},
                             },
                             "total_duration": {
                                 "type": "integer",
-                                "description": "Total duration in nanoseconds"
+                                "description": "Total duration in nanoseconds",
                             },
                             "load_duration": {
                                 "type": "integer",
-                                "description": "Model load duration in nanoseconds"
+                                "description": "Model load duration in nanoseconds",
                             },
                             "prompt_eval_count": {
                                 "type": "integer",
-                                "description": "Number of tokens in the prompt"
+                                "description": "Number of tokens in the prompt",
                             },
                             "prompt_eval_duration": {
                                 "type": "integer",
-                                "description": "Prompt evaluation duration in nanoseconds"
+                                "description": "Prompt evaluation duration in nanoseconds",
                             },
                             "eval_count": {
                                 "type": "integer",
-                                "description": "Number of tokens generated"
+                                "description": "Number of tokens generated",
                             },
                             "eval_duration": {
                                 "type": "integer",
-                                "description": "Generation duration in nanoseconds"
-                            }
+                                "description": "Generation duration in nanoseconds",
+                            },
                         },
-                        "required": ["model", "created_at", "response", "done"]
+                        "required": ["model", "created_at", "response", "done"],
                     },
                     "example": {
                         "model": "gemma3:4b",
@@ -226,17 +240,13 @@ spec = {
                         "prompt_eval_count": 10,
                         "prompt_eval_duration": 0,
                         "eval_count": 10,
-                        "eval_duration": 0
-                    }
+                        "eval_duration": 0,
+                    },
                 }
-            }
+            },
         },
-        400: {
-            "description": "Bad request - invalid parameters"
-        },
-        404: {
-            "description": "Model not found or not available"
-        },
+        400: {"description": "Bad request - invalid parameters"},
+        404: {"description": "Model not found or not available"},
         408: {
             "description": "Request timeout - the LLM provider did not respond within the specified timeout period"
         },
@@ -245,6 +255,6 @@ spec = {
         },
         501: {
             "description": "Not implemented - streaming is not yet supported"
-        }
-    }
+        },
+    },
 }

@@ -1,25 +1,18 @@
 import asyncio
-import functools
 import inspect
 import logging
+from typing import Any, Dict
 
-from fastapi import FastAPI, Body
-from typing import Dict, Any
-
-from startup.providers import (discover_providers,
-                               discover_context_windows)
+from fastapi import Body, FastAPI
 from startup.endpoints import discover_endpoints
+from startup.providers import discover_context_windows, discover_providers
 from startup.workflows import discover_workflows
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(
-    swagger_ui_parameters={
-        "syntaxHighlight.theme": "monokai"
-    }
-)
+app = FastAPI(swagger_ui_parameters={"syntaxHighlight.theme": "monokai"})
 
 # Global state for providers
 providers_state = {
@@ -27,7 +20,7 @@ providers_state = {
     "providers": [],
     "available_providers": [],
     "default_provider": None,
-    "status": "initializing"
+    "status": "initializing",
 }
 provider_discovery_task = None
 
@@ -53,10 +46,14 @@ async def run_provider_discovery():
         available_count = len(providers_state.get("available_providers", []))
         total_providers = len(providers_state.get("providers", []))
 
-        logger.info(f"Found {available_count} available providers (attempt {attempt}/{max_retries})")
+        logger.info(
+            f"Found {available_count} available providers (attempt {attempt}/{max_retries})"
+        )
 
         if providers_state.get("default_provider"):
-            logger.info(f"Default provider: {providers_state['default_provider']}")
+            logger.info(
+                f"Default provider: {providers_state['default_provider']}"
+            )
 
         # If we have at least one available provider, proceed
         if available_count > 0:
@@ -67,16 +64,22 @@ async def run_provider_discovery():
 
         # If there are no provider definitions at all, don't retry
         if total_providers == 0:
-            logger.warning("No provider configuration files found; skipping retries")
+            logger.warning(
+                "No provider configuration files found; skipping retries"
+            )
             break
 
         # If this was the last attempt, stop retrying
         if attempt == max_retries:
-            logger.warning("Provider discovery completed with no available providers after retries")
+            logger.warning(
+                "Provider discovery completed with no available providers after retries"
+            )
             break
 
         # Otherwise wait a bit and retry discovery
-        logger.info(f"No providers available yet; retrying in {backoff_seconds}s...")
+        logger.info(
+            f"No providers available yet; retrying in {backoff_seconds}s..."
+        )
         await asyncio.sleep(backoff_seconds)
 
     # Mark discovery as complete
@@ -86,7 +89,8 @@ async def run_provider_discovery():
 
 @app.on_event("startup")
 async def startup_event():
-    """Run startup tasks including endpoint registration and background provider discovery."""
+    """Run startup tasks including endpoint registration and background
+    provider discovery."""
     global provider_discovery_task
 
     logger.info("Starting FastAPI app...")
@@ -114,34 +118,59 @@ async def startup_event():
                     # Extract schema from requestBody
                     content = request_spec.get("content", {})
                     json_content = content.get("application/json", {})
-                    schema = json_content.get("schema", {})
                     example = json_content.get("example")
 
                     # Create Body parameter with schema
                     body_param = inspect.Parameter(
                         "request",
                         inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                        default=Body(..., openapi_examples={"example": {"value": example}} if example else None),
-                        annotation=Dict[str, Any]
+                        default=Body(
+                            ...,
+                            openapi_examples=(
+                                {"example": {"value": example}}
+                                if example
+                                else None
+                            ),
+                        ),
+                        annotation=Dict[str, Any],
                     )
 
-                    async def wrapper(request: Dict[str, Any] = Body(..., openapi_examples={"example": {"value": example}} if example else None)):
+                    async def wrapper(
+                        request: Dict[str, Any] = Body(
+                            ...,
+                            openapi_examples=(
+                                {"example": {"value": example}}
+                                if example
+                                else None
+                            ),
+                        )
+                    ):
                         if "providers_state" in params:
-                            return await original_handler(request=request, providers_state=providers_state)
+                            return await original_handler(
+                                request=request, providers_state=providers_state
+                            )
                         else:
                             return await original_handler(request=request)
+
                 else:
+
                     async def wrapper(**kwargs):
-                        return await original_handler(providers_state=providers_state, **kwargs)
+                        return await original_handler(
+                            providers_state=providers_state, **kwargs
+                        )
 
                 # Create new signature without providers_state parameter
-                new_params = [p for p in sig.parameters.values() if p.name not in ["providers_state", "request"]]
+                new_params = [
+                    p
+                    for p in sig.parameters.values()
+                    if p.name not in ["providers_state", "request"]
+                ]
                 if has_request:
                     # Add request parameter with Body annotation
                     body_param = inspect.Parameter(
                         "request",
                         inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                        annotation=Dict[str, Any]
+                        annotation=Dict[str, Any],
                     )
                     new_params = [body_param] + new_params
 
@@ -186,17 +215,28 @@ async def startup_event():
 
         # Create wrapper that injects providers_state
         async def create_workflow_wrapper(original_handler):
-            async def wrapper(request: Dict[str, Any] = Body(..., openapi_examples={"example": {"value": example}} if example else None)):
-                return await original_handler(request=request, providers_state=providers_state)
+            async def wrapper(
+                request: Dict[str, Any] = Body(
+                    ...,
+                    openapi_examples=(
+                        {"example": {"value": example}} if example else None
+                    ),
+                )
+            ):
+                return await original_handler(
+                    request=request, providers_state=providers_state
+                )
 
             # Create signature without providers_state
-            wrapper.__signature__ = inspect.Signature(parameters=[
-                inspect.Parameter(
-                    "request",
-                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                    annotation=Dict[str, Any]
-                )
-            ])
+            wrapper.__signature__ = inspect.Signature(
+                parameters=[
+                    inspect.Parameter(
+                        "request",
+                        inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                        annotation=Dict[str, Any],
+                    )
+                ]
+            )
             wrapper.__name__ = original_handler.__name__
             wrapper.__doc__ = original_handler.__doc__
             return wrapper
@@ -218,6 +258,8 @@ async def startup_event():
                 responses=spec.get("responses", {}),
                 openapi_extra=openapi_extra,
             )
-            logger.info(f"Registered {method} {spec['path']} from workflow {name}")
+            logger.info(
+                f"Registered {method} {spec['path']} from workflow {name}"
+            )
 
     logger.info("API ready - provider discovery running in background")

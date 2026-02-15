@@ -15,9 +15,7 @@ echo "========================================"
 declare -a TEST_ENVS=(
     "test_env_no_llm"
     "test_env_nothing"
-    # "test_env_mistral"
-    "test_env_self_hosted_llm"
-    # "test_env_local_llm"
+    "test_env_local_llm"
 )
 
 for env in "${TEST_ENVS[@]}"; do
@@ -40,6 +38,7 @@ for env in "${TEST_ENVS[@]}"; do
     if echo "$filtered_output" | grep -qiE 'FAILED|ERROR'; then
         echo "❌ $env: FAILED"
         FAILED=1
+        exit 1
     else
         echo "✅ $env: PASSED"
     fi

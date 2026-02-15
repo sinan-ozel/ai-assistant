@@ -8,8 +8,7 @@ set -e  # Exit on error
 echo "=========================================="
 echo "Installing dependencies..."
 echo "=========================================="
-pip install --upgrade pip
-pip install .[dev]
+echo "Skipping project install; using lint tools preinstalled in the image."
 
 echo ""
 echo "=========================================="

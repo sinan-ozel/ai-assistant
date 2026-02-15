@@ -16,20 +16,16 @@ async def handler(provider: str, providers_state: dict):
 
         if not provider_exists:
             raise HTTPException(
-                status_code=404,
-                detail=f"Provider '{provider}' not found"
+                status_code=404, detail=f"Provider '{provider}' not found"
             )
 
         # Provider exists but context window not available
         raise HTTPException(
             status_code=404,
-            detail=f"Context window information not available for provider '{provider}'"
+            detail=f"Context window information not available for provider '{provider}'",
         )
 
-    return {
-        "provider": provider,
-        "max_context_window": context_window
-    }
+    return {"provider": provider, "max_context_window": context_window}
 
 
 spec = {
@@ -42,10 +38,7 @@ spec = {
             "name": "provider",
             "in": "path",
             "required": True,
-            "schema": {
-                "type": "string",
-                "example": "pixtral"
-            }
+            "schema": {"type": "string", "example": "pixtral"},
         }
     ],
     "responses": {
@@ -58,11 +51,11 @@ spec = {
                         "properties": {
                             "provider": {
                                 "type": "string",
-                                "description": "Name of the provider"
+                                "description": "Name of the provider",
                             },
                             "max_context_window": {
                                 "type": "integer",
-                                "description": "Maximum context window size in tokens"
+                                "description": "Maximum context window size in tokens",
                             },
                         },
                         "required": ["provider", "max_context_window"],

@@ -1,18 +1,16 @@
 """Situational awareness utilities for the agent system.
 
-This module provides functions to access cached information about the system state,
-providers, and their capabilities.
+This module provides functions to access cached information about the
+system state, providers, and their capabilities.
 """
 
 from typing import Optional
 
 
 def get_provider_context_window(
-    providers_state: dict,
-    provider: str
+    providers_state: dict, provider: str
 ) -> Optional[int]:
-    """
-    Get the cached context window size for a provider.
+    """Get the cached context window size for a provider.
 
     This retrieves the context window that was queried during startup
     and cached in the providers_state global.

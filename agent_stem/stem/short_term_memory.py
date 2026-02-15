@@ -7,7 +7,6 @@ Uses redis-memory's ConversationMemory for:
 - Background sync with resilience
 """
 
-import json
 from typing import List, Dict, Any
 from redis_memory import ConversationMemory
 from .memory import Memory

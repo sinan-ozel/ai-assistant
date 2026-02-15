@@ -5,9 +5,9 @@ by all endpoints (chat completions, generate, agent chat, etc.).
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from litellm import completion
-import litellm
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +16,7 @@ def get_provider_config(
     providers_state: Dict[str, Any],
     requested_model: Optional[str] = None,
 ) -> tuple[str, Dict[str, Any]]:
-    """
-    Get provider configuration for the requested model.
+    """Get provider configuration for the requested model.
 
     Args:
         providers_state: Provider discovery state
@@ -40,19 +39,32 @@ def get_provider_config(
         model_without_prefix = requested_model
         if "/" in requested_model:
             parts = requested_model.split("/", 1)
-            if parts[0] in ["ollama", "openai", "anthropic", "google", "mistral", "cohere"]:
+            if parts[0] in [
+                "ollama",
+                "openai",
+                "anthropic",
+                "google",
+                "mistral",
+                "cohere",
+            ]:
                 model_without_prefix = parts[1]
 
         # Try exact match with full requested model name
         for provider in providers_state["providers"]:
-            if provider["available"] and provider["config"].get("model") == requested_model:
+            if (
+                provider["available"]
+                and provider["config"].get("model") == requested_model
+            ):
                 provider_to_use = provider
                 break
 
         # Try matching without prefix
         if not provider_to_use and model_without_prefix != requested_model:
             for provider in providers_state["providers"]:
-                if provider["available"] and provider["config"].get("model") == model_without_prefix:
+                if (
+                    provider["available"]
+                    and provider["config"].get("model") == model_without_prefix
+                ):
                     provider_to_use = provider
                     break
 
@@ -60,8 +72,8 @@ def get_provider_config(
         if not provider_to_use:
             for provider in providers_state["providers"]:
                 if provider["available"] and (
-                    provider["name"] == requested_model or
-                    provider["name"] == model_without_prefix
+                    provider["name"] == requested_model
+                    or provider["name"] == model_without_prefix
                 ):
                     provider_to_use = provider
                     break
@@ -102,8 +114,7 @@ def call_llm_by_model(
     timeout: Optional[float] = None,
     **kwargs,
 ) -> Dict[str, Any]:
-    """
-    Call LLM via LiteLLM with provider configuration.
+    """Call LLM via LiteLLM with provider configuration.
 
     Args:
         messages: List of message dicts with 'role' and 'content'
@@ -159,9 +170,9 @@ def call_llm_by_model(
     litellm_kwargs.update(kwargs)
 
     # Debug: Log what we're sending to the LLM
-    logger.debug("="*80)
+    logger.debug("=" * 80)
     logger.debug("LLM Call Parameters")
-    logger.debug("="*80)
+    logger.debug("=" * 80)
     logger.debug(f"Model: {litellm_kwargs.get('model')}")
     logger.debug(f"API Base: {litellm_kwargs.get('api_base')}")
     logger.debug(f"Temperature: {litellm_kwargs.get('temperature')}")
@@ -170,19 +181,20 @@ def call_llm_by_model(
     logger.debug(f"Response Format: {litellm_kwargs.get('response_format')}")
     logger.debug(f"Messages ({len(messages)} total):")
     for i, msg in enumerate(messages):
-        role = msg.get('role', 'unknown')
-        content = msg.get('content', '')
+        role = msg.get("role", "unknown")
+        content = msg.get("content", "")
         # Handle both string and structured content
         if isinstance(content, str):
-            content_preview = content[:100] + "..." if len(content) > 100 else content
+            content_preview = (
+                content[:100] + "..." if len(content) > 100 else content
+            )
         else:
             # For structured content (like image URLs), just show the structure
             content_preview = f"<structured content: {type(content).__name__}>"
         logger.debug(f"  [{i}] role='{role}' content='{content_preview}'")
-    logger.debug("="*80)
+    logger.debug("=" * 80)
 
     # Call LiteLLM
     response = completion(**litellm_kwargs)
 
     return response
-

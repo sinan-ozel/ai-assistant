@@ -28,9 +28,13 @@ def load_endpoint_module(endpoint_file: Path) -> Dict[str, Any]:
     spec.loader.exec_module(module)
 
     if not hasattr(module, "handler"):
-        raise RuntimeError(f"Endpoint {endpoint_file} missing 'handler' function")
+        raise RuntimeError(
+            f"Endpoint {endpoint_file} missing 'handler' function"
+        )
     if not hasattr(module, "spec"):
-        raise RuntimeError(f"Endpoint {endpoint_file} missing 'spec' dictionary")
+        raise RuntimeError(
+            f"Endpoint {endpoint_file} missing 'spec' dictionary"
+        )
 
     return {"handler": module.handler, "spec": module.spec}
 
@@ -53,9 +57,13 @@ def discover_endpoints(endpoints_dir: Path = DEFAULT_ENDPOINTS_DIR):
             continue
 
         try:
-            logger.info(f"Loading endpoint: {endpoint_file.relative_to(endpoints_dir)}")
+            logger.info(
+                f"Loading endpoint: {endpoint_file.relative_to(endpoints_dir)}"
+            )
             endpoint_module = load_endpoint_module(endpoint_file)
-            yield endpoint_file.stem, endpoint_module["handler"], endpoint_module["spec"]
+            yield endpoint_file.stem, endpoint_module[
+                "handler"
+            ], endpoint_module["spec"]
         except Exception as e:
             logger.error(f"Failed to load endpoint {endpoint_file.name}: {e}")
             raise

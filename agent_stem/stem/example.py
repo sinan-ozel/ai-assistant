@@ -104,7 +104,7 @@ def main():
     print("=== Agent STEM Example ===\n")
 
     # First interaction - store a fact
-    print(f"User: Remember that my favorite color is blue.")
+    print("User: Remember that my favorite color is blue.")
     response = agent.step(
         user_id=user_id,
         conversation_id=conversation_id,
@@ -113,7 +113,7 @@ def main():
     print(f"Agent: {response}\n")
 
     # Second interaction - recall from memory
-    print(f"User: What is my favorite color?")
+    print("User: What is my favorite color?")
     response = agent.step(
         user_id=user_id,
         conversation_id=conversation_id,
@@ -122,7 +122,7 @@ def main():
     print(f"Agent: {response}\n")
 
     # Third interaction - use tool
-    print(f"User: What is 7 + 15?")
+    print("User: What is 7 + 15?")
     response = agent.step(
         user_id=user_id,
         conversation_id=conversation_id,
@@ -133,8 +133,8 @@ def main():
     # New conversation, same user
     conversation_id = "conv-002"
 
-    print(f"=== New Conversation ===\n")
-    print(f"User: Do you remember my favorite color?")
+    print("=== New Conversation ===\n")
+    print("User: Do you remember my favorite color?")
     response = agent.step(
         user_id=user_id,
         conversation_id=conversation_id,

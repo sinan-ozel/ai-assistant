@@ -3,25 +3,27 @@
 import logging
 import time
 import uuid
-from jsonschema import validate, ValidationError
-from fastapi import HTTPException
-import litellm
 
+import litellm
 from common.llm import call_llm_by_model
+from fastapi import HTTPException
+from jsonschema import ValidationError, validate
 
 logger = logging.getLogger(__name__)
 
 
 async def handler(request: dict, providers_state: dict):
-    """
-    Create a chat completion (OpenAI-compatible API).
+    """Create a chat completion (OpenAI-compatible API).
 
-    This endpoint follows the OpenAI Chat Completion API format,
-    making it compatible with most LLM clients and tools.
+    This endpoint follows the OpenAI Chat Completion API format, making
+    it compatible with most LLM clients and tools.
     """
     # Validate request against schema
     try:
-        validate(instance=request, schema=spec["requestBody"]["content"]["application/json"]["schema"])
+        validate(
+            instance=request,
+            schema=spec["requestBody"]["content"]["application/json"]["schema"],
+        )
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
@@ -36,7 +38,9 @@ async def handler(request: dict, providers_state: dict):
     timeout = request.get("timeout")
 
     if stream:
-        raise HTTPException(status_code=501, detail="Streaming not yet implemented")
+        raise HTTPException(
+            status_code=501, detail="Streaming not yet implemented"
+        )
 
     try:
         # Call LLM
@@ -59,7 +63,8 @@ async def handler(request: dict, providers_state: dict):
             "id": f"chatcmpl-{uuid.uuid4().hex[:24]}",
             "object": "chat.completion",
             "created": int(time.time()),
-            "model": model or response.model,  # TODO: Consider model usage - if the model does not exist, are we using the default? Return the model that's actually used.
+            "model": model
+            or response.model,  # TODO: Consider model usage - if the model does not exist, are we using the default? Return the model that's actually used.
             "choices": [
                 {
                     "index": 0,
@@ -71,9 +76,15 @@ async def handler(request: dict, providers_state: dict):
                 }
             ],
             "usage": {
-                "prompt_tokens": response.usage.prompt_tokens if response.usage else 0,
-                "completion_tokens": response.usage.completion_tokens if response.usage else 0,
-                "total_tokens": response.usage.total_tokens if response.usage else 0,
+                "prompt_tokens": (
+                    response.usage.prompt_tokens if response.usage else 0
+                ),
+                "completion_tokens": (
+                    response.usage.completion_tokens if response.usage else 0
+                ),
+                "total_tokens": (
+                    response.usage.total_tokens if response.usage else 0
+                ),
             },
         }
     except ValueError as e:
@@ -83,7 +94,7 @@ async def handler(request: dict, providers_state: dict):
     except litellm.Timeout as e:
         raise HTTPException(
             status_code=408,
-            detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}"
+            detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}",
         )
     except litellm.APIConnectionError as e:
         # Check if this is a timeout error wrapped in APIConnectionError
@@ -91,22 +102,26 @@ async def handler(request: dict, providers_state: dict):
         if "timeout" in error_msg or "timed out" in error_msg:
             raise HTTPException(
                 status_code=408,
-                detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}"
+                detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}",
             )
         # Otherwise, it's a different connection error
-        raise HTTPException(status_code=500, detail=f"LLM call failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"LLM call failed: {str(e)}"
+        )
     except litellm.InternalServerError as e:
         # If a specific model was requested, inform user that model doesn't support this
         if model:
             raise HTTPException(
                 status_code=501,
-                detail=f"The requested model '{model}' does not support this operation. {str(e)}"
+                detail=f"The requested model '{model}' does not support this operation. {str(e)}",
             )
         # Otherwise, log and crash to expose the issue
         logger.error(f"InternalServerError from LLM provider: {e}")
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"LLM call failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"LLM call failed: {str(e)}"
+        )
 
 
 spec = {
@@ -123,7 +138,7 @@ spec = {
                     "properties": {
                         "model": {
                             "type": "string",
-                            "description": "ID of the model to use for completion"
+                            "description": "ID of the model to use for completion",
                         },
                         "messages": {
                             "type": "array",
@@ -134,21 +149,21 @@ spec = {
                                     "role": {
                                         "type": "string",
                                         "enum": ["system", "user", "assistant"],
-                                        "description": "Role of the message author"
+                                        "description": "Role of the message author",
                                     },
                                     "content": {
                                         "type": "string",
-                                        "description": "Human-readable text content of the message"
-                                    }
+                                        "description": "Human-readable text content of the message",
+                                    },
                                 },
-                                "required": ["role", "content"]
+                                "required": ["role", "content"],
                             },
-                            "minItems": 1
+                            "minItems": 1,
                         },
                         "timeout": {
                             "type": "number",
                             "minimum": 0,
-                            "description": "Request timeout in seconds. Overrides the provider's default timeout if specified."
+                            "description": "Request timeout in seconds. Overrides the provider's default timeout if specified.",
                         },
                         # "temperature": {
                         #     "type": "number",
@@ -181,18 +196,21 @@ spec = {
                         #     "description": "Up to 4 sequences where the API will stop generating tokens"
                         # }
                     },
-                    "required": ["messages"]
+                    "required": ["messages"],
                 },
                 "example": {
                     # "model": "pixtral",
                     "messages": [
-                        {"role": "user", "content": "What is the capital of France?"}
+                        {
+                            "role": "user",
+                            "content": "What is the capital of France?",
+                        }
                     ],
                     # "temperature": 0.7,
                     # "max_tokens": 100
-                }
+                },
             }
-        }
+        },
     },
     "responses": {
         200: {
@@ -204,19 +222,19 @@ spec = {
                         "properties": {
                             "id": {
                                 "type": "string",
-                                "description": "Unique identifier for the completion"
+                                "description": "Unique identifier for the completion",
                             },
                             "object": {
                                 "type": "string",
-                                "description": "Object type, always 'chat.completion'"
+                                "description": "Object type, always 'chat.completion'",
                             },
                             "created": {
                                 "type": "integer",
-                                "description": "Unix timestamp of when the completion was created"
+                                "description": "Unix timestamp of when the completion was created",
                             },
                             "model": {
                                 "type": "string",
-                                "description": "The model used for completion"
+                                "description": "The model used for completion",
                             },
                             "choices": {
                                 "type": "array",
@@ -226,7 +244,7 @@ spec = {
                                     "properties": {
                                         "index": {
                                             "type": "integer",
-                                            "description": "Choice index"
+                                            "description": "Choice index",
                                         },
                                         "message": {
                                             "type": "object",
@@ -234,20 +252,20 @@ spec = {
                                             "properties": {
                                                 "role": {
                                                     "type": "string",
-                                                    "description": "Role of the message author"
+                                                    "description": "Role of the message author",
                                                 },
                                                 "content": {
                                                     "type": "string",
-                                                    "description": "Content of the message"
-                                                }
-                                            }
+                                                    "description": "Content of the message",
+                                                },
+                                            },
                                         },
                                         "finish_reason": {
                                             "type": "string",
-                                            "description": "Reason for completion finish (stop, length, etc.)"
-                                        }
-                                    }
-                                }
+                                            "description": "Reason for completion finish (stop, length, etc.)",
+                                        },
+                                    },
+                                },
                             },
                             "usage": {
                                 "type": "object",
@@ -255,20 +273,26 @@ spec = {
                                 "properties": {
                                     "prompt_tokens": {
                                         "type": "integer",
-                                        "description": "Number of tokens in the prompt"
+                                        "description": "Number of tokens in the prompt",
                                     },
                                     "completion_tokens": {
                                         "type": "integer",
-                                        "description": "Number of tokens in the completion"
+                                        "description": "Number of tokens in the completion",
                                     },
                                     "total_tokens": {
                                         "type": "integer",
-                                        "description": "Total tokens used"
-                                    }
-                                }
-                            }
+                                        "description": "Total tokens used",
+                                    },
+                                },
+                            },
                         },
-                        "required": ["id", "object", "created", "model", "choices"]
+                        "required": [
+                            "id",
+                            "object",
+                            "created",
+                            "model",
+                            "choices",
+                        ],
                     },
                     "example": {
                         "id": "chatcmpl-abc123",
@@ -280,26 +304,22 @@ spec = {
                                 "index": 0,
                                 "message": {
                                     "role": "assistant",
-                                    "content": "Hello! How can I help you today?"
+                                    "content": "Hello! How can I help you today?",
                                 },
-                                "finish_reason": "stop"
+                                "finish_reason": "stop",
                             }
                         ],
                         "usage": {
                             "prompt_tokens": 20,
                             "completion_tokens": 10,
-                            "total_tokens": 30
-                        }
-                    }
+                            "total_tokens": 30,
+                        },
+                    },
                 }
-            }
+            },
         },
-        400: {
-            "description": "Bad request - invalid parameters"
-        },
-        404: {
-            "description": "Model not found or not available"
-        },
+        400: {"description": "Bad request - invalid parameters"},
+        404: {"description": "Model not found or not available"},
         408: {
             "description": "Request timeout - the LLM provider did not respond within the specified timeout period"
         },
@@ -308,6 +328,6 @@ spec = {
         },
         501: {
             "description": "Not implemented - streaming is not yet supported"
-        }
-    }
+        },
+    },
 }

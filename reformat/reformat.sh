@@ -1,28 +1,45 @@
 #!/bin/bash
 set -e
 
-echo ""
-echo "=========================================="
-echo "Running Black (code formatter)..."
-echo "=========================================="
-black src/
+# repository subfolder to run formatting against
+mfolder="agent_stem"
 
 echo ""
 echo "=========================================="
-echo "Running docformatter (docstring formatter)..."
+echo "Running formatters..."
 echo "=========================================="
-docformatter \
-  --in-place \
-  --recursive \
-  --wrap-summaries 72 \
-  --wrap-descriptions 72 \
-  src/
 
-echo ""
-echo "=========================================="
-echo "Running isort (import sorter)..."
-echo "=========================================="
-isort src/
+# directories to format under the repository subfolder
+targets=("$mfolder/src" "$mfolder/default")
+
+for d in "${targets[@]}"; do
+  if [ -d "$d" ]; then
+    echo ""
+    echo "=========================================="
+    echo "Running Black on $d..."
+    echo "=========================================="
+    black "$d"
+
+    echo ""
+    echo "=========================================="
+    echo "Running docformatter on $d..."
+    echo "=========================================="
+    docformatter \
+      --in-place \
+      --recursive \
+      --wrap-summaries 72 \
+      --wrap-descriptions 72 \
+      "$d"
+
+    echo ""
+    echo "=========================================="
+    echo "Running isort on $d..."
+    echo "=========================================="
+    isort "$d"
+  else
+    echo "Skipping $d (directory not found)."
+  fi
+done
 
 echo ""
 echo "=========================================="

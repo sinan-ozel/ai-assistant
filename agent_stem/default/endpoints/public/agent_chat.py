@@ -1,20 +1,16 @@
 """Agent chat endpoint with stateful conversation memory."""
 
+import logging
 import time
 import uuid
-from jsonschema import validate, ValidationError
-from fastapi import HTTPException
-from redis_memory import ConversationMemory
+
 import litellm
-
-from common.llm import call_llm_by_model
-from situational.awareness import get_provider_context_window
-
-
-import logging
 import tiktoken
-
-
+from common.llm import call_llm_by_model
+from fastapi import HTTPException
+from jsonschema import ValidationError, validate
+from redis_memory import ConversationMemory
+from situational.awareness import get_provider_context_window
 
 # Default system message
 DEFAULT_SYSTEM_MESSAGE = (
@@ -34,7 +30,8 @@ def get_conversation_key(user_id: str, conversation_id: str) -> str:
 
 
 def estimate_token_count(text: str) -> int:
-    """Estimate token count using tiktoken, with fallback to character-based estimation."""
+    """Estimate token count using tiktoken, with fallback to character-
+    based estimation."""
     if _encoding is not None:
         try:
             return len(_encoding.encode(text))
@@ -45,8 +42,7 @@ def estimate_token_count(text: str) -> int:
 
 
 def strip_base64_content(content) -> str:
-    """
-    Strip base64-encoded images from message content.
+    """Strip base64-encoded images from message content.
 
     Handles both string content and multi-part content with image_url.
     Returns plain text content only.
@@ -75,8 +71,7 @@ def fit_messages_to_context(
     max_context_token_count: int,
     system_message: str,
 ) -> list[dict]:
-    """
-    Fit messages into context window, keeping most recent messages.
+    """Fit messages into context window, keeping most recent messages.
 
     Base64-encoded images are stripped from content to avoid
     overwhelming the context window.
@@ -92,7 +87,9 @@ def fit_messages_to_context(
     # Reserve tokens for system message and response
     system_token_count = estimate_token_count(system_message)
     response_buffer = 1000  # Reserve tokens for response
-    available_token_count = max_context_token_count - system_token_count - response_buffer
+    available_token_count = (
+        max_context_token_count - system_token_count - response_buffer
+    )
 
     if available_token_count < 100:
         # If context is too small, just return empty
@@ -112,10 +109,7 @@ def fit_messages_to_context(
         if current_tokens + msg_tokens <= available_token_count:
             # Create a fresh plain dict to avoid thread lock issues with redis-memory
             # Use text-only content without base64 images
-            plain_msg = {
-                "role": message.get("role"),
-                "content": text_content
-            }
+            plain_msg = {"role": message.get("role"), "content": text_content}
             fitted_messages.insert(0, plain_msg)
             current_tokens += msg_tokens
         else:
@@ -126,8 +120,7 @@ def fit_messages_to_context(
 
 
 async def handler(request: dict, providers_state: dict):
-    """
-    Agent chat endpoint with stateful conversation memory.
+    """Agent chat endpoint with stateful conversation memory.
 
     Features:
     - User and conversation ID based isolation
@@ -136,7 +129,10 @@ async def handler(request: dict, providers_state: dict):
     """
     # Validate request against schema
     try:
-        validate(instance=request, schema=spec["requestBody"]["content"]["application/json"]["schema"])
+        validate(
+            instance=request,
+            schema=spec["requestBody"]["content"]["application/json"]["schema"],
+        )
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
@@ -163,7 +159,9 @@ async def handler(request: dict, providers_state: dict):
 
     # Streaming not supported
     if stream:
-        raise HTTPException(status_code=501, detail="Streaming not yet implemented")
+        raise HTTPException(
+            status_code=501, detail="Streaming not yet implemented"
+        )
 
     # Generate conversation_id if not provided
     if not conversation_id:
@@ -173,13 +171,11 @@ async def handler(request: dict, providers_state: dict):
     default_provider = providers_state.get("default_provider")
     if not default_provider:
         raise HTTPException(
-            status_code=503,
-            detail="No default provider available"
+            status_code=503, detail="No default provider available"
         )
 
     max_context_window = get_provider_context_window(
-        providers_state,
-        default_provider
+        providers_state, default_provider
     )
 
     # Use default if context window not available
@@ -205,9 +201,7 @@ async def handler(request: dict, providers_state: dict):
 
         # Fit messages to context window
         fitted_history = fit_messages_to_context(
-            messages,
-            max_context_window,
-            system_message
+            messages, max_context_window, system_message
         )
 
         # Build prompt with system message
@@ -230,7 +224,7 @@ async def handler(request: dict, providers_state: dict):
         except litellm.Timeout as e:
             raise HTTPException(
                 status_code=408,
-                detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}"
+                detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}",
             )
         except litellm.APIConnectionError as e:
             # Check if this is a timeout error wrapped in APIConnectionError
@@ -238,13 +232,15 @@ async def handler(request: dict, providers_state: dict):
             if "timeout" in error_msg or "timed out" in error_msg:
                 raise HTTPException(
                     status_code=408,
-                    detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}"
+                    detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}",
                 )
             # Otherwise, re-raise to be handled by outer exception handler
             raise
         except litellm.InternalServerError as e:
             # Log the error and crash to expose the issue
-            logger.error(f"InternalServerError from LLM provider in agent chat: {e}")
+            logger.error(
+                f"InternalServerError from LLM provider in agent chat: {e}"
+            )
             raise
 
         # Extract response
@@ -254,7 +250,9 @@ async def handler(request: dict, providers_state: dict):
         # Store user message and assistant response in memory
         # Use redis-memory's append() which handles persistence
         memory.messages.append({"role": "user", "content": message})
-        memory.messages.append({"role": "assistant", "content": assistant_message})
+        memory.messages.append(
+            {"role": "assistant", "content": assistant_message}
+        )
 
         # Build response
         return {
@@ -264,9 +262,15 @@ async def handler(request: dict, providers_state: dict):
             "role": "assistant",
             "created": int(time.time()),
             "usage": {
-                "prompt_tokens": response.usage.prompt_tokens if response.usage else 0,
-                "completion_tokens": response.usage.completion_tokens if response.usage else 0,
-                "total_tokens": response.usage.total_tokens if response.usage else 0,
+                "prompt_tokens": (
+                    response.usage.prompt_tokens if response.usage else 0
+                ),
+                "completion_tokens": (
+                    response.usage.completion_tokens if response.usage else 0
+                ),
+                "total_tokens": (
+                    response.usage.total_tokens if response.usage else 0
+                ),
             },
         }
 
@@ -285,42 +289,42 @@ spec = {
                     "properties": {
                         "message": {
                             "type": "string",
-                            "description": "The message to send to the agent"
+                            "description": "The message to send to the agent",
                         },
                         "conversation_id": {
                             "type": "string",
-                            "description": "Conversation identifier (optional, will be generated if not provided)"
+                            "description": "Conversation identifier (optional, will be generated if not provided)",
                         },
                         "user_id": {
                             "type": "string",
-                            "description": "User identifier for isolation (optional, defaults to 'default-user')"
+                            "description": "User identifier for isolation (optional, defaults to 'default-user')",
                         },
                         "stream": {
                             "type": "boolean",
                             "description": "Whether to stream the response (not yet supported)",
-                            "default": False
+                            "default": False,
                         },
                         "timeout": {
                             "type": "number",
                             "minimum": 0,
-                            "description": "Request timeout in seconds. Overrides the provider's default timeout if specified."
+                            "description": "Request timeout in seconds. Overrides the provider's default timeout if specified.",
                         },
                         "max_tokens": {
                             "type": "integer",
                             "minimum": 1,
-                            "description": "Maximum number of tokens to generate in the response."
-                        }
+                            "description": "Maximum number of tokens to generate in the response.",
+                        },
                     },
-                    "required": ["message"]
+                    "required": ["message"],
                 },
                 "example": {
                     "message": "What's the weather?",
                     "conversation_id": "conv-123",
                     "user_id": "user-456",
-                    "stream": False
-                }
+                    "stream": False,
+                },
             }
-        }
+        },
     },
     "responses": {
         200: {
@@ -332,23 +336,23 @@ spec = {
                         "properties": {
                             "conversation_id": {
                                 "type": "string",
-                                "description": "Unique identifier for the conversation"
+                                "description": "Unique identifier for the conversation",
                             },
                             "user_id": {
                                 "type": "string",
-                                "description": "User identifier for conversation isolation"
+                                "description": "User identifier for conversation isolation",
                             },
                             "message": {
                                 "type": "string",
-                                "description": "The assistant's response message"
+                                "description": "The assistant's response message",
                             },
                             "role": {
                                 "type": "string",
-                                "description": "Message role (always 'assistant' for responses)"
+                                "description": "Message role (always 'assistant' for responses)",
                             },
                             "created": {
                                 "type": "integer",
-                                "description": "Unix timestamp when the response was created"
+                                "description": "Unix timestamp when the response was created",
                             },
                             "usage": {
                                 "type": "object",
@@ -356,20 +360,25 @@ spec = {
                                 "properties": {
                                     "prompt_tokens": {
                                         "type": "integer",
-                                        "description": "Number of tokens in the prompt"
+                                        "description": "Number of tokens in the prompt",
                                     },
                                     "completion_tokens": {
                                         "type": "integer",
-                                        "description": "Number of tokens in the completion"
+                                        "description": "Number of tokens in the completion",
                                     },
                                     "total_tokens": {
                                         "type": "integer",
-                                        "description": "Total number of tokens used"
-                                    }
-                                }
-                            }
+                                        "description": "Total number of tokens used",
+                                    },
+                                },
+                            },
                         },
-                        "required": ["conversation_id", "message", "role", "created"]
+                        "required": [
+                            "conversation_id",
+                            "message",
+                            "role",
+                            "created",
+                        ],
                     },
                     "example": {
                         "conversation_id": "conv-123",
@@ -380,26 +389,18 @@ spec = {
                         "usage": {
                             "prompt_tokens": 56,
                             "completion_tokens": 31,
-                            "total_tokens": 87
-                        }
-                    }
+                            "total_tokens": 87,
+                        },
+                    },
                 }
-            }
+            },
         },
-        400: {
-            "description": "Bad request - invalid input"
-        },
+        400: {"description": "Bad request - invalid input"},
         408: {
             "description": "Request timeout - the LLM provider did not respond within the specified timeout period"
         },
-        422: {
-            "description": "Validation error"
-        },
-        501: {
-            "description": "Feature not implemented (e.g., streaming)"
-        },
-        503: {
-            "description": "Service unavailable - no provider available"
-        }
-    }
+        422: {"description": "Validation error"},
+        501: {"description": "Feature not implemented (e.g., streaming)"},
+        503: {"description": "Service unavailable - no provider available"},
+    },
 }

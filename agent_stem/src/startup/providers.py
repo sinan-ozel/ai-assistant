@@ -8,9 +8,8 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import yaml
-from litellm import acompletion, completion, get_model_info
-
 from common import CUSTOMIZATION_FOLDER, DEFAULTS_FOLDER
+from litellm import completion, get_model_info
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +94,7 @@ def validate_provider(config: Dict[str, Any]) -> tuple[bool, str]:
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            response = completion(**kwargs)
+            _ = completion(**kwargs)
         return True, ""
     except Exception as e:
         return False, str(e)
@@ -225,7 +224,6 @@ def discover_providers() -> Dict[str, Any]:
 
     # Get custom (mounted) providers
     custom_available = [p for p in custom_providers if p["available"]]
-    custom_available_names = [p["name"] for p in custom_available]
 
     # Get DEFAULT_PROVIDER from environment
     env_default_provider = os.getenv("DEFAULT_PROVIDER")
@@ -289,7 +287,8 @@ def discover_providers() -> Dict[str, Any]:
 
 
 async def query_context_window(provider_data: Dict[str, Any]) -> int | None:
-    """Query a provider for their context window size using LiteLLM's get_model_info.
+    """Query a provider for their context window size using LiteLLM's
+    get_model_info.
 
     Args:
         provider_data: Provider dictionary with config
@@ -318,7 +317,9 @@ async def query_context_window(provider_data: Dict[str, Any]) -> int | None:
             model_info = get_model_info(model)
 
             # Extract max_tokens (context window) from model info
-            context_window = model_info.get("max_tokens") or model_info.get("max_input_tokens")
+            context_window = model_info.get("max_tokens") or model_info.get(
+                "max_input_tokens"
+            )
 
             if context_window:
                 logger.info(f"Context window from model info: {context_window}")
@@ -353,9 +354,7 @@ async def discover_context_windows(providers_state: Dict[str, Any]) -> None:
     ]
 
     # Query all providers concurrently
-    tasks = [
-        query_context_window(provider) for provider in available_providers
-    ]
+    tasks = [query_context_window(provider) for provider in available_providers]
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
     # Update provider data with results

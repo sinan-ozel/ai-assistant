@@ -1,0 +1,10 @@
+services:
+  linter:
+    build:
+      context: ${HOST_PROJECT_PATH:-.}/..
+      dockerfile: lint/Dockerfile
+    working_dir: /workspace
+    volumes:
+      - ${HOST_PROJECT_PATH:-..}:/workspace
+    command: ./lint/lint.sh
+

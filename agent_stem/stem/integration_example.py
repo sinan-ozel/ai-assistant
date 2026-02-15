@@ -164,7 +164,6 @@ def example_conversation():
     """
     Example multi-turn conversation with memory.
     """
-    import time
 
     user_id = "user-456"
     conversation_1 = "conv-morning"
@@ -184,7 +183,7 @@ def example_conversation():
         conversation_id=conversation_1,
         user_input="My name is Alice and I'm learning Python.",
     )
-    print(f"User: My name is Alice and I'm learning Python.")
+    print("User: My name is Alice and I'm learning Python.")
     print(f"Agent: {response}\n")
 
     # User asks for help
@@ -193,7 +192,7 @@ def example_conversation():
         conversation_id=conversation_1,
         user_input="Can you recommend a Python project for beginners?",
     )
-    print(f"User: Can you recommend a Python project for beginners?")
+    print("User: Can you recommend a Python project for beginners?")
     print(f"Agent: {response}\n")
 
     print("\n=== Conversation 2 (Afternoon) ===\n")
@@ -204,7 +203,7 @@ def example_conversation():
         conversation_id=conversation_2,
         user_input="What was my name again?",
     )
-    print(f"User: What was my name again?")
+    print("User: What was my name again?")
     print(f"Agent: {response}\n")
 
     # Should also remember context about learning Python
@@ -213,7 +212,7 @@ def example_conversation():
         conversation_id=conversation_2,
         user_input="What am I learning?",
     )
-    print(f"User: What am I learning?")
+    print("User: What am I learning?")
     print(f"Agent: {response}\n")
 
 

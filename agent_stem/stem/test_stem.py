@@ -7,8 +7,6 @@ Tests core functionality without requiring external services.
 import pytest
 from agent_stem.stem import (
     Memory,
-    RedisShortTermMemory,
-    QdrantLongTermMemory,
     Agent,
     ToolRegistry,
     create_tool,

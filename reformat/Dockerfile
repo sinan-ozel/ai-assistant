@@ -13,4 +13,4 @@ COPY reformat/reformat.sh /workspace/reformat.sh
 RUN chmod +x /workspace/reformat.sh
 
 # Run the reformat script
-CMD ["/workspace/reformat.sh"]
+CMD ["/workspace/reformat/reformat.sh"]

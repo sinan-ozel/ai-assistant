@@ -1,10 +1,9 @@
 """Streamlit chat application for agent interaction."""
 
-import streamlit as st
-import requests
 import uuid
-from datetime import datetime
 
+import requests
+import streamlit as st
 
 # Configuration
 API_BASE_URL = "http://localhost:8000"
@@ -27,7 +26,7 @@ def send_message(message: str) -> dict:
         "message": message,
         "conversation_id": st.session_state.conversation_id,
         "user_id": st.session_state.user_id,
-        "stream": False
+        "stream": False,
     }
 
     try:
@@ -51,7 +50,7 @@ def main():
         page_title="Agent Chat",
         page_icon="💬",
         layout="wide",
-        initial_sidebar_state="expanded"
+        initial_sidebar_state="expanded",
     )
 
     initialize_session_state()
@@ -63,7 +62,9 @@ def main():
         # Conversation controls
         col1, col2 = st.columns([3, 1])
         with col1:
-            st.caption(f"Conversation ID: {st.session_state.conversation_id[:8]}...")
+            st.caption(
+                f"Conversation ID: {st.session_state.conversation_id[:8]}..."
+            )
         with col2:
             if st.button("🔄", help="New conversation"):
                 reset_conversation()
@@ -88,10 +89,9 @@ def main():
 
         if user_input:
             # Add user message to history
-            st.session_state.messages.append({
-                "role": "user",
-                "content": user_input
-            })
+            st.session_state.messages.append(
+                {"role": "user", "content": user_input}
+            )
 
             # Send to agent and get response
             with st.spinner("Thinking..."):
@@ -99,10 +99,9 @@ def main():
 
             if response:
                 # Add assistant response to history
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": response["message"]
-                })
+                st.session_state.messages.append(
+                    {"role": "assistant", "content": response["message"]}
+                )
 
             # Rerun to update chat display
             st.rerun()
@@ -127,10 +126,14 @@ def main():
         with col1:
             st.metric("Messages", len(st.session_state.messages))
         with col2:
-            user_msgs = sum(1 for m in st.session_state.messages if m["role"] == "user")
+            user_msgs = sum(
+                1 for m in st.session_state.messages if m["role"] == "user"
+            )
             st.metric("Your Messages", user_msgs)
         with col3:
-            assistant_msgs = sum(1 for m in st.session_state.messages if m["role"] == "assistant")
+            assistant_msgs = sum(
+                1 for m in st.session_state.messages if m["role"] == "assistant"
+            )
             st.metric("Agent Responses", assistant_msgs)
 
 
