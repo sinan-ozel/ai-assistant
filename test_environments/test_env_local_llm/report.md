@@ -152,13 +152,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "",
+  "message": "The weather is sunny.\n",
   "role": "assistant",
-  "created": 1771122105,
+  "created": 1771166423,
   "usage": {
-    "prompt_tokens": 1057,
-    "completion_tokens": 1,
-    "total_tokens": 1058
+    "prompt_tokens": 1201,
+    "completion_tokens": 7,
+    "total_tokens": 1208
   }
 }
 ```
@@ -718,24 +718,24 @@
 
 ```json
 {
-  "id": "chatcmpl-bd20aee142a34044a2668050",
+  "id": "chatcmpl-ca3abd1b9e3b4b09ac50fc21",
   "object": "chat.completion",
-  "created": 1771122108,
+  "created": 1771166425,
   "model": "ollama/gemma3:270m",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is Paris."
+        "content": "The capital of France is Paris.\n"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 22,
-    "completion_tokens": 8,
-    "total_tokens": 30
+    "completion_tokens": 9,
+    "total_tokens": 31
   }
 }
 ```
@@ -797,9 +797,9 @@
 
 ```json
 {
-  "id": "chatcmpl-5d007a60a522434fbabaee55",
+  "id": "chatcmpl-accb9bcad8864624b84be821",
   "object": "chat.completion",
-  "created": 1771122109,
+  "created": 1771166425,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -937,9 +937,9 @@
 
 ```json
 {
-  "id": "chatcmpl-f89e369e1c264bd3bf6c962b",
+  "id": "chatcmpl-37f05424aa98404bb70c4c2d",
   "object": "chat.completion",
-  "created": 1771122110,
+  "created": 1771166425,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1016,9 +1016,9 @@
 
 ```json
 {
-  "id": "chatcmpl-7cd012e3d4ae432490c860ed",
+  "id": "chatcmpl-f11146553c2f4eabab8bb698",
   "object": "chat.completion",
-  "created": 1771122110,
+  "created": 1771166426,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1095,9 +1095,9 @@
 
 ```json
 {
-  "id": "chatcmpl-8dbc51604faa4adb94c2f861",
+  "id": "chatcmpl-461f37482d8e4901a8402101",
   "object": "chat.completion",
-  "created": 1771122112,
+  "created": 1771166426,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1174,9 +1174,9 @@
 
 ```json
 {
-  "id": "chatcmpl-fbfa884f5bc446f29def9228",
+  "id": "chatcmpl-7621782e5b1347c4a0fd056c",
   "object": "chat.completion",
-  "created": 1771122113,
+  "created": 1771166426,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1253,9 +1253,9 @@
 
 ```json
 {
-  "id": "chatcmpl-61468ce0913a45648d520b0d",
+  "id": "chatcmpl-8eb45ec64352463aab2ddddd",
   "object": "chat.completion",
-  "created": 1771122115,
+  "created": 1771166427,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1393,9 +1393,9 @@
 
 ```json
 {
-  "id": "chatcmpl-e95155e3f92446acafa85ebd",
+  "id": "chatcmpl-e75cf232ba1d48b7bee7bd06",
   "object": "chat.completion",
-  "created": 1771122116,
+  "created": 1771166427,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1472,24 +1472,24 @@
 
 ```json
 {
-  "id": "chatcmpl-29e6c2038ef440efb72b8822",
+  "id": "chatcmpl-b2106a8193214e9989eb5eb5",
   "object": "chat.completion",
-  "created": 1771122117,
+  "created": 1771166428,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": ""
+        "content": "Lorem ipsum dolor sit amet\n"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 20,
-    "completion_tokens": 1,
-    "total_tokens": 21
+    "completion_tokens": 7,
+    "total_tokens": 27
   }
 }
 ```
@@ -1540,7 +1540,7 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-15T02:21:59.125042Z",
+  "created_at": "2026-02-15T14:40:28.551285Z",
   "response": "The capital of France is Paris.",
   "done": true,
   "context": [],

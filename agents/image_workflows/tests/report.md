@@ -163,13 +163,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "I need to know your location to check the weather! \ud83d\ude0a Could you please tell me where you are? \ud83c\udf24\ufe0f",
+  "message": "I need to know where you are to check the weather! \ud83d\ude0a Could you please tell me your current location? For example, city name, country, or zip code? \ud83c\udf24\ufe0f",
   "role": "assistant",
-  "created": 1770601988,
+  "created": 1771167261,
   "usage": {
-    "prompt_tokens": 802,
-    "completion_tokens": 1635,
-    "total_tokens": 2437
+    "prompt_tokens": 1055,
+    "completion_tokens": 965,
+    "total_tokens": 2020
   }
 }
 ```
@@ -729,24 +729,24 @@
 
 ```json
 {
-  "id": "chatcmpl-b377847f598c42f185bcbe32",
+  "id": "chatcmpl-9249e4ba652748c882610d5c",
   "object": "chat.completion",
-  "created": 1770601996,
+  "created": 1771167269,
   "model": "qwen3-vl:2b-q4km",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of **France** is **Paris**.  \n\n### Key details about Paris:\n- **Historical Significance**: Founded as a Roman settlement, it has been the political, cultural, and economic heart of France for over 2,000 years.\n- **Iconic Symbols**: The Eiffel Tower (built for the 1889 World's Fair), the Seine River, and the Louvre Museum are landmarks that define its identity.\n- **Cultural Hub**: Home to major institutions like the Mus\u00e9e d\u2019Orsay, the Centre Pompidou, and the Place de la Concorde.\n- **Geographical Note**: Located on the Seine River in northern France, it\u2019s known for its vibrant arts scene, fashion industry, and iconic architecture.\n\nParis remains the **undisputed capital** of France, with its history and culture making it a global symbol of European heritage. \ud83c\uddeb\ud83c\uddf7"
+        "content": "The capital of France is **Paris**.  \n\nParis is not only the political center of France but also the largest city in the country and a global hub for culture, history, and tourism. It's renowned for landmarks like the Eiffel Tower, the Louvre Museum, and the Seine River.  \n\n*Note:* While France has other important cities (e.g., Lyon, Bordeaux), Paris holds the specific distinction of being the **national capital**."
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 17,
-    "completion_tokens": 569,
-    "total_tokens": 586
+    "completion_tokens": 624,
+    "total_tokens": 641
   }
 }
 ```
@@ -808,24 +808,24 @@
 
 ```json
 {
-  "id": "chatcmpl-82d26779fadc4a1db2c9edb4",
+  "id": "chatcmpl-ae6fb0318d6641acb83e2f0d",
   "object": "chat.completion",
-  "created": 1770602000,
+  "created": 1771167271,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Hello! It seems like you've used \"Lorem ipsum dolor sit amet\" \u2014 a common placeholder text often used in design and layout contexts. I'm here to help! Could you tell me what you need assistance with? \ud83d\ude0a"
+        "content": "It seems you've pasted some placeholder text (\"Lorem ipsum dolor sit amet\"). This is commonly used in design and publishing for mockups or examples. How can I assist you today? Whether you need help with writing, technical support, or something else, feel free to ask! \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 15,
-    "completion_tokens": 397,
-    "total_tokens": 412
+    "completion_tokens": 207,
+    "total_tokens": 222
   }
 }
 ```
@@ -1070,24 +1070,24 @@
 
 ```json
 {
-  "id": "chatcmpl-0ac41c01babc4c56a9fdbe40",
+  "id": "chatcmpl-40e0687f4ea84ca894cedc9f",
   "object": "chat.completion",
-  "created": 1770602014,
+  "created": 1771167285,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "I notice you've shared placeholder text (\"Lorem ipsum dolor sit amet\"). This is commonly used in design or content creation to represent generic content. How can I assist you today? Whether you need help with writing, problem-solving, or anything else, feel free to ask! \ud83d\ude0a"
+        "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. \n\nIf you're encountering this text in a design or publishing context and need guidance on its usage, or if you have a specific question about it, feel free to clarify! \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 15,
-    "completion_tokens": 282,
-    "total_tokens": 297
+    "completion_tokens": 359,
+    "total_tokens": 374
   }
 }
 ```
@@ -1149,24 +1149,24 @@
 
 ```json
 {
-  "id": "chatcmpl-c4ff806fe6a84d109611cd0a",
+  "id": "chatcmpl-5a3fa2ea24854d4691d17c95",
   "object": "chat.completion",
-  "created": 1770602017,
+  "created": 1771167288,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Ah, I see! You've shared some placeholder text: *\"Lorem ipsum dolor sit amet.\"* \ud83d\ude04 This is commonly used in design and publishing to create mockups or layouts without specific content. It's meant to be filler text\u2014often used for visual design, not for actual messaging.\n\nIf you're asking about it or need help with something else (like writing a story, designing a layout, or clarifying a question), feel free to ask! I'm here to assist. \ud83d\ude0a"
+        "content": "I see you've shared some placeholder text\u2014*Lorem ipsum dolor sit amet*\u2014which is commonly used in design and typography for mockups. \ud83d\ude0a Is there something specific you'd like help with today? Whether it's writing, design, or just a general conversation, I'm here to assist!"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 15,
-    "completion_tokens": 268,
-    "total_tokens": 283
+    "completion_tokens": 253,
+    "total_tokens": 268
   }
 }
 ```
@@ -1228,24 +1228,24 @@
 
 ```json
 {
-  "id": "chatcmpl-6da491e4f9c643d1840ad799",
+  "id": "chatcmpl-33b6a40847494ed69e4d6d0b",
   "object": "chat.completion",
-  "created": 1770602034,
+  "created": 1771167289,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Hello! I see you've used \"Lorem ipsum\" \u2014 a common placeholder text used in design and publishing to fill space before actual content. It's often used to test layouts or as a default text. How can I assist you today? \ud83d\ude0a"
+        "content": "Hello! \ud83d\ude0a It looks like you've pasted some placeholder text (Lorem ipsum dolor sit amet) \u2013 that's common in design or publishing to create space for content. How can I assist you today? Whether you need help with a project, a question, or just want to chat, I'm here to support you! \ud83c\udf1f"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 15,
-    "completion_tokens": 1628,
-    "total_tokens": 1643
+    "completion_tokens": 169,
+    "total_tokens": 184
   }
 }
 ```
@@ -1479,15 +1479,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-09T01:54:11.559883Z",
-  "response": "The capital of France is **Paris**.  \n\n### Key Details:\n- **Location**: Situated in the \u00cele-de-France region, near the Seine River.\n- **Significance**:  \n  - Hosts the **French government** (Chancellery, National Assembly, and President's residence).  \n  - Home to iconic landmarks like the **Eiffel Tower**, **Louvre Museum**, and **Seine River**.  \n  - A global cultural and historical hub (birthplace of the Renaissance, home to the Louvre, and the city's vibrant arts scene).  \n- **Historical Note**: Paris was founded in 1180 and became the capital in 1870 after the Franco-Prussian War.  \n\nIf you're curious about why it matters or have follow-up questions (e.g., \"What's the city's nickname?\"), feel free to ask! \ud83d\ude0a",
+  "created_at": "2026-02-15T14:55:06.846173Z",
+  "response": "The capital of France is **Paris**.  \n\nParis has been the capital of France since the Middle Ages and serves as the seat of the French government, including the National Assembly, the President of the Republic, and key institutions. It is also the largest city in France and a global cultural and historical hub.",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 17,
   "prompt_eval_duration": 0,
-  "eval_count": 492,
+  "eval_count": 584,
   "eval_duration": 0
 }
 ```
@@ -2031,7 +2031,7 @@
         {
           "type": "image_url",
           "image_url": {
-            "url": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAgAQADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigAooooAKKKKACiiigAooooAKKKo3+sWOmXWn213cJFLfz/Z7cMwG59rNj/x3H1IHegC9RWJp3izR9U0Yana3kDILVbuWEzxiSBGXd+8G7CYHXJxwea0YdSsrm5ntre7t57m3/wBbDHKrPH7MM8fjQBaoqhaa1pt7LFDBf2r3EsKzrCs6M5jIBDYUnIwRyMj3o/tvSTFPKNUsvLt5BFM/2hMROTgKxzwSSBg96AL9FURq9hJpcupW95b3FnErM00UyFAF+9ls7Rjvk8Uy58QaLZ3E1vdavYQTQjMsctyisgwDlgTkcMp59R60AaNFVBqmntdpaLf2puZI/NSETLvZP7wXOSPfpUEfiHRJoJp4tY094oApmkW5QrGGJC7jnjJBAz1waANKio4J4bqBJ7eVJYZBuSSNgysPUEdRUlABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAVlavp9zeXui3Fv5X+g33nyLIxXchhliOMA8jzM474xkda1aKAOEfwRejwtY6XE9mksHhq50lyGYKZ5VhAYfLnbmNyTjPI45Na2j6Hf6f4iu7t/sqWMnnFUjdnYvJKH3AMuY++4BirMd2FxiulooA4jw34S1XRbrSd7WIhtreFLlo5GbzXS2WHIRlwrZUfvFZcoNpXvVWz8E6sYblL97F/O/swMElZkcW1y0sh27AEDK2AgyAeM969BooA5m+8O3dzo/jCzjkgD615n2YknCbrWOH5+OPmRjxngjvxTG8Lzv4iOot9maM6yL/ByW8v7B9nx0+9v5x0xznPFdTRQB5g/gLXBplnazT2xitbMRM9tKwkyLB7YhU2gO29twdmBxgcY5lg0bVvEWqz6m1ill5K2QjhWS4tFmMa3Ksu/Ysi4E6kEKR8oHODXpVFAGZoGmtpGjQ2bhBIGkkcI7uAzuzn5nJZuWPJ69cDpWnRRQAUUUUAFFFFABRRRQAUUUUAFFFFAH/9k="
+            "url": "data:image/jpeg;base64,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"
           }
         }
       ]
@@ -2071,17 +2071,17 @@
 ```json
 {
   "result": {
-    "title": "This Is Not an Image",
-    "author": "A. Smith",
-    "subtitle": "A New Look at the World",
-    "publisher": "Penguin Books",
-    "series_title": "The World's Books",
-    "series_number": 1
+    "title": "This Is An Image",
+    "author": "example",
+    "subtitle": "example",
+    "publisher": "example",
+    "series_title": "example",
+    "series_number": 0
   },
   "usage": {
     "prompt_tokens": 163,
-    "completion_tokens": 55,
-    "total_tokens": 218
+    "completion_tokens": 51,
+    "total_tokens": 214
   }
 }
 ```
@@ -2615,7 +2615,7 @@
         {
           "type": "image_url",
           "image_url": {
-            "url": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAgAQADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigAooooAKKKKACiiigAooooAKKKo3+sWOmXWn213cJFLfz/Z7cMwG59rNj/x3H1IHegC9RWJp3izR9U0Yana3kDILVbuWEzxiSBGXd+8G7CYHXJxwea0YdSsrm5ntre7t57m3/wBbDHKrPH7MM8fjQBaoqhaa1pt7LFDBf2r3EsKzrCs6M5jIBDYUnIwRyMj3o/tvSTFPKNUsvLt5BFM/2hMROTgKxzwSSBg96AL9FURq9hJpcupW95b3FnErM00UyFAF+9ls7Rjvk8Uy58QaLZ3E1vdavYQTQjMsctyisgwDlgTkcMp59R60AaNFVBqmntdpaLf2puZI/NSETLvZP7wXOSPfpUEfiHRJoJp4tY094oApmkW5QrGGJC7jnjJBAz1waANKio4J4bqBJ7eVJYZBuSSNgysPUEdRUlABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAVlavp9zeXui3Fv5X+g33nyLIxXchhliOMA8jzM474xkda1aKAOEfwRejwtY6XE9mksHhq50lyGYKZ5VhAYfLnbmNyTjPI45Na2j6Hf6f4iu7t/sqWMnnFUjdnYvJKH3AMuY++4BirMd2FxiulooA4jw34S1XRbrSd7WIhtreFLlo5GbzXS2WHIRlwrZUfvFZcoNpXvVWz8E6sYblL97F/O/swMElZkcW1y0sh27AEDK2AgyAeM969BooA5m+8O3dzo/jCzjkgD615n2YknCbrWOH5+OPmRjxngjvxTG8Lzv4iOot9maM6yL/ByW8v7B9nx0+9v5x0xznPFdTRQB5g/gLXBplnazT2xitbMRM9tKwkyLB7YhU2gO29twdmBxgcY5lg0bVvEWqz6m1ill5K2QjhWS4tFmMa3Ksu/Ysi4E6kEKR8oHODXpVFAGZoGmtpGjQ2bhBIGkkcI7uAzuzn5nJZuWPJ69cDpWnRRQAUUUUAFFFFABRRRQAUUUUAFFFFAH/9k="
+            "url": "data:image/jpeg;base64,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"
           }
         }
       ]
@@ -2647,11 +2647,11 @@
 
 ```json
 {
-  "result": "this is not a magic",
+  "result": "",
   "usage": {
     "prompt_tokens": 90,
-    "completion_tokens": 121,
-    "total_tokens": 211
+    "completion_tokens": 4006,
+    "total_tokens": 4096
   }
 }
 ```
@@ -3115,7 +3115,7 @@
         {
           "type": "image_url",
           "image_url": {
-            "url": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAgAQADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigAooooAKKKKACiiigAooooAKKKo3+sWOmXWn213cJFLfz/Z7cMwG59rNj/x3H1IHegC9RWJp3izR9U0Yana3kDILVbuWEzxiSBGXd+8G7CYHXJxwea0YdSsrm5ntre7t57m3/wBbDHKrPH7MM8fjQBaoqhaa1pt7LFDBf2r3EsKzrCs6M5jIBDYUnIwRyMj3o/tvSTFPKNUsvLt5BFM/2hMROTgKxzwSSBg96AL9FURq9hJpcupW95b3FnErM00UyFAF+9ls7Rjvk8Uy58QaLZ3E1vdavYQTQjMsctyisgwDlgTkcMp59R60AaNFVBqmntdpaLf2puZI/NSETLvZP7wXOSPfpUEfiHRJoJp4tY094oApmkW5QrGGJC7jnjJBAz1waANKio4J4bqBJ7eVJYZBuSSNgysPUEdRUlABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAVlavp9zeXui3Fv5X+g33nyLIxXchhliOMA8jzM474xkda1aKAOEfwRejwtY6XE9mksHhq50lyGYKZ5VhAYfLnbmNyTjPI45Na2j6Hf6f4iu7t/sqWMnnFUjdnYvJKH3AMuY++4BirMd2FxiulooA4jw34S1XRbrSd7WIhtreFLlo5GbzXS2WHIRlwrZUfvFZcoNpXvVWz8E6sYblL97F/O/swMElZkcW1y0sh27AEDK2AgyAeM969BooA5m+8O3dzo/jCzjkgD615n2YknCbrWOH5+OPmRjxngjvxTG8Lzv4iOot9maM6yL/ByW8v7B9nx0+9v5x0xznPFdTRQB5g/gLXBplnazT2xitbMRM9tKwkyLB7YhU2gO29twdmBxgcY5lg0bVvEWqz6m1ill5K2QjhWS4tFmMa3Ksu/Ysi4E6kEKR8oHODXpVFAGZoGmtpGjQ2bhBIGkkcI7uAzuzn5nJZuWPJ69cDpWnRRQAUUUUAFFFFABRRRQAUUUUAFFFFAH/9k="
+            "url": "data:image/jpeg;base64,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"
           }
         }
       ]
