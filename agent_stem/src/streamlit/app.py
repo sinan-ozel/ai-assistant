@@ -1,5 +1,6 @@
 """Streamlit chat application for agent interaction."""
 
+import json
 import uuid
 
 import requests
@@ -20,22 +21,35 @@ def initialize_session_state():
         st.session_state.messages = []
 
 
-def send_message(message: str) -> dict:
-    """Send a message to the agent chat endpoint."""
+def send_message(message: str):
+    """Send a message to the agent chat endpoint and stream the response."""
     payload = {
         "message": message,
         "conversation_id": st.session_state.conversation_id,
         "user_id": st.session_state.user_id,
-        "stream": False,
+        "stream": True,
+        "stream_format": "sse",
     }
 
     try:
-        response = requests.post(CHAT_ENDPOINT, json=payload, timeout=30)
+        response = requests.post(CHAT_ENDPOINT, json=payload, timeout=60, stream=True)
         response.raise_for_status()
-        return response.json()
+
+        # Stream the response chunks
+        for line in response.iter_lines(decode_unicode=True):
+            if line and line.startswith("data: "):
+                data = line[6:]  # Remove "data: " prefix
+                if data == "[DONE]":
+                    break
+                else:
+                    chunk = json.loads(data)
+                    # Extract content from delta
+                    if "delta" in chunk and "content" in chunk["delta"]:
+                        yield chunk["delta"]["content"]
+
     except requests.exceptions.RequestException as e:
         st.error(f"Error communicating with agent: {str(e)}")
-        return None
+        return
 
 
 def reset_conversation():
@@ -93,14 +107,15 @@ def main():
                 {"role": "user", "content": user_input}
             )
 
-            # Send to agent and get response
-            with st.spinner("Thinking..."):
-                response = send_message(user_input)
+            # Send to agent and get streaming response
+            with chat_container:
+                with st.chat_message("assistant"):
+                    response_text = st.write_stream(send_message(user_input))
 
-            if response:
+            if response_text:
                 # Add assistant response to history
                 st.session_state.messages.append(
-                    {"role": "assistant", "content": response["message"]}
+                    {"role": "assistant", "content": response_text}
                 )
 
             # Rerun to update chat display
