@@ -1,6 +1,6 @@
 - [ ] Upgrade pytest-openapi to 0.2.1
 - [ ] Finish logic / protocol for the default provider: if multiple custom, the one called default is default. Also: vision,
-- [ ] Add streaming
+- [x] Add streaming
 - [ ] Add dark/light mode to the streamlit app
 
 
@@ -16,6 +16,7 @@
 - [x] Finish the `workflows`
 - [x] Run the mistral and local LLM checks in the everything environment.
 - [ ] Add agent name to logger.
+- [ ] Add `evaluation` to workflows.
 
 
 Plans for the GitHub actions:
