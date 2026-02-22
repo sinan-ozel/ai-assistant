@@ -14,8 +14,9 @@ from typing import Any, Dict
 
 import litellm
 import yaml
-from common.llm import call_llm_by_model
+from common.llm import call_llm_by_model, call_llm_by_model_streaming
 from fastapi import HTTPException
+from fastapi.responses import StreamingResponse
 from jsonschema import ValidationError, validate
 from PIL import Image, ImageDraw, ImageFont
 
@@ -172,6 +173,181 @@ def load_workflow_yaml(workflow_file: Path) -> Dict[str, Any]:
         raise ValueError(f"Failed to load workflow: {e}")
 
 
+# Supported streaming formats
+STREAM_FORMAT_SSE = "sse"
+STREAM_FORMAT_NDJSON = "ndjson"
+
+
+def handle_workflow_streaming(
+    prompt_messages: list,
+    providers_state: dict,
+    provider_to_use: str,
+    temperature: float,
+    max_tokens: int,
+    output_schema: dict,
+    workflow_name: str,
+    stream_format: str = STREAM_FORMAT_SSE,
+):
+    """Handle streaming workflow requests.
+
+    Args:
+        stream_format: "sse" for Server-Sent Events (OpenAI-compatible),
+                      "ndjson" for newline-delimited JSON (Ollama-style)
+
+    Returns a StreamingResponse. Note that for workflows with object
+    output schemas, streaming returns raw content chunks that may need
+    to be parsed as JSON after completion.
+    """
+    import time
+
+    created = int(time.time())
+
+    def format_chunk(data: dict) -> str:
+        """Format chunk according to stream_format."""
+        if stream_format == STREAM_FORMAT_SSE:
+            return f"data: {json.dumps(data)}\n\n"
+        else:  # NDJSON
+            return json.dumps(data) + "\n"
+
+    def format_done() -> str:
+        """Format final done message."""
+        if stream_format == STREAM_FORMAT_SSE:
+            return "data: [DONE]\n\n"
+        else:  # NDJSON
+            return json.dumps({"done": True}) + "\n"
+
+    async def generate_chunks():
+        """Generate streaming chunks in the requested format."""
+        full_content = []
+
+        try:
+            # For object schemas with streaming, we can't use JSON mode
+            # as we need to stream raw content
+            llm_kwargs = {}
+            if output_schema.get("type") == "object":
+                llm_kwargs["response_format"] = {"type": "json_object"}
+
+            async for chunk in call_llm_by_model_streaming(
+                messages=prompt_messages,
+                providers_state=providers_state,
+                model=provider_to_use,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                **llm_kwargs,
+            ):
+                # Extract delta content from chunk
+                if chunk.choices and len(chunk.choices) > 0:
+                    choice = chunk.choices[0]
+                    delta = choice.delta
+
+                    # Build workflow streaming chunk
+                    chunk_data = {
+                        "workflow": workflow_name,
+                        "created": created,
+                        "delta": {},
+                        "finish_reason": choice.finish_reason,
+                    }
+
+                    # Add content if present
+                    if hasattr(delta, "content") and delta.content:
+                        chunk_data["delta"]["content"] = delta.content
+                        full_content.append(delta.content)
+
+                    yield format_chunk(chunk_data)
+
+            # After streaming completes, try to parse and validate for object schemas
+            complete_content = "".join(full_content)
+
+            # Send final result chunk with parsed data
+            if output_schema.get("type") == "string":
+                final_chunk = {
+                    "workflow": workflow_name,
+                    "created": created,
+                    "result": complete_content,
+                    "finish_reason": "stop",
+                }
+            else:
+                # Try to parse JSON
+                try:
+                    content = complete_content
+                    if "```json" in content:
+                        json_start = content.find("```json") + 7
+                        json_end = content.find("```", json_start)
+                        if json_end > json_start:
+                            content = content[json_start:json_end].strip()
+                    elif "```" in content:
+                        json_start = content.find("```") + 3
+                        json_end = content.find("```", json_start)
+                        if json_end > json_start:
+                            content = content[json_start:json_end].strip()
+
+                    result = json.loads(content)
+                    validate(instance=result, schema=output_schema)
+                    final_chunk = {
+                        "workflow": workflow_name,
+                        "created": created,
+                        "result": result,
+                        "finish_reason": "stop",
+                    }
+                except (json.JSONDecodeError, ValidationError) as e:
+                    logger.error(
+                        f"Failed to parse/validate streaming response for {workflow_name}: {e}"
+                    )
+                    final_chunk = {
+                        "workflow": workflow_name,
+                        "created": created,
+                        "result": complete_content,
+                        "finish_reason": "stop",
+                        "parse_error": str(e),
+                    }
+
+            yield format_chunk(final_chunk)
+
+            # Send final done message
+            yield format_done()
+
+        except litellm.Timeout as e:
+            error_data = {"error": {"message": str(e), "type": "timeout"}}
+            yield format_chunk(error_data)
+        except litellm.RateLimitError as e:
+            error_data = {"error": {"message": str(e), "type": "rate_limit"}}
+            yield format_chunk(error_data)
+        except litellm.APIConnectionError as e:
+            error_msg = str(e).lower()
+            if "timeout" in error_msg or "timed out" in error_msg:
+                error_data = {"error": {"message": str(e), "type": "timeout"}}
+            else:
+                error_data = {
+                    "error": {"message": str(e), "type": "connection_error"}
+                }
+            yield format_chunk(error_data)
+        except Exception as e:
+            logger.error(f"Streaming error in workflow {workflow_name}: {e}")
+            error_data = {
+                "error": {
+                    "message": f"LLM call failed: {str(e)}",
+                    "type": "server_error",
+                }
+            }
+            yield format_chunk(error_data)
+
+    # Set media type based on format
+    if stream_format == STREAM_FORMAT_SSE:
+        media_type = "text/event-stream"
+    else:
+        media_type = "application/x-ndjson"
+
+    return StreamingResponse(
+        generate_chunks(),
+        media_type=media_type,
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
 async def create_workflow_handler(workflow: Dict[str, Any]):
     """Create a dynamic handler function for a workflow.
 
@@ -219,17 +395,12 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
         temperature = request.get("temperature", 0.7)
         max_tokens = request.get("max_tokens", 4096)
         stream = request.get("stream", False)
+        stream_format = request.get("stream_format", STREAM_FORMAT_SSE)
 
         # Validate input
         if not messages or len(messages) == 0:
             raise HTTPException(
                 status_code=422, detail="messages array cannot be empty"
-            )
-
-        # Streaming not supported
-        if stream:
-            raise HTTPException(
-                status_code=501, detail="Streaming not supported for workflows"
             )
 
         # Build messages for LLM
@@ -248,6 +419,19 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
         elif model:
             # Use model from request (though we accept it, we may override)
             provider_to_use = model
+
+        # Handle streaming if requested
+        if stream:
+            return handle_workflow_streaming(
+                prompt_messages=prompt_messages,
+                providers_state=providers_state,
+                provider_to_use=provider_to_use,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                output_schema=output_schema,
+                workflow_name=workflow_name,
+                stream_format=stream_format,
+            )
 
         # Call LLM
         try:
@@ -527,6 +711,17 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
                 "default": 4096,
                 "description": "Maximum tokens to generate",
             },
+            "stream": {
+                "type": "boolean",
+                "default": False,
+                "description": "Whether to stream the response",
+            },
+            "stream_format": {
+                "type": "string",
+                "enum": ["sse", "ndjson"],
+                "default": "sse",
+                "description": "Streaming format: 'sse' for Server-Sent Events (OpenAI-compatible), 'ndjson' for newline-delimited JSON (Ollama-style)",
+            },
         },
         "required": ["messages"],
     }
@@ -582,22 +777,6 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
                     }
                 },
             },
-            "501": {
-                "description": "Not implemented (e.g., streaming not supported)",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "detail": {
-                                    "type": "string",
-                                    "description": "Error message indicating the feature is not implemented",
-                                }
-                            },
-                        }
-                    }
-                },
-            },
         },
     }
 
@@ -647,6 +826,7 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
             ],
             "temperature": 0.7,
             "max_tokens": 4096,
+            "stream": False,
         }
     else:
         # Text input example
@@ -654,6 +834,7 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
             "messages": [{"role": "user", "content": "Your message here"}],
             "temperature": 0.7,
             "max_tokens": 4096,
+            "stream": False,
         }
 
     spec["requestBody"]["content"]["application/json"][

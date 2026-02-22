@@ -1,13 +1,15 @@
 """Agent chat endpoint with stateful conversation memory."""
 
+import json
 import logging
 import time
 import uuid
 
 import litellm
 import tiktoken
-from common.llm import call_llm_by_model
+from common.llm import call_llm_by_model, call_llm_by_model_streaming
 from fastapi import HTTPException
+from fastapi.responses import StreamingResponse
 from jsonschema import ValidationError, validate
 from redis_memory import ConversationMemory
 from situational.awareness import get_provider_context_window
@@ -119,6 +121,137 @@ def fit_messages_to_context(
     return fitted_messages
 
 
+# Supported streaming formats
+STREAM_FORMAT_SSE = "sse"
+STREAM_FORMAT_NDJSON = "ndjson"
+
+
+def handle_streaming(
+    prompt_messages: list,
+    providers_state: dict,
+    timeout: float,
+    max_tokens: int,
+    conversation_id: str,
+    user_id: str,
+    message: str,
+    conv_key: str,
+    stream_format: str = STREAM_FORMAT_SSE,
+):
+    """Handle streaming agent chat requests.
+
+    Args:
+        stream_format: "sse" for Server-Sent Events (OpenAI-compatible),
+                      "ndjson" for newline-delimited JSON (Ollama-style)
+
+    Returns a StreamingResponse. After streaming completes,
+    stores the full response in conversation memory.
+    """
+    created = int(time.time())
+
+    async def generate_chunks():
+        """Generate streaming chunks in the requested format."""
+        full_content = []
+
+        try:
+            async for chunk in call_llm_by_model_streaming(
+                messages=prompt_messages,
+                providers_state=providers_state,
+                model=None,  # Use default provider
+                timeout=timeout,
+                max_tokens=max_tokens,
+            ):
+                # Extract delta content from chunk
+                if chunk.choices and len(chunk.choices) > 0:
+                    choice = chunk.choices[0]
+                    delta = choice.delta
+
+                    # Build agent chat streaming chunk
+                    chunk_data = {
+                        "conversation_id": conversation_id,
+                        "user_id": user_id,
+                        "role": "assistant",
+                        "created": created,
+                        "delta": {},
+                        "finish_reason": choice.finish_reason,
+                    }
+
+                    # Add content if present
+                    if hasattr(delta, "content") and delta.content:
+                        chunk_data["delta"]["content"] = delta.content
+                        full_content.append(delta.content)
+
+                    # Yield in appropriate format
+                    if stream_format == STREAM_FORMAT_SSE:
+                        yield f"data: {json.dumps(chunk_data)}\n\n"
+                    else:  # NDJSON
+                        yield json.dumps(chunk_data) + "\n"
+
+            # After streaming completes, store messages in memory
+            assistant_message = "".join(full_content)
+            with ConversationMemory(conversation_id=conv_key) as memory:
+                if not hasattr(memory, "messages") or not isinstance(
+                    memory.messages, list
+                ):
+                    memory.messages = []
+                memory.messages.append({"role": "user", "content": message})
+                memory.messages.append(
+                    {"role": "assistant", "content": assistant_message}
+                )
+
+            # Send final message
+            if stream_format == STREAM_FORMAT_SSE:
+                yield "data: [DONE]\n\n"
+            else:  # NDJSON
+                yield json.dumps({"done": True}) + "\n"
+
+        except litellm.Timeout as e:
+            error_data = {"error": {"message": str(e), "type": "timeout"}}
+            if stream_format == STREAM_FORMAT_SSE:
+                yield f"data: {json.dumps(error_data)}\n\n"
+            else:
+                yield json.dumps(error_data) + "\n"
+        except litellm.APIConnectionError as e:
+            error_msg = str(e).lower()
+            if "timeout" in error_msg or "timed out" in error_msg:
+                error_data = {"error": {"message": str(e), "type": "timeout"}}
+            else:
+                error_data = {
+                    "error": {"message": str(e), "type": "connection_error"}
+                }
+            if stream_format == STREAM_FORMAT_SSE:
+                yield f"data: {json.dumps(error_data)}\n\n"
+            else:
+                yield json.dumps(error_data) + "\n"
+        except Exception as e:
+            logger.error(f"Streaming error in agent chat: {e}")
+            error_data = {
+                "error": {
+                    "message": f"LLM call failed: {str(e)}",
+                    "type": "server_error",
+                }
+            }
+            if stream_format == STREAM_FORMAT_SSE:
+                yield f"data: {json.dumps(error_data)}\n\n"
+            else:
+                yield json.dumps(error_data) + "\n"
+
+    # Set media type based on format
+    if stream_format == STREAM_FORMAT_SSE:
+        media_type = "text/event-stream"
+    else:
+        media_type = "application/x-ndjson"
+
+    return StreamingResponse(
+        generate_chunks(),
+        media_type=media_type,
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
 async def handler(request: dict, providers_state: dict):
     """Agent chat endpoint with stateful conversation memory.
 
@@ -141,6 +274,7 @@ async def handler(request: dict, providers_state: dict):
     conversation_id = request.get("conversation_id")
     user_id = request.get("user_id", "default-user")
     stream = request.get("stream", False)
+    stream_format = request.get("stream_format", STREAM_FORMAT_SSE)
     timeout = request.get("timeout")
     max_tokens = request.get("max_tokens")
 
@@ -156,12 +290,6 @@ async def handler(request: dict, providers_state: dict):
 
     # System message is not customizable per request
     system_message = DEFAULT_SYSTEM_MESSAGE
-
-    # Streaming not supported
-    if stream:
-        raise HTTPException(
-            status_code=501, detail="Streaming not yet implemented"
-        )
 
     # Generate conversation_id if not provided
     if not conversation_id:
@@ -211,6 +339,20 @@ async def handler(request: dict, providers_state: dict):
         # Add current user message to prompt
         user_msg = {"role": "user", "content": message}
         prompt_messages.append(user_msg)
+
+        # Handle streaming if requested
+        if stream:
+            return handle_streaming(
+                prompt_messages=prompt_messages,
+                providers_state=providers_state,
+                timeout=timeout,
+                max_tokens=max_tokens,
+                conversation_id=conversation_id,
+                user_id=user_id,
+                message=message,
+                conv_key=conv_key,
+                stream_format=stream_format,
+            )
 
         # Call LLM with default provider
         try:
@@ -301,8 +443,14 @@ spec = {
                         },
                         "stream": {
                             "type": "boolean",
-                            "description": "Whether to stream the response (not yet supported)",
+                            "description": "Whether to stream the response",
                             "default": False,
+                        },
+                        "stream_format": {
+                            "type": "string",
+                            "enum": ["sse", "ndjson"],
+                            "default": "sse",
+                            "description": "Streaming format: 'sse' for Server-Sent Events (OpenAI-compatible), 'ndjson' for newline-delimited JSON (Ollama-style)",
                         },
                         "timeout": {
                             "type": "number",
@@ -322,6 +470,7 @@ spec = {
                     "conversation_id": "conv-123",
                     "user_id": "user-456",
                     "stream": False,
+                    "stream_format": "sse",
                 },
             }
         },
@@ -400,7 +549,6 @@ spec = {
             "description": "Request timeout - the LLM provider did not respond within the specified timeout period"
         },
         422: {"description": "Validation error"},
-        501: {"description": "Feature not implemented (e.g., streaming)"},
         503: {"description": "Service unavailable - no provider available"},
     },
 }

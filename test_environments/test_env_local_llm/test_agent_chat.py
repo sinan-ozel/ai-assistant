@@ -1,8 +1,10 @@
 """Tests for agent chat endpoint."""
 
+import json
+import os
+
 import pytest
 import requests
-import os
 
 
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
@@ -248,3 +250,124 @@ def test_agent_chat_timeout():
     data = response.json()
     assert "detail" in data
     assert "timeout" in data["detail"].lower(), f"Expected timeout message, got: {data['detail']}"
+
+
+def test_agent_chat_streaming_sse():
+    """Test streaming with SSE format (default)."""
+    response = requests.post(
+        f"{BASE_URL}/v1/agent/chat",
+        json={
+            "message": "Say hello in exactly 3 words.",
+            "user_id": "test-user-stream-sse",
+            "stream": True,
+            "stream_format": "sse",
+            "max_tokens": 20
+        },
+        stream=True
+    )
+
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    assert response.headers.get("content-type") == "text/event-stream; charset=utf-8"
+
+    chunks = []
+    content_parts = []
+    done_received = False
+
+    for line in response.iter_lines(decode_unicode=True):
+        if line:
+            if line.startswith("data: "):
+                data = line[6:]  # Remove "data: " prefix
+                if data == "[DONE]":
+                    done_received = True
+                else:
+                    chunk = json.loads(data)
+                    chunks.append(chunk)
+                    # Extract content from delta
+                    if "delta" in chunk and "content" in chunk["delta"]:
+                        content_parts.append(chunk["delta"]["content"])
+
+    assert len(chunks) > 0, "Expected at least one chunk"
+    assert done_received, "Expected [DONE] message"
+
+    # Verify chunk structure
+    first_chunk = chunks[0]
+    assert "conversation_id" in first_chunk
+    assert "user_id" in first_chunk
+    assert first_chunk["user_id"] == "test-user-stream-sse"
+    assert "role" in first_chunk
+    assert first_chunk["role"] == "assistant"
+    assert "created" in first_chunk
+
+    # Verify we got content
+    full_content = "".join(content_parts)
+    assert len(full_content) > 0, "Expected content in streaming response"
+    print(f"Agent SSE streaming content: {full_content}")
+
+
+def test_agent_chat_streaming_ndjson():
+    """Test streaming with NDJSON format."""
+    response = requests.post(
+        f"{BASE_URL}/v1/agent/chat",
+        json={
+            "message": "Say goodbye in exactly 3 words.",
+            "user_id": "test-user-stream-ndjson",
+            "stream": True,
+            "stream_format": "ndjson",
+            "max_tokens": 20
+        },
+        stream=True
+    )
+
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    assert "application/x-ndjson" in response.headers.get("content-type", "")
+
+    chunks = []
+    content_parts = []
+    done_received = False
+
+    for line in response.iter_lines(decode_unicode=True):
+        if line:
+            chunk = json.loads(line)
+            if chunk.get("done"):
+                done_received = True
+            else:
+                chunks.append(chunk)
+                # Extract content from delta
+                if "delta" in chunk and "content" in chunk["delta"]:
+                    content_parts.append(chunk["delta"]["content"])
+
+    assert len(chunks) > 0, "Expected at least one chunk"
+    assert done_received, "Expected done message"
+
+    # Verify chunk structure
+    first_chunk = chunks[0]
+    assert "conversation_id" in first_chunk
+    assert "user_id" in first_chunk
+    assert first_chunk["user_id"] == "test-user-stream-ndjson"
+    assert "role" in first_chunk
+    assert first_chunk["role"] == "assistant"
+
+    # Verify we got content
+    full_content = "".join(content_parts)
+    assert len(full_content) > 0, "Expected content in streaming response"
+    print(f"Agent NDJSON streaming content: {full_content}")
+
+
+def test_agent_chat_streaming_invalid_format():
+    """Test that invalid stream_format returns 422 (schema validation error)."""
+    response = requests.post(
+        f"{BASE_URL}/v1/agent/chat",
+        json={
+            "message": "Hello",
+            "user_id": "test-user-invalid-format",
+            "stream": True,
+            "stream_format": "invalid_format"
+        }
+    )
+
+    assert response.status_code == 422, f"Expected 422, got {response.status_code}: {response.text}"
+
+    data = response.json()
+    assert "detail" in data
+    # Schema validation error will mention the enum or validation failure
+    assert "stream_format" in data["detail"].lower() or "enum" in data["detail"].lower() or "invalid" in data["detail"].lower()

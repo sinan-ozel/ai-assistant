@@ -1,15 +1,146 @@
 """Chat completions endpoint - OpenAI-compatible API."""
 
+import json
 import logging
 import time
 import uuid
 
 import litellm
-from common.llm import call_llm_by_model
+from common.llm import call_llm_by_model, call_llm_by_model_streaming
 from fastapi import HTTPException
+from fastapi.responses import StreamingResponse
 from jsonschema import ValidationError, validate
 
 logger = logging.getLogger(__name__)
+
+# Supported streaming formats
+STREAM_FORMAT_SSE = "sse"
+STREAM_FORMAT_NDJSON = "ndjson"
+
+
+async def handle_streaming(
+    messages: list,
+    providers_state: dict,
+    model: str,
+    stream_format: str = STREAM_FORMAT_SSE,
+    temperature: float = None,
+    max_tokens: int = None,
+    top_p: float = None,
+    stop: list = None,
+    timeout: float = None,
+):
+    """Handle streaming chat completion requests.
+
+    Args:
+        stream_format: "sse" for Server-Sent Events (OpenAI-compatible),
+                      "ndjson" for newline-delimited JSON (Ollama-style)
+
+    Returns a StreamingResponse with appropriate format.
+    """
+    completion_id = f"chatcmpl-{uuid.uuid4().hex[:24]}"
+    created = int(time.time())
+
+    async def generate_chunks():
+        """Generate streaming chunks in the requested format."""
+        try:
+            async for chunk in call_llm_by_model_streaming(
+                messages=messages,
+                providers_state=providers_state,
+                model=model,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                top_p=top_p,
+                stop=stop,
+                timeout=timeout,
+            ):
+                # Extract delta content from chunk
+                if chunk.choices and len(chunk.choices) > 0:
+                    choice = chunk.choices[0]
+                    delta = choice.delta
+
+                    # Build OpenAI-compatible streaming chunk
+                    chunk_data = {
+                        "id": completion_id,
+                        "object": "chat.completion.chunk",
+                        "created": created,
+                        "model": model or chunk.model,
+                        "choices": [
+                            {
+                                "index": 0,
+                                "delta": {},
+                                "finish_reason": choice.finish_reason,
+                            }
+                        ],
+                    }
+
+                    # Add role if present (usually first chunk)
+                    if hasattr(delta, "role") and delta.role:
+                        chunk_data["choices"][0]["delta"]["role"] = delta.role
+
+                    # Add content if present
+                    if hasattr(delta, "content") and delta.content:
+                        chunk_data["choices"][0]["delta"][
+                            "content"
+                        ] = delta.content
+
+                    # Yield in appropriate format
+                    if stream_format == STREAM_FORMAT_SSE:
+                        yield f"data: {json.dumps(chunk_data)}\n\n"
+                    else:  # NDJSON
+                        yield json.dumps(chunk_data) + "\n"
+
+            # Send final message
+            if stream_format == STREAM_FORMAT_SSE:
+                yield "data: [DONE]\n\n"
+            else:  # NDJSON
+                yield json.dumps({"done": True}) + "\n"
+
+        except litellm.Timeout as e:
+            error_data = {"error": {"message": str(e), "type": "timeout"}}
+            if stream_format == STREAM_FORMAT_SSE:
+                yield f"data: {json.dumps(error_data)}\n\n"
+            else:
+                yield json.dumps(error_data) + "\n"
+        except litellm.APIConnectionError as e:
+            error_msg = str(e).lower()
+            if "timeout" in error_msg or "timed out" in error_msg:
+                error_data = {"error": {"message": str(e), "type": "timeout"}}
+            else:
+                error_data = {
+                    "error": {"message": str(e), "type": "connection_error"}
+                }
+            if stream_format == STREAM_FORMAT_SSE:
+                yield f"data: {json.dumps(error_data)}\n\n"
+            else:
+                yield json.dumps(error_data) + "\n"
+        except Exception as e:
+            logger.error(f"Streaming error: {e}")
+            error_data = {
+                "error": {
+                    "message": f"LLM call failed: {str(e)}",
+                    "type": "server_error",
+                }
+            }
+            if stream_format == STREAM_FORMAT_SSE:
+                yield f"data: {json.dumps(error_data)}\n\n"
+            else:
+                yield json.dumps(error_data) + "\n"
+
+    # Set media type based on format
+    if stream_format == STREAM_FORMAT_SSE:
+        media_type = "text/event-stream"
+    else:
+        media_type = "application/x-ndjson"
+
+    return StreamingResponse(
+        generate_chunks(),
+        media_type=media_type,
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 async def handler(request: dict, providers_state: dict):
@@ -35,11 +166,20 @@ async def handler(request: dict, providers_state: dict):
     top_p = request.get("top_p")
     stop = request.get("stop")
     stream = request.get("stream", False)
+    stream_format = request.get("stream_format", STREAM_FORMAT_SSE)
     timeout = request.get("timeout")
 
     if stream:
-        raise HTTPException(
-            status_code=501, detail="Streaming not yet implemented"
+        return await handle_streaming(
+            messages=messages,
+            providers_state=providers_state,
+            model=model,
+            stream_format=stream_format,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            top_p=top_p,
+            stop=stop,
+            timeout=timeout,
         )
 
     try:
@@ -165,6 +305,17 @@ spec = {
                             "minimum": 0,
                             "description": "Request timeout in seconds. Overrides the provider's default timeout if specified.",
                         },
+                        "stream": {
+                            "type": "boolean",
+                            "default": False,
+                            "description": "Whether to stream the response incrementally",
+                        },
+                        "stream_format": {
+                            "type": "string",
+                            "enum": ["sse", "ndjson"],
+                            "default": "sse",
+                            "description": "Streaming format: 'sse' for Server-Sent Events (OpenAI-compatible), 'ndjson' for newline-delimited JSON (Ollama-style)",
+                        },
                         # "temperature": {
                         #     "type": "number",
                         #     "minimum": 0.0,
@@ -206,6 +357,7 @@ spec = {
                             "content": "What is the capital of France?",
                         }
                     ],
+                    "stream": False,
                     # "temperature": 0.7,
                     # "max_tokens": 100
                 },
@@ -327,7 +479,7 @@ spec = {
             "description": "Validation error - request does not match schema"
         },
         501: {
-            "description": "Not implemented - streaming is not yet supported"
+            "description": "Not implemented - the requested model does not support this operation"
         },
     },
 }

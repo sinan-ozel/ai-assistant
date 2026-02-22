@@ -36,7 +36,7 @@ test = [
     "pytest-cov>=3.0.0",      # For test coverage reporting
     "pytest-depends>=1.0.1",  # For test dependency management
     "pytest-mock>=3.14.0",    # For mocking in tests
-    "pytest-openapi==0.1.6",  # For OpenAPI contract testing
+    "pytest-openapi==0.2.2.dev202602210352",  # For OpenAPI contract testing
     "pytest-repeated==0.3.9", # For statistical testing of LLM responses (esp. the low parameter SLMs used in tests.)
     "httpx>=0.28.1",          # To make more complex calls, such as streaming.
     "litellm==1.80.0",

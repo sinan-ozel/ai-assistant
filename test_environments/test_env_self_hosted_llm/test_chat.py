@@ -109,27 +109,6 @@ def test_chat_completions_litellm(ollama_server_available):
 
 
 @pytest.mark.depends(on=['test_chat_completions_basic'])
-def test_chat_completions_streaming_not_implemented():
-    """Test that streaming returns 501 Not Implemented."""
-    url = f"{BASE_URL}/v1/chat/completions"
-
-    payload = {
-        "model": "ollama/gemma3:4b",
-        "messages": [
-            {"role": "user", "content": "Hello"}
-        ],
-        "stream": True  # Request streaming
-    }
-
-    response = requests.post(url, json=payload)
-    assert response.status_code == 501, f"Expected 501, got {response.status_code}: {response.text}"
-
-    data = response.json()
-    assert "detail" in data
-    assert "streaming" in data["detail"].lower() or "not" in data["detail"].lower()
-
-
-@pytest.mark.depends(on=['test_chat_completions_basic'])
 def test_chat_completions_timeout():
     """Test that timeout parameter triggers 408 when request times out."""
     url = f"{BASE_URL}/v1/chat/completions"

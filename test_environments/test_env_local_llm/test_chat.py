@@ -1,7 +1,9 @@
+import json
+import os
+
+import litellm
 import pytest
 import requests
-import litellm
-import os
 
 litellm.set_verbose = False
 litellm.verbose = False
@@ -109,8 +111,114 @@ def test_chat_completions_litellm():
 
 
 @pytest.mark.depends(on=['test_chat_completions_basic'])
-def test_chat_completions_streaming_not_implemented():
-    """Test that streaming returns 501 Not Implemented."""
+def test_chat_completions_streaming_sse():
+    """Test streaming with SSE format (default)."""
+    url = f"{BASE_URL}/v1/chat/completions"
+
+    payload = {
+        "model": "ollama/gemma3:4b",
+        "messages": [
+            {"role": "user", "content": "Say hello in exactly 3 words."}
+        ],
+        "stream": True,
+        "stream_format": "sse",
+        "max_tokens": 20
+    }
+
+    response = requests.post(url, json=payload, stream=True)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    assert response.headers.get("content-type") == "text/event-stream; charset=utf-8"
+
+    chunks = []
+    content_parts = []
+    done_received = False
+
+    for line in response.iter_lines(decode_unicode=True):
+        if line:
+            if line.startswith("data: "):
+                data = line[6:]  # Remove "data: " prefix
+                if data == "[DONE]":
+                    done_received = True
+                else:
+                    chunk = json.loads(data)
+                    chunks.append(chunk)
+                    # Extract content from delta
+                    if "choices" in chunk and chunk["choices"]:
+                        delta = chunk["choices"][0].get("delta", {})
+                        if "content" in delta:
+                            content_parts.append(delta["content"])
+
+    assert len(chunks) > 0, "Expected at least one chunk"
+    assert done_received, "Expected [DONE] message"
+
+    # Verify chunk structure
+    first_chunk = chunks[0]
+    assert "id" in first_chunk
+    assert "object" in first_chunk
+    assert first_chunk["object"] == "chat.completion.chunk"
+    assert "created" in first_chunk
+    assert "choices" in first_chunk
+
+    # Verify we got content
+    full_content = "".join(content_parts)
+    assert len(full_content) > 0, "Expected content in streaming response"
+    print(f"SSE streaming content: {full_content}")
+
+
+@pytest.mark.depends(on=['test_chat_completions_basic'])
+def test_chat_completions_streaming_ndjson():
+    """Test streaming with NDJSON format."""
+    url = f"{BASE_URL}/v1/chat/completions"
+
+    payload = {
+        "model": "ollama/gemma3:4b",
+        "messages": [
+            {"role": "user", "content": "Say goodbye in exactly 3 words."}
+        ],
+        "stream": True,
+        "stream_format": "ndjson",
+        "max_tokens": 20
+    }
+
+    response = requests.post(url, json=payload, stream=True)
+    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    assert "application/x-ndjson" in response.headers.get("content-type", "")
+
+    chunks = []
+    content_parts = []
+    done_received = False
+
+    for line in response.iter_lines(decode_unicode=True):
+        if line:
+            chunk = json.loads(line)
+            if chunk.get("done"):
+                done_received = True
+            else:
+                chunks.append(chunk)
+                # Extract content from delta
+                if "choices" in chunk and chunk["choices"]:
+                    delta = chunk["choices"][0].get("delta", {})
+                    if "content" in delta:
+                        content_parts.append(delta["content"])
+
+    assert len(chunks) > 0, "Expected at least one chunk"
+    assert done_received, "Expected done message"
+
+    # Verify chunk structure
+    first_chunk = chunks[0]
+    assert "id" in first_chunk
+    assert "object" in first_chunk
+    assert first_chunk["object"] == "chat.completion.chunk"
+
+    # Verify we got content
+    full_content = "".join(content_parts)
+    assert len(full_content) > 0, "Expected content in streaming response"
+    print(f"NDJSON streaming content: {full_content}")
+
+
+@pytest.mark.depends(on=['test_chat_completions_basic'])
+def test_chat_completions_streaming_invalid_format():
+    """Test that invalid stream_format returns 422 (schema validation error)."""
     url = f"{BASE_URL}/v1/chat/completions"
 
     payload = {
@@ -118,15 +226,17 @@ def test_chat_completions_streaming_not_implemented():
         "messages": [
             {"role": "user", "content": "Hello"}
         ],
-        "stream": True  # Request streaming
+        "stream": True,
+        "stream_format": "invalid_format"
     }
 
     response = requests.post(url, json=payload)
-    assert response.status_code == 501, f"Expected 501, got {response.status_code}: {response.text}"
+    assert response.status_code == 422, f"Expected 422, got {response.status_code}: {response.text}"
 
     data = response.json()
     assert "detail" in data
-    assert "streaming" in data["detail"].lower() or "not" in data["detail"].lower()
+    # Schema validation error will mention the enum or validation failure
+    assert "stream_format" in data["detail"].lower() or "enum" in data["detail"].lower() or "invalid" in data["detail"].lower()
 
 
 @pytest.mark.depends(on=['test_chat_completions_basic'])

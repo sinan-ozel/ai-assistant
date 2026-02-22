@@ -5,9 +5,9 @@ by all endpoints (chat completions, generate, agent chat, etc.).
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, AsyncGenerator, Dict, Optional
 
-from litellm import completion
+from litellm import acompletion, completion
 
 logger = logging.getLogger(__name__)
 
@@ -198,3 +198,88 @@ def call_llm_by_model(
     response = completion(**litellm_kwargs)
 
     return response
+
+
+async def call_llm_by_model_streaming(
+    messages: list[Dict[str, str]],
+    providers_state: Dict[str, Any],
+    model: Optional[str] = None,
+    temperature: Optional[float] = None,
+    max_tokens: Optional[int] = None,
+    top_p: Optional[float] = None,
+    stop: Optional[list[str]] = None,
+    timeout: Optional[float] = None,
+    **kwargs,
+) -> AsyncGenerator[Any, None]:
+    """Call LLM via LiteLLM with streaming enabled.
+
+    Args:
+        messages: List of message dicts with 'role' and 'content'
+        providers_state: Provider discovery state
+        model: Requested model name (optional, uses default if not specified)
+        temperature: Sampling temperature
+        max_tokens: Maximum tokens to generate
+        top_p: Nucleus sampling parameter
+        stop: Stop sequences
+        timeout: Request timeout in seconds (overrides provider config)
+        **kwargs: Additional parameters for litellm.completion
+
+    Yields:
+        LiteLLM streaming chunks
+
+    Raises:
+        ValueError: If no providers available
+        litellm.Timeout: If request times out
+        Exception: If LLM call fails
+    """
+    # Get provider configuration
+    model_to_use, provider_config = get_provider_config(providers_state, model)
+
+    # Build kwargs for litellm
+    litellm_kwargs = {
+        "model": model_to_use,
+        "messages": messages,
+        "stream": True,
+    }
+
+    # Add provider-specific config
+    if provider_config.get("api_base"):
+        litellm_kwargs["api_base"] = provider_config["api_base"]
+    if provider_config.get("api_key"):
+        litellm_kwargs["api_key"] = provider_config["api_key"]
+
+    # Add timeout - prioritize request parameter, then provider config, then no timeout
+    if timeout is not None:
+        litellm_kwargs["timeout"] = timeout
+    elif provider_config.get("timeout"):
+        litellm_kwargs["timeout"] = provider_config["timeout"]
+
+    # Add optional parameters if provided
+    if temperature is not None:
+        litellm_kwargs["temperature"] = temperature
+    if max_tokens is not None:
+        litellm_kwargs["max_tokens"] = max_tokens
+    if top_p is not None:
+        litellm_kwargs["top_p"] = top_p
+    if stop is not None:
+        litellm_kwargs["stop"] = stop
+
+    # Add any extra kwargs
+    litellm_kwargs.update(kwargs)
+
+    logger.debug("=" * 80)
+    logger.debug("LLM Streaming Call Parameters")
+    logger.debug("=" * 80)
+    logger.debug(f"Model: {litellm_kwargs.get('model')}")
+    logger.debug(f"API Base: {litellm_kwargs.get('api_base')}")
+    logger.debug(f"Temperature: {litellm_kwargs.get('temperature')}")
+    logger.debug(f"Max Tokens: {litellm_kwargs.get('max_tokens')}")
+    logger.debug(f"Timeout: {litellm_kwargs.get('timeout')}")
+    logger.debug(f"Messages ({len(messages)} total)")
+    logger.debug("=" * 80)
+
+    # Call LiteLLM with async streaming
+    response = await acompletion(**litellm_kwargs)
+
+    async for chunk in response:
+        yield chunk

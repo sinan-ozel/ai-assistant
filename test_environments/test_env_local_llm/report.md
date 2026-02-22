@@ -121,13 +121,14 @@
   "message": "What's the weather?",
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "stream": false
+  "stream": false,
+  "stream_format": "sse"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -154,11 +155,11 @@
   "user_id": "user-456",
   "message": "The weather is sunny.\n",
   "role": "assistant",
-  "created": 1771166423,
+  "created": 1771730053,
   "usage": {
-    "prompt_tokens": 1201,
+    "prompt_tokens": 1473,
     "completion_tokens": 7,
-    "total_tokens": 1208
+    "total_tokens": 1480
   }
 }
 ```
@@ -167,7 +168,7 @@
 
 ## Test #5 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -179,6 +180,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.0,
   "max_tokens": 1
 }
@@ -186,7 +188,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -205,19 +207,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #6 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -229,6 +229,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.0,
   "max_tokens": 500000
 }
@@ -236,7 +237,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -255,19 +256,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #7 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -279,6 +278,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.0,
   "max_tokens": 1000000
 }
@@ -286,7 +286,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -305,19 +305,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #8 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -329,6 +327,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.123456789,
   "max_tokens": 1
 }
@@ -336,7 +335,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -355,19 +354,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #9 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -379,6 +376,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.123456789,
   "max_tokens": 500000
 }
@@ -386,7 +384,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -405,19 +403,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #10 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -429,6 +425,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.123456789,
   "max_tokens": 1000000
 }
@@ -436,7 +433,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -455,19 +452,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #11 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -479,6 +474,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.999999999,
   "max_tokens": 1
 }
@@ -486,7 +482,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -505,19 +501,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #12 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -529,6 +523,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.999999999,
   "max_tokens": 500000
 }
@@ -536,7 +531,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -555,19 +550,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #13 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -579,6 +572,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.999999999,
   "max_tokens": 1000000
 }
@@ -586,7 +580,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -605,19 +599,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #14 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -629,6 +621,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 1.111111111,
   "max_tokens": 1
 }
@@ -636,7 +629,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -655,12 +648,10 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
@@ -680,7 +671,8 @@
       "role": "user",
       "content": "What is the capital of France?"
     }
-  ]
+  ],
+  "stream": false
 }
 ```
 
@@ -718,24 +710,24 @@
 
 ```json
 {
-  "id": "chatcmpl-ca3abd1b9e3b4b09ac50fc21",
+  "id": "chatcmpl-663ea9e36bd844e7837a91b9",
   "object": "chat.completion",
-  "created": 1771166425,
+  "created": 1771730089,
   "model": "ollama/gemma3:270m",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is Paris.\n"
+        "content": "The capital of France is Paris."
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 22,
-    "completion_tokens": 9,
-    "total_tokens": 31
+    "completion_tokens": 8,
+    "total_tokens": 30
   }
 }
 ```
@@ -744,7 +736,7 @@
 
 ## Test #16 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -759,7 +751,9 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 0.0
+  "timeout": 0.0,
+  "stream": true,
+  "stream_format": "sse"
 }
 ```
 
@@ -796,34 +790,14 @@
 **Status:** `200`
 
 ```json
-{
-  "id": "chatcmpl-accb9bcad8864624b84be821",
-  "object": "chat.completion",
-  "created": 1771166425,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": ""
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 1,
-    "total_tokens": 21
-  }
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #17 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -838,68 +812,9 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 0.123456789
-}
-```
-
-### Expected Response
-
-**Status:** `200 or 422 or 400 or 404 or 501 or 408`
-
-```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `408`
-
-```json
-{
-  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 0.123456789 seconds."
-}
-```
-
----
-
-## Test #18 ✅
-
-📋 *Test case from OpenAPI example*
-
-**Endpoint:** `POST /v1/chat/completions`
-
-### Request Body
-
-```json
-{
-  "model": "Lorem ipsum dolor sit amet",
-  "messages": [
-    {
-      "role": "system",
-      "content": "Lorem ipsum dolor sit amet"
-    }
-  ],
-  "timeout": 0.999999999
+  "timeout": 0.0,
+  "stream": true,
+  "stream_format": "ndjson"
 }
 ```
 
@@ -936,26 +851,49 @@
 **Status:** `200`
 
 ```json
+"[Streaming response: application/x-ndjson]"
+```
+
+---
+
+## Test #18 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/chat/completions`
+
+### Request Body
+
+```json
 {
-  "id": "chatcmpl-37f05424aa98404bb70c4c2d",
-  "object": "chat.completion",
-  "created": 1771166425,
   "model": "Lorem ipsum dolor sit amet",
-  "choices": [
+  "messages": [
     {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": ""
-      },
-      "finish_reason": "stop"
+      "role": "system",
+      "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 1,
-    "total_tokens": 21
-  }
+  "timeout": 0.0,
+  "stream": true,
+  "stream_format": "invalid_enum_value"
+}
+```
+
+### Expected Response
+
+**Status:** `400 or 422 or 200 or 404 or 501 or 408`
+
+```json
+"400/422 (invalid enum value)"
+```
+
+### Actual Response
+
+**Status:** `422`
+
+```json
+{
+  "detail": "'invalid_enum_value' is not one of ['sse', 'ndjson']\n\nFailed validating 'enum' in schema['properties']['stream_format']:\n    {'type': 'string',\n     'enum': ['sse', 'ndjson'],\n     'default': 'sse',\n     'description': \"Streaming format: 'sse' for Server-Sent Events \"\n                    \"(OpenAI-compatible), 'ndjson' for newline-delimited \"\n                    'JSON (Ollama-style)'}\n\nOn instance['stream_format']:\n    'invalid_enum_value'"
 }
 ```
 
@@ -963,7 +901,7 @@
 
 ## Test #19 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -978,7 +916,9 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 1.111111111
+  "timeout": 0.0,
+  "stream": false,
+  "stream_format": "sse"
 }
 ```
 
@@ -1016,9 +956,9 @@
 
 ```json
 {
-  "id": "chatcmpl-f11146553c2f4eabab8bb698",
+  "id": "chatcmpl-196260754fb04fe9bb757d4e",
   "object": "chat.completion",
-  "created": 1771166426,
+  "created": 1771730092,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1042,7 +982,7 @@
 
 ## Test #20 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -1057,7 +997,9 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 500000.0
+  "timeout": 0.0,
+  "stream": false,
+  "stream_format": "ndjson"
 }
 ```
 
@@ -1095,9 +1037,9 @@
 
 ```json
 {
-  "id": "chatcmpl-461f37482d8e4901a8402101",
+  "id": "chatcmpl-bf1b553760524a1487a7c20a",
   "object": "chat.completion",
-  "created": 1771166426,
+  "created": 1771730092,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1121,7 +1063,7 @@
 
 ## Test #21 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -1136,63 +1078,27 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 1000000.0
+  "timeout": 0.0,
+  "stream": false,
+  "stream_format": "invalid_enum_value"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501 or 408`
+**Status:** `400 or 422 or 200 or 404 or 501 or 408`
 
 ```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
+"400/422 (invalid enum value)"
 ```
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `422`
 
 ```json
 {
-  "id": "chatcmpl-7621782e5b1347c4a0fd056c",
-  "object": "chat.completion",
-  "created": 1771166426,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": ""
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 1,
-    "total_tokens": 21
-  }
+  "detail": "'invalid_enum_value' is not one of ['sse', 'ndjson']\n\nFailed validating 'enum' in schema['properties']['stream_format']:\n    {'type': 'string',\n     'enum': ['sse', 'ndjson'],\n     'default': 'sse',\n     'description': \"Streaming format: 'sse' for Server-Sent Events \"\n                    \"(OpenAI-compatible), 'ndjson' for newline-delimited \"\n                    'JSON (Ollama-style)'}\n\nOn instance['stream_format']:\n    'invalid_enum_value'"
 }
 ```
 
@@ -1200,7 +1106,7 @@
 
 ## Test #22 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -1215,7 +1121,9 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 0.0
+  "timeout": 0.123456789,
+  "stream": true,
+  "stream_format": "sse"
 }
 ```
 
@@ -1252,34 +1160,14 @@
 **Status:** `200`
 
 ```json
-{
-  "id": "chatcmpl-8eb45ec64352463aab2ddddd",
-  "object": "chat.completion",
-  "created": 1771166427,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": ""
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 1,
-    "total_tokens": 21
-  }
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #23 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -1294,7 +1182,113 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 0.123456789
+  "timeout": 0.123456789,
+  "stream": true,
+  "stream_format": "ndjson"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1734700000,
+  "model": "pixtral",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! How can I help you today?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 20,
+    "completion_tokens": 10,
+    "total_tokens": 30
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+"[Streaming response: application/x-ndjson]"
+```
+
+---
+
+## Test #24 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/chat/completions`
+
+### Request Body
+
+```json
+{
+  "model": "Lorem ipsum dolor sit amet",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Lorem ipsum dolor sit amet"
+    }
+  ],
+  "timeout": 0.123456789,
+  "stream": true,
+  "stream_format": "invalid_enum_value"
+}
+```
+
+### Expected Response
+
+**Status:** `400 or 422 or 200 or 404 or 501 or 408`
+
+```json
+"400/422 (invalid enum value)"
+```
+
+### Actual Response
+
+**Status:** `422`
+
+```json
+{
+  "detail": "'invalid_enum_value' is not one of ['sse', 'ndjson']\n\nFailed validating 'enum' in schema['properties']['stream_format']:\n    {'type': 'string',\n     'enum': ['sse', 'ndjson'],\n     'default': 'sse',\n     'description': \"Streaming format: 'sse' for Server-Sent Events \"\n                    \"(OpenAI-compatible), 'ndjson' for newline-delimited \"\n                    'JSON (Ollama-style)'}\n\nOn instance['stream_format']:\n    'invalid_enum_value'"
+}
+```
+
+---
+
+## Test #25 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/chat/completions`
+
+### Request Body
+
+```json
+{
+  "model": "Lorem ipsum dolor sit amet",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Lorem ipsum dolor sit amet"
+    }
+  ],
+  "timeout": 0.123456789,
+  "stream": false,
+  "stream_format": "sse"
 }
 ```
 
@@ -1333,164 +1327,6 @@
 ```json
 {
   "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 0.123456789 seconds."
-}
-```
-
----
-
-## Test #24 ✅
-
-📋 *Test case from OpenAPI example*
-
-**Endpoint:** `POST /v1/chat/completions`
-
-### Request Body
-
-```json
-{
-  "model": "Lorem ipsum dolor sit amet",
-  "messages": [
-    {
-      "role": "system",
-      "content": "Lorem ipsum dolor sit amet"
-    }
-  ],
-  "timeout": 0.999999999
-}
-```
-
-### Expected Response
-
-**Status:** `200 or 422 or 400 or 404 or 501 or 408`
-
-```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-e75cf232ba1d48b7bee7bd06",
-  "object": "chat.completion",
-  "created": 1771166427,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": ""
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 1,
-    "total_tokens": 21
-  }
-}
-```
-
----
-
-## Test #25 ✅
-
-📋 *Test case from OpenAPI example*
-
-**Endpoint:** `POST /v1/chat/completions`
-
-### Request Body
-
-```json
-{
-  "model": "Lorem ipsum dolor sit amet",
-  "messages": [
-    {
-      "role": "system",
-      "content": "Lorem ipsum dolor sit amet"
-    }
-  ],
-  "timeout": 1.111111111
-}
-```
-
-### Expected Response
-
-**Status:** `200 or 422 or 400 or 404 or 501 or 408`
-
-```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-b2106a8193214e9989eb5eb5",
-  "object": "chat.completion",
-  "created": 1771166428,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Lorem ipsum dolor sit amet\n"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 7,
-    "total_tokens": 27
-  }
 }
 ```
 
@@ -1540,7 +1376,7 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-15T14:40:28.551285Z",
+  "created_at": "2026-02-22T03:14:55.429161Z",
   "response": "The capital of France is Paris.",
   "done": true,
   "context": [],
@@ -1557,7 +1393,7 @@
 
 ## Test #27 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1609,7 +1445,7 @@
 
 ## Test #28 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1661,7 +1497,7 @@
 
 ## Test #29 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1713,7 +1549,7 @@
 
 ## Test #30 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1765,7 +1601,7 @@
 
 ## Test #31 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1817,7 +1653,7 @@
 
 ## Test #32 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1869,7 +1705,7 @@
 
 ## Test #33 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1921,7 +1757,7 @@
 
 ## Test #34 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1973,7 +1809,7 @@
 
 ## Test #35 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -2025,7 +1861,7 @@
 
 ## Test #36 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 

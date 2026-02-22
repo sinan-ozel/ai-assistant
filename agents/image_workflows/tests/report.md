@@ -132,13 +132,14 @@
   "message": "What's the weather?",
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "stream": false
+  "stream": false,
+  "stream_format": "sse"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -165,11 +166,11 @@
   "user_id": "user-456",
   "message": "I need to know where you are to check the weather! \ud83d\ude0a Could you please tell me your current location? For example, city name, country, or zip code? \ud83c\udf24\ufe0f",
   "role": "assistant",
-  "created": 1771167261,
+  "created": 1771730741,
   "usage": {
-    "prompt_tokens": 1055,
-    "completion_tokens": 965,
-    "total_tokens": 2020
+    "prompt_tokens": 1143,
+    "completion_tokens": 587,
+    "total_tokens": 1730
   }
 }
 ```
@@ -178,7 +179,7 @@
 
 ## Test #5 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -190,6 +191,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.0,
   "max_tokens": 1
 }
@@ -197,7 +199,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -216,19 +218,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #6 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -240,6 +240,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.0,
   "max_tokens": 500000
 }
@@ -247,7 +248,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -266,19 +267,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #7 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -290,6 +289,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.0,
   "max_tokens": 1000000
 }
@@ -297,7 +297,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -316,19 +316,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #8 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -340,6 +338,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.123456789,
   "max_tokens": 1
 }
@@ -347,7 +346,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -366,19 +365,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #9 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -390,6 +387,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.123456789,
   "max_tokens": 500000
 }
@@ -397,7 +395,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -416,19 +414,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #10 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -440,6 +436,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.123456789,
   "max_tokens": 1000000
 }
@@ -447,7 +444,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -466,19 +463,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #11 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -490,6 +485,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.999999999,
   "max_tokens": 1
 }
@@ -497,7 +493,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -516,19 +512,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #12 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -540,6 +534,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.999999999,
   "max_tokens": 500000
 }
@@ -547,7 +542,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -566,19 +561,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #13 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -590,6 +583,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 0.999999999,
   "max_tokens": 1000000
 }
@@ -597,7 +591,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -616,19 +610,17 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #14 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/agent/chat`
 
@@ -640,6 +632,7 @@
   "conversation_id": "Lorem ipsum dolor sit amet",
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
+  "stream_format": "sse",
   "timeout": 1.111111111,
   "max_tokens": 1
 }
@@ -647,7 +640,7 @@
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 501 or 503 or 408`
+**Status:** `200 or 422 or 400 or 503 or 408`
 
 ```json
 {
@@ -666,12 +659,10 @@
 
 ### Actual Response
 
-**Status:** `501`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Streaming not yet implemented"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
@@ -691,7 +682,8 @@
       "role": "user",
       "content": "What is the capital of France?"
     }
-  ]
+  ],
+  "stream": false
 }
 ```
 
@@ -729,24 +721,24 @@
 
 ```json
 {
-  "id": "chatcmpl-9249e4ba652748c882610d5c",
+  "id": "chatcmpl-7e6176056470451bbfa93c05",
   "object": "chat.completion",
-  "created": 1771167269,
+  "created": 1771730789,
   "model": "qwen3-vl:2b-q4km",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is **Paris**.  \n\nParis is not only the political center of France but also the largest city in the country and a global hub for culture, history, and tourism. It's renowned for landmarks like the Eiffel Tower, the Louvre Museum, and the Seine River.  \n\n*Note:* While France has other important cities (e.g., Lyon, Bordeaux), Paris holds the specific distinction of being the **national capital**."
+        "content": "The capital of France is **Paris**.  \n\nThis city has been the political, cultural, and economic heart of France for centuries, serving as the seat of government (including the National Assembly, the Senate, and the President of France). It's also renowned for its iconic landmarks like the Eiffel Tower, Louvre Museum, and Notre-Dame Cathedral.  \n\n*Note: While Paris is the capital, it's also the most famous city in France and a global hub for tourism, arts, and fashion.*"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 17,
-    "completion_tokens": 624,
-    "total_tokens": 641
+    "completion_tokens": 611,
+    "total_tokens": 628
   }
 }
 ```
@@ -755,7 +747,7 @@
 
 ## Test #16 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -770,7 +762,9 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 0.0
+  "timeout": 0.0,
+  "stream": true,
+  "stream_format": "sse"
 }
 ```
 
@@ -807,34 +801,14 @@
 **Status:** `200`
 
 ```json
-{
-  "id": "chatcmpl-ae6fb0318d6641acb83e2f0d",
-  "object": "chat.completion",
-  "created": 1771167271,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "It seems you've pasted some placeholder text (\"Lorem ipsum dolor sit amet\"). This is commonly used in design and publishing for mockups or examples. How can I assist you today? Whether you need help with writing, technical support, or something else, feel free to ask! \ud83d\ude0a"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 15,
-    "completion_tokens": 207,
-    "total_tokens": 222
-  }
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #17 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -849,7 +823,9 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 0.123456789
+  "timeout": 0.0,
+  "stream": true,
+  "stream_format": "ndjson"
 }
 ```
 
@@ -883,19 +859,17 @@
 
 ### Actual Response
 
-**Status:** `408`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.Timeout: APITimeoutError - Request timed out. Error_str: Request timed out."
-}
+"[Streaming response: application/x-ndjson]"
 ```
 
 ---
 
 ## Test #18 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -910,45 +884,27 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 0.999999999
+  "timeout": 0.0,
+  "stream": true,
+  "stream_format": "invalid_enum_value"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501 or 408`
+**Status:** `400 or 422 or 200 or 404 or 501 or 408`
 
 ```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
+"400/422 (invalid enum value)"
 ```
 
 ### Actual Response
 
-**Status:** `408`
+**Status:** `422`
 
 ```json
 {
-  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.Timeout: APITimeoutError - Request timed out. Error_str: Request timed out."
+  "detail": "'invalid_enum_value' is not one of ['sse', 'ndjson']\n\nFailed validating 'enum' in schema['properties']['stream_format']:\n    {'type': 'string',\n     'enum': ['sse', 'ndjson'],\n     'default': 'sse',\n     'description': \"Streaming format: 'sse' for Server-Sent Events \"\n                    \"(OpenAI-compatible), 'ndjson' for newline-delimited \"\n                    'JSON (Ollama-style)'}\n\nOn instance['stream_format']:\n    'invalid_enum_value'"
 }
 ```
 
@@ -956,7 +912,7 @@
 
 ## Test #19 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -971,68 +927,9 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 1.111111111
-}
-```
-
-### Expected Response
-
-**Status:** `200 or 422 or 400 or 404 or 501 or 408`
-
-```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `408`
-
-```json
-{
-  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.Timeout: APITimeoutError - Request timed out. Error_str: Request timed out."
-}
-```
-
----
-
-## Test #20 ✅
-
-📋 *Test case from OpenAPI example*
-
-**Endpoint:** `POST /v1/chat/completions`
-
-### Request Body
-
-```json
-{
-  "model": "Lorem ipsum dolor sit amet",
-  "messages": [
-    {
-      "role": "system",
-      "content": "Lorem ipsum dolor sit amet"
-    }
-  ],
-  "timeout": 500000.0
+  "timeout": 0.0,
+  "stream": false,
+  "stream_format": "sse"
 }
 ```
 
@@ -1070,24 +967,105 @@
 
 ```json
 {
-  "id": "chatcmpl-40e0687f4ea84ca894cedc9f",
+  "id": "chatcmpl-18bb4169ddcd41b39a4459e8",
   "object": "chat.completion",
-  "created": 1771167285,
+  "created": 1771730807,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. \n\nIf you're encountering this text in a design or publishing context and need guidance on its usage, or if you have a specific question about it, feel free to clarify! \ud83d\ude0a"
+        "content": "It seems like you've pasted placeholder text (\"Lorem ipsum dolor sit amet\") instead of a specific question or request. This is commonly used in design and publishing to represent content without actual text (like \"Lorem ipsum\" in typography).  \n\nIf you have a question or need help with something specific\u2014whether it's writing, design, or another topic\u2014I\u2019d be happy to assist! Just let me know how I can help. \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 15,
-    "completion_tokens": 359,
-    "total_tokens": 374
+    "completion_tokens": 396,
+    "total_tokens": 411
+  }
+}
+```
+
+---
+
+## Test #20 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/chat/completions`
+
+### Request Body
+
+```json
+{
+  "model": "Lorem ipsum dolor sit amet",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Lorem ipsum dolor sit amet"
+    }
+  ],
+  "timeout": 0.0,
+  "stream": false,
+  "stream_format": "ndjson"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1734700000,
+  "model": "pixtral",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! How can I help you today?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 20,
+    "completion_tokens": 10,
+    "total_tokens": 30
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+{
+  "id": "chatcmpl-2a28aa9788c64d59b3c3faed",
+  "object": "chat.completion",
+  "created": 1771730811,
+  "model": "Lorem ipsum dolor sit amet",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! I'm here to help. How can I assist you today? \ud83d\ude0a"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 15,
+    "completion_tokens": 283,
+    "total_tokens": 298
   }
 }
 ```
@@ -1096,7 +1074,7 @@
 
 ## Test #21 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -1111,63 +1089,27 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 1000000.0
+  "timeout": 0.0,
+  "stream": false,
+  "stream_format": "invalid_enum_value"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501 or 408`
+**Status:** `400 or 422 or 200 or 404 or 501 or 408`
 
 ```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
+"400/422 (invalid enum value)"
 ```
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `422`
 
 ```json
 {
-  "id": "chatcmpl-5a3fa2ea24854d4691d17c95",
-  "object": "chat.completion",
-  "created": 1771167288,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "I see you've shared some placeholder text\u2014*Lorem ipsum dolor sit amet*\u2014which is commonly used in design and typography for mockups. \ud83d\ude0a Is there something specific you'd like help with today? Whether it's writing, design, or just a general conversation, I'm here to assist!"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 15,
-    "completion_tokens": 253,
-    "total_tokens": 268
-  }
+  "detail": "'invalid_enum_value' is not one of ['sse', 'ndjson']\n\nFailed validating 'enum' in schema['properties']['stream_format']:\n    {'type': 'string',\n     'enum': ['sse', 'ndjson'],\n     'default': 'sse',\n     'description': \"Streaming format: 'sse' for Server-Sent Events \"\n                    \"(OpenAI-compatible), 'ndjson' for newline-delimited \"\n                    'JSON (Ollama-style)'}\n\nOn instance['stream_format']:\n    'invalid_enum_value'"
 }
 ```
 
@@ -1175,7 +1117,7 @@
 
 ## Test #22 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -1190,7 +1132,9 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 0.0
+  "timeout": 0.123456789,
+  "stream": true,
+  "stream_format": "sse"
 }
 ```
 
@@ -1227,34 +1171,14 @@
 **Status:** `200`
 
 ```json
-{
-  "id": "chatcmpl-33b6a40847494ed69e4d6d0b",
-  "object": "chat.completion",
-  "created": 1771167289,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! \ud83d\ude0a It looks like you've pasted some placeholder text (Lorem ipsum dolor sit amet) \u2013 that's common in design or publishing to create space for content. How can I assist you today? Whether you need help with a project, a question, or just want to chat, I'm here to support you! \ud83c\udf1f"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 15,
-    "completion_tokens": 169,
-    "total_tokens": 184
-  }
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
 
 ## Test #23 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -1269,7 +1193,9 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 0.123456789
+  "timeout": 0.123456789,
+  "stream": true,
+  "stream_format": "ndjson"
 }
 ```
 
@@ -1303,19 +1229,17 @@
 
 ### Actual Response
 
-**Status:** `408`
+**Status:** `200`
 
 ```json
-{
-  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.Timeout: APITimeoutError - Request timed out. Error_str: Request timed out."
-}
+"[Streaming response: application/x-ndjson]"
 ```
 
 ---
 
 ## Test #24 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -1330,45 +1254,27 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 0.999999999
+  "timeout": 0.123456789,
+  "stream": true,
+  "stream_format": "invalid_enum_value"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 422 or 400 or 404 or 501 or 408`
+**Status:** `400 or 422 or 200 or 404 or 501 or 408`
 
 ```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
+"400/422 (invalid enum value)"
 ```
 
 ### Actual Response
 
-**Status:** `408`
+**Status:** `422`
 
 ```json
 {
-  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.Timeout: APITimeoutError - Request timed out. Error_str: Request timed out."
+  "detail": "'invalid_enum_value' is not one of ['sse', 'ndjson']\n\nFailed validating 'enum' in schema['properties']['stream_format']:\n    {'type': 'string',\n     'enum': ['sse', 'ndjson'],\n     'default': 'sse',\n     'description': \"Streaming format: 'sse' for Server-Sent Events \"\n                    \"(OpenAI-compatible), 'ndjson' for newline-delimited \"\n                    'JSON (Ollama-style)'}\n\nOn instance['stream_format']:\n    'invalid_enum_value'"
 }
 ```
 
@@ -1376,7 +1282,7 @@
 
 ## Test #25 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/chat/completions`
 
@@ -1391,7 +1297,9 @@
       "content": "Lorem ipsum dolor sit amet"
     }
   ],
-  "timeout": 1.111111111
+  "timeout": 0.123456789,
+  "stream": false,
+  "stream_format": "sse"
 }
 ```
 
@@ -1479,15 +1387,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-15T14:55:06.846173Z",
-  "response": "The capital of France is **Paris**.  \n\nParis has been the capital of France since the Middle Ages and serves as the seat of the French government, including the National Assembly, the President of the Republic, and key institutions. It is also the largest city in France and a global cultural and historical hub.",
+  "created_at": "2026-02-22T03:27:03.946365Z",
+  "response": "The capital of France is **Paris**.  \n\nIt's the political, cultural, and historical center of France, home to iconic landmarks like the Eiffel Tower, the Louvre Museum, and the Seine River. Paris has been the capital since the Middle Ages and is a symbol of French identity. \ud83c\uddeb\ud83c\uddf7",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 17,
   "prompt_eval_duration": 0,
-  "eval_count": 584,
+  "eval_count": 534,
   "eval_duration": 0
 }
 ```
@@ -1496,7 +1404,7 @@
 
 ## Test #27 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1548,7 +1456,7 @@
 
 ## Test #28 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1600,7 +1508,7 @@
 
 ## Test #29 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1652,7 +1560,7 @@
 
 ## Test #30 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1704,7 +1612,7 @@
 
 ## Test #31 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1756,7 +1664,7 @@
 
 ## Test #32 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1808,7 +1716,7 @@
 
 ## Test #33 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1860,7 +1768,7 @@
 
 ## Test #34 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1912,7 +1820,7 @@
 
 ## Test #35 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -1964,7 +1872,7 @@
 
 ## Test #36 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/api/generate`
 
@@ -2038,13 +1946,14 @@
     }
   ],
   "temperature": 0.7,
-  "max_tokens": 4096
+  "max_tokens": 4096,
+  "stream": false
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -2071,17 +1980,17 @@
 ```json
 {
   "result": {
-    "title": "This Is An Image",
-    "author": "example",
-    "subtitle": "example",
-    "publisher": "example",
-    "series_title": "example",
+    "title": "This is an Image",
+    "author": "The Author",
+    "subtitle": "A Description of the Book",
+    "publisher": "Example Publisher",
+    "series_title": "Example Series",
     "series_number": 0
   },
   "usage": {
     "prompt_tokens": 163,
-    "completion_tokens": 51,
-    "total_tokens": 214
+    "completion_tokens": 59,
+    "total_tokens": 222
   }
 }
 ```
@@ -2090,7 +1999,7 @@
 
 ## Test #38 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-metadata`
 
@@ -2101,13 +2010,15 @@
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
   "temperature": 0.0,
-  "max_tokens": 1
+  "max_tokens": 1,
+  "stream": true,
+  "stream_format": "sse"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -2141,7 +2052,7 @@
 
 ## Test #39 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-metadata`
 
@@ -2152,13 +2063,15 @@
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
   "temperature": 0.0,
-  "max_tokens": 500000
+  "max_tokens": 1,
+  "stream": true,
+  "stream_format": "ndjson"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -2192,7 +2105,7 @@
 
 ## Test #40 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-metadata`
 
@@ -2203,30 +2116,18 @@
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
   "temperature": 0.0,
-  "max_tokens": 1000000
+  "max_tokens": 1,
+  "stream": true,
+  "stream_format": "invalid_enum_value"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `400 or 200 or 429 or 422`
 
 ```json
-{
-  "result": {
-    "title": "example",
-    "author": "example",
-    "subtitle": "example",
-    "publisher": "example",
-    "series_title": "example",
-    "series_number": 0
-  },
-  "usage": {
-    "prompt_tokens": 0,
-    "completion_tokens": 0,
-    "total_tokens": 0
-  }
-}
+"400/422 (invalid enum value)"
 ```
 
 ### Actual Response
@@ -2243,7 +2144,7 @@
 
 ## Test #41 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-metadata`
 
@@ -2253,14 +2154,16 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.123456789,
-  "max_tokens": 1
+  "temperature": 0.0,
+  "max_tokens": 1,
+  "stream": false,
+  "stream_format": "sse"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -2294,7 +2197,7 @@
 
 ## Test #42 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-metadata`
 
@@ -2304,14 +2207,16 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.123456789,
-  "max_tokens": 500000
+  "temperature": 0.0,
+  "max_tokens": 1,
+  "stream": false,
+  "stream_format": "ndjson"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -2345,7 +2250,7 @@
 
 ## Test #43 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-metadata`
 
@@ -2355,31 +2260,19 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.123456789,
-  "max_tokens": 1000000
+  "temperature": 0.0,
+  "max_tokens": 1,
+  "stream": false,
+  "stream_format": "invalid_enum_value"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `400 or 200 or 429 or 422`
 
 ```json
-{
-  "result": {
-    "title": "example",
-    "author": "example",
-    "subtitle": "example",
-    "publisher": "example",
-    "series_title": "example",
-    "series_number": 0
-  },
-  "usage": {
-    "prompt_tokens": 0,
-    "completion_tokens": 0,
-    "total_tokens": 0
-  }
-}
+"400/422 (invalid enum value)"
 ```
 
 ### Actual Response
@@ -2396,7 +2289,7 @@
 
 ## Test #44 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-metadata`
 
@@ -2406,14 +2299,16 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.999999999,
-  "max_tokens": 1
+  "temperature": 0.0,
+  "max_tokens": 500000,
+  "stream": true,
+  "stream_format": "sse"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -2447,7 +2342,7 @@
 
 ## Test #45 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-metadata`
 
@@ -2457,14 +2352,16 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.999999999,
-  "max_tokens": 500000
+  "temperature": 0.0,
+  "max_tokens": 500000,
+  "stream": true,
+  "stream_format": "ndjson"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -2498,7 +2395,7 @@
 
 ## Test #46 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-metadata`
 
@@ -2508,31 +2405,19 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.999999999,
-  "max_tokens": 1000000
+  "temperature": 0.0,
+  "max_tokens": 500000,
+  "stream": true,
+  "stream_format": "invalid_enum_value"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `400 or 200 or 429 or 422`
 
 ```json
-{
-  "result": {
-    "title": "example",
-    "author": "example",
-    "subtitle": "example",
-    "publisher": "example",
-    "series_title": "example",
-    "series_number": 0
-  },
-  "usage": {
-    "prompt_tokens": 0,
-    "completion_tokens": 0,
-    "total_tokens": 0
-  }
-}
+"400/422 (invalid enum value)"
 ```
 
 ### Actual Response
@@ -2549,7 +2434,7 @@
 
 ## Test #47 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-metadata`
 
@@ -2559,14 +2444,16 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 1.0,
-  "max_tokens": 1
+  "temperature": 0.0,
+  "max_tokens": 500000,
+  "stream": false,
+  "stream_format": "sse"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -2622,13 +2509,14 @@
     }
   ],
   "temperature": 0.7,
-  "max_tokens": 4096
+  "max_tokens": 4096,
+  "stream": false
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -2647,11 +2535,11 @@
 
 ```json
 {
-  "result": "",
+  "result": "this is an image",
   "usage": {
     "prompt_tokens": 90,
-    "completion_tokens": 4006,
-    "total_tokens": 4096
+    "completion_tokens": 687,
+    "total_tokens": 777
   }
 }
 ```
@@ -2660,7 +2548,7 @@
 
 ## Test #49 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-title`
 
@@ -2671,13 +2559,15 @@
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
   "temperature": 0.0,
-  "max_tokens": 1
+  "max_tokens": 1,
+  "stream": true,
+  "stream_format": "sse"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -2704,7 +2594,7 @@
 
 ## Test #50 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-title`
 
@@ -2715,13 +2605,15 @@
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
   "temperature": 0.0,
-  "max_tokens": 500000
+  "max_tokens": 1,
+  "stream": true,
+  "stream_format": "ndjson"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -2748,7 +2640,7 @@
 
 ## Test #51 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-title`
 
@@ -2759,23 +2651,18 @@
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
   "temperature": 0.0,
-  "max_tokens": 1000000
+  "max_tokens": 1,
+  "stream": true,
+  "stream_format": "invalid_enum_value"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `400 or 200 or 429 or 422`
 
 ```json
-{
-  "result": "example",
-  "usage": {
-    "prompt_tokens": 0,
-    "completion_tokens": 0,
-    "total_tokens": 0
-  }
-}
+"400/422 (invalid enum value)"
 ```
 
 ### Actual Response
@@ -2792,7 +2679,7 @@
 
 ## Test #52 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-title`
 
@@ -2802,14 +2689,16 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.123456789,
-  "max_tokens": 1
+  "temperature": 0.0,
+  "max_tokens": 1,
+  "stream": false,
+  "stream_format": "sse"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -2836,7 +2725,7 @@
 
 ## Test #53 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-title`
 
@@ -2846,14 +2735,16 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.123456789,
-  "max_tokens": 500000
+  "temperature": 0.0,
+  "max_tokens": 1,
+  "stream": false,
+  "stream_format": "ndjson"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -2880,7 +2771,7 @@
 
 ## Test #54 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-title`
 
@@ -2890,24 +2781,19 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.123456789,
-  "max_tokens": 1000000
+  "temperature": 0.0,
+  "max_tokens": 1,
+  "stream": false,
+  "stream_format": "invalid_enum_value"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `400 or 200 or 429 or 422`
 
 ```json
-{
-  "result": "example",
-  "usage": {
-    "prompt_tokens": 0,
-    "completion_tokens": 0,
-    "total_tokens": 0
-  }
-}
+"400/422 (invalid enum value)"
 ```
 
 ### Actual Response
@@ -2924,7 +2810,7 @@
 
 ## Test #55 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-title`
 
@@ -2934,14 +2820,16 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.999999999,
-  "max_tokens": 1
+  "temperature": 0.0,
+  "max_tokens": 500000,
+  "stream": true,
+  "stream_format": "sse"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -2968,7 +2856,7 @@
 
 ## Test #56 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-title`
 
@@ -2978,14 +2866,16 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.999999999,
-  "max_tokens": 500000
+  "temperature": 0.0,
+  "max_tokens": 500000,
+  "stream": true,
+  "stream_format": "ndjson"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -3012,7 +2902,7 @@
 
 ## Test #57 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-title`
 
@@ -3022,24 +2912,19 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.999999999,
-  "max_tokens": 1000000
+  "temperature": 0.0,
+  "max_tokens": 500000,
+  "stream": true,
+  "stream_format": "invalid_enum_value"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `400 or 200 or 429 or 422`
 
 ```json
-{
-  "result": "example",
-  "usage": {
-    "prompt_tokens": 0,
-    "completion_tokens": 0,
-    "total_tokens": 0
-  }
-}
+"400/422 (invalid enum value)"
 ```
 
 ### Actual Response
@@ -3056,7 +2941,7 @@
 
 ## Test #58 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-book-title`
 
@@ -3066,14 +2951,16 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 1.0,
-  "max_tokens": 1
+  "temperature": 0.0,
+  "max_tokens": 500000,
+  "stream": false,
+  "stream_format": "sse"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -3122,13 +3009,14 @@
     }
   ],
   "temperature": 0.7,
-  "max_tokens": 4096
+  "max_tokens": 4096,
+  "stream": false
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -3168,7 +3056,7 @@
 
 ## Test #60 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-nutrition-information`
 
@@ -3179,13 +3067,15 @@
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
   "temperature": 0.0,
-  "max_tokens": 1
+  "max_tokens": 1,
+  "stream": true,
+  "stream_format": "sse"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -3216,7 +3106,7 @@
 
 ## Test #61 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-nutrition-information`
 
@@ -3227,13 +3117,15 @@
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
   "temperature": 0.0,
-  "max_tokens": 500000
+  "max_tokens": 1,
+  "stream": true,
+  "stream_format": "ndjson"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -3264,7 +3156,7 @@
 
 ## Test #62 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-nutrition-information`
 
@@ -3275,27 +3167,18 @@
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
   "temperature": 0.0,
-  "max_tokens": 1000000
+  "max_tokens": 1,
+  "stream": true,
+  "stream_format": "invalid_enum_value"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `400 or 200 or 429 or 422`
 
 ```json
-{
-  "result": {
-    "calories": 0,
-    "serving_size": 0.0,
-    "unit": "example"
-  },
-  "usage": {
-    "prompt_tokens": 0,
-    "completion_tokens": 0,
-    "total_tokens": 0
-  }
-}
+"400/422 (invalid enum value)"
 ```
 
 ### Actual Response
@@ -3312,7 +3195,7 @@
 
 ## Test #63 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-nutrition-information`
 
@@ -3322,14 +3205,16 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.123456789,
-  "max_tokens": 1
+  "temperature": 0.0,
+  "max_tokens": 1,
+  "stream": false,
+  "stream_format": "sse"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -3360,7 +3245,7 @@
 
 ## Test #64 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-nutrition-information`
 
@@ -3370,14 +3255,16 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.123456789,
-  "max_tokens": 500000
+  "temperature": 0.0,
+  "max_tokens": 1,
+  "stream": false,
+  "stream_format": "ndjson"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -3408,7 +3295,7 @@
 
 ## Test #65 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-nutrition-information`
 
@@ -3418,28 +3305,19 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.123456789,
-  "max_tokens": 1000000
+  "temperature": 0.0,
+  "max_tokens": 1,
+  "stream": false,
+  "stream_format": "invalid_enum_value"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `400 or 200 or 429 or 422`
 
 ```json
-{
-  "result": {
-    "calories": 0,
-    "serving_size": 0.0,
-    "unit": "example"
-  },
-  "usage": {
-    "prompt_tokens": 0,
-    "completion_tokens": 0,
-    "total_tokens": 0
-  }
-}
+"400/422 (invalid enum value)"
 ```
 
 ### Actual Response
@@ -3456,7 +3334,7 @@
 
 ## Test #66 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-nutrition-information`
 
@@ -3466,14 +3344,16 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.999999999,
-  "max_tokens": 1
+  "temperature": 0.0,
+  "max_tokens": 500000,
+  "stream": true,
+  "stream_format": "sse"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -3504,7 +3384,7 @@
 
 ## Test #67 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-nutrition-information`
 
@@ -3514,14 +3394,16 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.999999999,
-  "max_tokens": 500000
+  "temperature": 0.0,
+  "max_tokens": 500000,
+  "stream": true,
+  "stream_format": "ndjson"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
@@ -3552,7 +3434,7 @@
 
 ## Test #68 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-nutrition-information`
 
@@ -3562,28 +3444,19 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.999999999,
-  "max_tokens": 1000000
+  "temperature": 0.0,
+  "max_tokens": 500000,
+  "stream": true,
+  "stream_format": "invalid_enum_value"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `400 or 200 or 429 or 422`
 
 ```json
-{
-  "result": {
-    "calories": 0,
-    "serving_size": 0.0,
-    "unit": "example"
-  },
-  "usage": {
-    "prompt_tokens": 0,
-    "completion_tokens": 0,
-    "total_tokens": 0
-  }
-}
+"400/422 (invalid enum value)"
 ```
 
 ### Actual Response
@@ -3600,7 +3473,7 @@
 
 ## Test #69 ✅
 
-📋 *Test case from OpenAPI example*
+🔧 *Test case generated from schema*
 
 **Endpoint:** `POST /v1/extract-nutrition-information`
 
@@ -3610,14 +3483,16 @@
 {
   "messages": [],
   "model": "Lorem ipsum dolor sit amet",
-  "temperature": 1.0,
-  "max_tokens": 1
+  "temperature": 0.0,
+  "max_tokens": 500000,
+  "stream": false,
+  "stream_format": "sse"
 }
 ```
 
 ### Expected Response
 
-**Status:** `200 or 501 or 429 or 422`
+**Status:** `200 or 429 or 422`
 
 ```json
 {
