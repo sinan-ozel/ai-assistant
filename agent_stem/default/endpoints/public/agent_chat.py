@@ -2,20 +2,23 @@
 
 import json
 import logging
+import os
 import time
 import uuid
 
 import litellm
 import tiktoken
 from common.llm import call_llm_by_model, call_llm_by_model_streaming
+from common.prompt_dsl import load_prompt_dsl
 from fastapi import HTTPException
 from fastapi.responses import StreamingResponse
 from jsonschema import ValidationError, validate
 from redis_memory import ConversationMemory
 from situational.awareness import get_provider_context_window
 
-# Default system message
-DEFAULT_SYSTEM_MESSAGE = (
+# Default system message (can be overridden by env or DSL)
+DEFAULT_SYSTEM_MESSAGE = os.environ.get(
+    "DEFAULT_SYSTEM_MESSAGE",
     "You are a helpful assistant. "
     "You have access to conversation history and can maintain context across messages."
 )
@@ -252,6 +255,7 @@ def handle_streaming(
     )
 
 
+# TODO: Completely get rid of this and stop support for non-streaming.
 async def handler(request: dict, providers_state: dict):
     """Agent chat endpoint with stateful conversation memory.
 
@@ -287,9 +291,6 @@ async def handler(request: dict, providers_state: dict):
 
     if len(message.strip()) == 0:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
-
-    # System message is not customizable per request
-    system_message = DEFAULT_SYSTEM_MESSAGE
 
     # Generate conversation_id if not provided
     if not conversation_id:
@@ -327,6 +328,51 @@ async def handler(request: dict, providers_state: dict):
             messages = []
             memory.messages = messages
 
+        # Try to load prompt DSL from cortex folder
+        dsl_result = load_prompt_dsl(
+            input_text=message,
+            message_history=messages,
+            default_system_message=DEFAULT_SYSTEM_MESSAGE,
+        )
+
+        logger.info(f"Agent chat: DSL result present: {dsl_result is not None}")
+
+        # Apply DSL customizations if available
+        if dsl_result:
+            # Override system message from docstring
+            system_message = dsl_result.system_message or DEFAULT_SYSTEM_MESSAGE
+            logger.info(f"Agent chat: Using DSL system message: {system_message[:100]}...")
+
+            # Override user message from stdout
+            if dsl_result.user_messages:
+                # If DSL printed output, use that instead of raw message
+                user_message_content = dsl_result.user_messages[0]
+                # Store additional messages if multiple prints
+                extra_user_messages = dsl_result.user_messages[1:]
+            else:
+                # No stdout, use original message
+                user_message_content = message
+                extra_user_messages = []
+
+            # Apply agent config overrides
+            if dsl_result.agent_config.max_tokens is not None:
+                max_tokens = dsl_result.agent_config.max_tokens
+            if dsl_result.agent_config.stream is not None:
+                stream = dsl_result.agent_config.stream
+            if dsl_result.agent_config.stream_format is not None:
+                stream_format = dsl_result.agent_config.stream_format
+
+            # Use modified history if DSL changed it
+            if dsl_result.message_history is not None:
+                messages = dsl_result.message_history
+                memory.messages = messages
+        else:
+            # No DSL, use defaults
+            system_message = DEFAULT_SYSTEM_MESSAGE
+            user_message_content = message
+            extra_user_messages = []
+            logger.info(f"Agent chat: Using default system message: {system_message[:100]}...")
+
         # Fit messages to context window
         fitted_history = fit_messages_to_context(
             messages, max_context_window, system_message
@@ -336,9 +382,16 @@ async def handler(request: dict, providers_state: dict):
         prompt_messages = [{"role": "system", "content": system_message}]
         prompt_messages.extend(fitted_history)
 
-        # Add current user message to prompt
-        user_msg = {"role": "user", "content": message}
+        # Add current user message(s) to prompt
+        user_msg = {"role": "user", "content": user_message_content}
         prompt_messages.append(user_msg)
+
+        # Add any extra user messages from DSL (multiple prints)
+        for extra_msg in extra_user_messages:
+            prompt_messages.append({"role": "user", "content": extra_msg})
+
+        logger.info(f"Agent chat: Prompt messages count: {len(prompt_messages)}")
+        logger.info(f"Agent chat: System message in prompt: {prompt_messages[0]['content'][:100] if prompt_messages else 'N/A'}...")
 
         # Handle streaming if requested
         if stream:
@@ -355,6 +408,8 @@ async def handler(request: dict, providers_state: dict):
             )
 
         # Call LLM with default provider
+        logger.info(f"Agent chat: Calling LLM with {len(prompt_messages)} messages")
+        logger.info(f"Agent chat: First message (system): {prompt_messages[0] if prompt_messages else 'N/A'}")
         try:
             response = call_llm_by_model(
                 messages=prompt_messages,

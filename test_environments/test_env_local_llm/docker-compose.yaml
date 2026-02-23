@@ -103,7 +103,7 @@ services:
       retries: 30
       start_period: 10s
     volumes:
-      - ${AGENT_FOLDER:-./cortex}:/app/cortex
+      - ${CORTEX_FOLDER:-./cortex}:/app/cortex
 
   # Test runner
   tests:

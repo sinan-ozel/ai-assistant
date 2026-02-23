@@ -57,6 +57,8 @@ docs = [
 ]
 
 [tool.ruff]
+select = ["I", "F", "E", "W"]
+ignore = []
 line-length = 80
 
 [tool.black]
@@ -65,8 +67,9 @@ target-version = ['py312']
 
 [tool.isort]
 profile = "black"
+force_sort_within_sections = true
 line_length = 80
 
 [project.urls]
-Homepage = "https://github.com/<ORGANIZATION>/<MODULE-NAME>"
-Issues = "https://github.com/<ORGANIZATION>/<MODULE-NAME>/issues"
+Homepage = "https://github.com/sinan-ozel/<MODULE-NAME>"
+Issues = "https://github.com/sinan-ozel/<MODULE-NAME>/issues"

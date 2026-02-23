@@ -27,7 +27,7 @@
             "problemMatcher": [],
             "options": {
                 "env": {
-                    "AGENT_FOLDER": "${workspaceFolder}/agents/${input:agent}/cortex"
+                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/cortex"
                 }
             },
         },
@@ -106,7 +106,7 @@
             ],
             "options": {
                 "env": {
-                    "AGENT_FOLDER": "${workspaceFolder}/test_environments/test_env_local_llm/cortex"
+                    "CORTEX_FOLDER": "${workspaceFolder}/test_environments/test_env_local_llm/cortex"
                 }
             },
             "problemMatcher": []
@@ -124,8 +124,8 @@
             ],
             "options": {
                 "env": {
-                    "AGENT_FOLDER": "${workspaceFolder}/agents/${input:agent}/cortex",
-                    "TEST_FOLDER": "${workspaceFolder}/agents/${input:agent}/tests"
+                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/tests"
                 }
             },
             "problemMatcher": []
@@ -191,8 +191,8 @@
             ],
             "options": {
                 "env": {
-                    "AGENT_FOLDER": "${workspaceFolder}/agents/image_workflows/cortex",
-                    "TEST_FOLDER": "${workspaceFolder}/agents/image_workflows/tests"
+                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/image_workflows/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/image_workflows/tests"
                 }
             },
             "problemMatcher": []
@@ -210,8 +210,27 @@
             ],
             "options": {
                 "env": {
-                    "AGENT_FOLDER": "${workspaceFolder}/agents/text_workflows/cortex",
-                    "TEST_FOLDER": "${workspaceFolder}/agents/text_workflows/tests"
+                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/text_workflows/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/text_workflows/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests on Agent: son_of_anton",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/test_environments/test_env_everything/docker-compose.yaml",
+                "up",
+                "--build",
+                "--exit-code-from", "tests"
+            ],
+            "options": {
+                "env": {
+                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/son_of_anton/cortex/chat",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/son_of_anton/tests"
                 }
             },
             "problemMatcher": []
@@ -221,6 +240,7 @@
             "dependsOn": [
                 "Local Checks",
                 "Run Tests (Self-Hosted LLM)",
+                "Run Tests on Agent: son_of_anton",
                 "Run Tests on Agent: text_workflows",
                 "Run Tests on Agent: image_workflows"
             ],
@@ -245,7 +265,8 @@
             "description": "Choose the agent",
             "options": [
                 "text_workflows",
-                "image_workflows"
+                "image_workflows",
+                "son_of_anton"
             ],
             "default": "text_workflows"
         },

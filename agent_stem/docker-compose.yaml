@@ -4,7 +4,7 @@ services:
     container_name: agent-stem-dev
     volumes:
       - ..:/workspace
-      - ${AGENT_FOLDER:-./cortex}:/app/cortex
+      - ${CORTEX_FOLDER:-./cortex}:/app/cortex
     working_dir: /workspace
     ports:
       - "8000:8000"
