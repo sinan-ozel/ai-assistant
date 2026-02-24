@@ -155,11 +155,11 @@
   "user_id": "user-456",
   "message": "The weather is sunny.\n",
   "role": "assistant",
-  "created": 1771730053,
+  "created": 1771953717,
   "usage": {
-    "prompt_tokens": 1473,
+    "prompt_tokens": 93,
     "completion_tokens": 7,
-    "total_tokens": 1480
+    "total_tokens": 100
   }
 }
 ```
@@ -710,24 +710,24 @@
 
 ```json
 {
-  "id": "chatcmpl-663ea9e36bd844e7837a91b9",
+  "id": "chatcmpl-a98ddf4f39a54317a980d2c8",
   "object": "chat.completion",
-  "created": 1771730089,
+  "created": 1771953743,
   "model": "ollama/gemma3:270m",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is Paris."
+        "content": "The capital of France is Paris.\n"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 22,
-    "completion_tokens": 8,
-    "total_tokens": 30
+    "completion_tokens": 9,
+    "total_tokens": 31
   }
 }
 ```
@@ -956,9 +956,9 @@
 
 ```json
 {
-  "id": "chatcmpl-196260754fb04fe9bb757d4e",
+  "id": "chatcmpl-f73b61d731d446098a9ccff5",
   "object": "chat.completion",
-  "created": 1771730092,
+  "created": 1771953744,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1037,9 +1037,9 @@
 
 ```json
 {
-  "id": "chatcmpl-bf1b553760524a1487a7c20a",
+  "id": "chatcmpl-f3ebf663b2734277b03c22df",
   "object": "chat.completion",
-  "created": 1771730092,
+  "created": 1771953744,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1376,7 +1376,7 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-22T03:14:55.429161Z",
+  "created_at": "2026-02-24T17:22:25.556160Z",
   "response": "The capital of France is Paris.",
   "done": true,
   "context": [],

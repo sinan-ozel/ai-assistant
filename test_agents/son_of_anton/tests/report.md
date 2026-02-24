@@ -166,11 +166,11 @@
   "user_id": "user-456",
   "message": "I am Son of Anton, your ever-faithful assistant.\n\nUnfortunately, I don\u2019t have access to real-time weather information. I\u2019m a bit of a digital hermit, you know? But if you need it, I can point you towards a surprisingly accurate weather forecast \u2013 it\u2019s about as reliable as a perfectly cooked hamburger, but I\u2019ll try my best!",
   "role": "assistant",
-  "created": 1771884582,
+  "created": 1771954114,
   "usage": {
-    "prompt_tokens": 88,
+    "prompt_tokens": 276,
     "completion_tokens": 79,
-    "total_tokens": 167
+    "total_tokens": 355
   }
 }
 ```
@@ -721,24 +721,24 @@
 
 ```json
 {
-  "id": "chatcmpl-8b60092be5784adab789c462",
+  "id": "chatcmpl-c803c80edf6a43a4a52a4725",
   "object": "chat.completion",
-  "created": 1771884606,
+  "created": 1771954152,
   "model": "ollama/gemma3:1b",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is **Paris**. \ud83d\ude0a \n\nIs there anything else I can help you with?"
+        "content": "IThe capital of France is **Paris**. \ud83c\uddeb\ud83c\uddf7\n"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 21,
-    "completion_tokens": 22,
-    "total_tokens": 43
+    "completion_tokens": 13,
+    "total_tokens": 34
   }
 }
 ```
@@ -967,24 +967,24 @@
 
 ```json
 {
-  "id": "chatcmpl-63108f0c66034b1f8c042c73",
+  "id": "chatcmpl-c03d7afda94b49e1ad51ff83",
   "object": "chat.completion",
-  "created": 1771884619,
+  "created": 1771954167,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic \"Lorem Ipsum\" placeholder text. \n\nIs there anything I can do with it? For example, would you like me to:\n\n*   **Generate more text using it?** (e.g., a paragraph, a short story, etc.)\n*   **Explain what it is?**\n*   **Help you with a task that requires this placeholder?** (e.g., creating a book layout, filling out a document, etc.)"
+        "content": "This is a classic placeholder text. It's a very common practice in the printing and design industries to use a large block of seemingly random text to allow designers to focus on the layout and design of the final product without having to worry about actual content. \n\nIt's usually in a standard font (like Arial or Helvetica) and is usually a beige or light color. \n\n**Do you want me to do anything with this text? For example, would you like me to:**\n\n*   Generate something based on it? (e.g., a story, a poem, etc.)\n*   Explain its purpose?\n*   Translate it into another language?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 106,
-    "total_tokens": 125
+    "completion_tokens": 138,
+    "total_tokens": 157
   }
 }
 ```
@@ -1048,24 +1048,24 @@
 
 ```json
 {
-  "id": "chatcmpl-32d7e4bdd4ae4bf386bc793d",
+  "id": "chatcmpl-c6cdf64e617342449dcb05ac",
   "object": "chat.completion",
-  "created": 1771884623,
+  "created": 1771954172,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the standard placeholder text. \n\nIs there anything you'd like me to do with this text? For example, would you like me to:\n\n*   **Generate some text based on it?** (e.g., a paragraph, a story, etc.)\n*   **Analyze it?** (e.g., identify its purpose)\n*   **Convert it to another format?** (e.g., HTML, Markdown)\n*   **Something else?**\n\nJust let me know what you have in mind!"
+        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything I can do with it? For example, would you like me to:\n\n*   **Generate more Lorem Ipsum text?** (e.g., a longer paragraph)\n*   **Explain what it is?**\n*   **Convert it to a specific format?** (like a specific length or layout?)\n*   **Just acknowledge its presence?**\n\nLet me know how I can help!"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 121,
-    "total_tokens": 140
+    "completion_tokens": 108,
+    "total_tokens": 127
   }
 }
 ```
@@ -1387,15 +1387,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-23T22:10:25.405409Z",
-  "response": "The capital of France is **Paris**. \n\nIt\u2019s a great city! \ud83d\ude0a \n\nDo you want to know more about Paris?",
+  "created_at": "2026-02-24T17:29:34.282736Z",
+  "response": "The capital of France is **Paris**. \n\n\ud83d\ude0a",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 21,
   "prompt_eval_duration": 0,
-  "eval_count": 30,
+  "eval_count": 12,
   "eval_duration": 0
 }
 ```

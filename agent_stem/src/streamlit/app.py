@@ -128,8 +128,9 @@ def main():
     st.title("Agent Chat Interface")
     st.markdown("### Welcome to the Agent Chat")
     st.markdown("""
-    Use the sidebar on the left to chat with the agent. The conversation is stateful,
-    so the agent will remember your previous messages within the same conversation.
+    Use the sidebar on the left to chat with the agent. The \
+conversation is stateful, so the agent will remember your previous \
+messages within the same conversation.
 
     **Features:**
     - 💬 Persistent conversation memory

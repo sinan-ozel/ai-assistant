@@ -203,8 +203,11 @@ async def handler(request: dict, providers_state: dict):
             "id": f"chatcmpl-{uuid.uuid4().hex[:24]}",
             "object": "chat.completion",
             "created": int(time.time()),
-            "model": model
-            or response.model,  # TODO: Consider model usage - if the model does not exist, are we using the default? Return the model that's actually used.
+            "model": (
+                model or response.model
+            ),  # TODO: Consider model usage - if the model does not exist,
+            # are we using the default? Return the model that's actually
+            # used.
             "choices": [
                 {
                     "index": 0,
@@ -234,7 +237,10 @@ async def handler(request: dict, providers_state: dict):
     except litellm.Timeout as e:
         raise HTTPException(
             status_code=408,
-            detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}",
+            detail=(
+                f"Request timeout: The LLM provider did not respond "
+                f"within the specified timeout period. {str(e)}"
+            ),
         )
     except litellm.APIConnectionError as e:
         # Check if this is a timeout error wrapped in APIConnectionError
@@ -242,18 +248,25 @@ async def handler(request: dict, providers_state: dict):
         if "timeout" in error_msg or "timed out" in error_msg:
             raise HTTPException(
                 status_code=408,
-                detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}",
+                detail=(
+                    f"Request timeout: The LLM provider did not respond "
+                    f"within the specified timeout period. {str(e)}"
+                ),
             )
         # Otherwise, it's a different connection error
         raise HTTPException(
             status_code=500, detail=f"LLM call failed: {str(e)}"
         )
     except litellm.InternalServerError as e:
-        # If a specific model was requested, inform user that model doesn't support this
+        # If a specific model was requested, inform user that model
+        # doesn't support this
         if model:
             raise HTTPException(
                 status_code=501,
-                detail=f"The requested model '{model}' does not support this operation. {str(e)}",
+                detail=(
+                    f"The requested model '{model}' does not support this "
+                    f"operation. {str(e)}"
+                ),
             )
         # Otherwise, log and crash to expose the issue
         logger.error(f"InternalServerError from LLM provider: {e}")
@@ -268,7 +281,10 @@ spec = {
     "path": "/v1/chat/completions",
     "methods": ["POST"],
     "summary": "Create chat completion",
-    "description": "Creates a model response for the given chat conversation. Compatible with OpenAI's Chat Completion API format.",
+    "description": (
+        "Creates a model response for the given chat conversation. "
+        "Compatible with OpenAI's Chat Completion API format."
+    ),
     "requestBody": {
         "required": True,
         "content": {
@@ -278,22 +294,31 @@ spec = {
                     "properties": {
                         "model": {
                             "type": "string",
-                            "description": "ID of the model to use for completion",
+                            "description": (
+                                "ID of the model to use for completion"
+                            ),
                         },
                         "messages": {
                             "type": "array",
-                            "description": "List of messages in the conversation",
+                            "description": (
+                                "List of messages in the conversation"
+                            ),
                             "items": {
                                 "type": "object",
                                 "properties": {
                                     "role": {
                                         "type": "string",
                                         "enum": ["system", "user", "assistant"],
-                                        "description": "Role of the message author",
+                                        "description": (
+                                            "Role of the message author"
+                                        ),
                                     },
                                     "content": {
                                         "type": "string",
-                                        "description": "Human-readable text content of the message",
+                                        "description": (
+                                            "Human-readable text content of "
+                                            "the message"
+                                        ),
                                     },
                                 },
                                 "required": ["role", "content"],
@@ -303,48 +328,73 @@ spec = {
                         "timeout": {
                             "type": "number",
                             "minimum": 0,
-                            "description": "Request timeout in seconds. Overrides the provider's default timeout if specified.",
+                            "description": (
+                                "Request timeout in seconds. Overrides the "
+                                "provider's default timeout if specified."
+                            ),
                         },
                         "stream": {
                             "type": "boolean",
                             "default": False,
-                            "description": "Whether to stream the response incrementally",
+                            "description": (
+                                "Whether to stream the response incrementally"
+                            ),
                         },
                         "stream_format": {
                             "type": "string",
                             "enum": ["sse", "ndjson"],
                             "default": "sse",
-                            "description": "Streaming format: 'sse' for Server-Sent Events (OpenAI-compatible), 'ndjson' for newline-delimited JSON (Ollama-style)",
+                            "description": (
+                                "Streaming format: 'sse' for Server-Sent "
+                                "Events (OpenAI-compatible), 'ndjson' for "
+                                "newline-delimited JSON (Ollama-style)"
+                            ),
                         },
                         # "temperature": {
                         #     "type": "number",
                         #     "minimum": 0.0,
                         #     "maximum": 2.0,
                         #     "default": 1.0,
-                        #     "description": "Sampling temperature. Higher values make output more random, lower values more deterministic"
+                        #     "description": (
+                        #         "Sampling temperature. Higher values make "
+                        #         "output more random, lower values more "
+                        #         "deterministic"
+                        #     )
                         # },
                         # "max_tokens": {
                         #     "type": "integer",
                         #     "minimum": 1,
-                        #     "description": "Maximum number of tokens to generate in the completion"
+                        #     "description": (
+                        #         "Maximum number of tokens to generate in "
+                        #         "the completion"
+                        #     )
                         # },
                         # "stream": {
                         #     "type": "boolean",
                         #     "default": False,
-                        #     "description": "Whether to stream the response incrementally"
+                        #     "description": (
+                        #         "Whether to stream the response "
+                        #         "incrementally"
+                        #     )
                         # },
                         # "top_p": {
                         #     "type": "number",
                         #     "exclusiveMinimum": 0.0,
                         #     "maximum": 1.0,
                         #     "default": 1.0,
-                        #     "description": "Nucleus sampling parameter. Alternative to temperature. Must be in (0, 1]."
+                        #     "description": (
+                        #         "Nucleus sampling parameter. Alternative to "
+                        #         "temperature. Must be in (0, 1]."
+                        #     )
                         # },
                         # "stop": {
                         #     "type": "array",
                         #     "items": {"type": "string"},
                         #     "maxItems": 4,
-                        #     "description": "Up to 4 sequences where the API will stop generating tokens"
+                        #     "description": (
+                        #         "Up to 4 sequences where the API will "
+                        #         "stop generating tokens"
+                        #     )
                         # }
                     },
                     "required": ["messages"],
@@ -374,15 +424,22 @@ spec = {
                         "properties": {
                             "id": {
                                 "type": "string",
-                                "description": "Unique identifier for the completion",
+                                "description": (
+                                    "Unique identifier for the completion"
+                                ),
                             },
                             "object": {
                                 "type": "string",
-                                "description": "Object type, always 'chat.completion'",
+                                "description": (
+                                    "Object type, always 'chat.completion'"
+                                ),
                             },
                             "created": {
                                 "type": "integer",
-                                "description": "Unix timestamp of when the completion was created",
+                                "description": (
+                                    "Unix timestamp of when the completion "
+                                    "was created"
+                                ),
                             },
                             "model": {
                                 "type": "string",
@@ -400,21 +457,31 @@ spec = {
                                         },
                                         "message": {
                                             "type": "object",
-                                            "description": "The generated message",
+                                            "description": (
+                                                "The generated message"
+                                            ),
                                             "properties": {
                                                 "role": {
                                                     "type": "string",
-                                                    "description": "Role of the message author",
+                                                    "description": (
+                                                        "Role of the message "
+                                                        "author"
+                                                    ),
                                                 },
                                                 "content": {
                                                     "type": "string",
-                                                    "description": "Content of the message",
+                                                    "description": (
+                                                        "Content of the message"
+                                                    ),
                                                 },
                                             },
                                         },
                                         "finish_reason": {
                                             "type": "string",
-                                            "description": "Reason for completion finish (stop, length, etc.)",
+                                            "description": (
+                                                "Reason for completion finish "
+                                                "(stop, length, etc.)"
+                                            ),
                                         },
                                     },
                                 },
@@ -425,11 +492,15 @@ spec = {
                                 "properties": {
                                     "prompt_tokens": {
                                         "type": "integer",
-                                        "description": "Number of tokens in the prompt",
+                                        "description": (
+                                            "Number of tokens in the prompt"
+                                        ),
                                     },
                                     "completion_tokens": {
                                         "type": "integer",
-                                        "description": "Number of tokens in the completion",
+                                        "description": (
+                                            "Number of tokens in the completion"
+                                        ),
                                     },
                                     "total_tokens": {
                                         "type": "integer",
@@ -456,7 +527,9 @@ spec = {
                                 "index": 0,
                                 "message": {
                                     "role": "assistant",
-                                    "content": "Hello! How can I help you today?",
+                                    "content": (
+                                        "Hello! How can I help you today?"
+                                    ),
                                 },
                                 "finish_reason": "stop",
                             }
@@ -473,13 +546,19 @@ spec = {
         400: {"description": "Bad request - invalid parameters"},
         404: {"description": "Model not found or not available"},
         408: {
-            "description": "Request timeout - the LLM provider did not respond within the specified timeout period"
+            "description": (
+                "Request timeout - the LLM provider did not respond "
+                "within the specified timeout period"
+            )
         },
         422: {
             "description": "Validation error - request does not match schema"
         },
         501: {
-            "description": "Not implemented - the requested model does not support this operation"
+            "description": (
+                "Not implemented - the requested model does not support "
+                "this operation"
+            )
         },
     },
 }

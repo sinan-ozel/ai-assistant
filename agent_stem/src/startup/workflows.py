@@ -104,7 +104,10 @@ def json_schema_to_prompt_format(schema: Dict[str, Any]) -> str:
         Formatted string for inclusion in system prompt
     """
     if schema.get("type") == "string":
-        return "Return your response as a plain string with no additional formatting."
+        return (
+            "Return your response as a plain string with no additional "
+            "formatting."
+        )
 
     # For object schemas, provide a concrete example JSON matching the schema
     example = example_from_schema(schema)
@@ -119,7 +122,8 @@ def json_schema_to_prompt_format(schema: Dict[str, Any]) -> str:
 {example_json}
 ```
 
-Return ONLY valid JSON matching this schema, with no additional text or markdown formatting."""
+Return ONLY valid JSON matching this schema, with no additional text or \
+markdown formatting."""
 
 
 def load_workflow_yaml(workflow_file: Path) -> Dict[str, Any]:
@@ -160,9 +164,11 @@ def load_workflow_yaml(workflow_file: Path) -> Dict[str, Any]:
                     "python execution type requires 'python' field"
                 )
         elif "prompt" not in workflow:
-            # Legacy format check - allow root-level prompt for backwards compatibility
+            # Legacy format check - allow root-level prompt for
+            # backwards compatibility
             raise ValueError(
-                "Workflow must have 'execution' section or legacy 'prompt' field"
+                "Workflow must have 'execution' section or legacy "
+                "'prompt' field"
             )
 
         return workflow
@@ -255,7 +261,8 @@ def handle_workflow_streaming(
 
                     yield format_chunk(chunk_data)
 
-            # After streaming completes, try to parse and validate for object schemas
+            # After streaming completes, try to parse and validate for
+            # object schemas
             complete_content = "".join(full_content)
 
             # Send final result chunk with parsed data
@@ -291,7 +298,8 @@ def handle_workflow_streaming(
                     }
                 except (json.JSONDecodeError, ValidationError) as e:
                     logger.error(
-                        f"Failed to parse/validate streaming response for {workflow_name}: {e}"
+                        f"Failed to parse/validate streaming response for "
+                        f"{workflow_name}: {e}"
                     )
                     final_chunk = {
                         "workflow": workflow_name,
@@ -371,7 +379,8 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
         elif exec_type == "python":
             # Python execution not yet implemented
             raise NotImplementedError(
-                f"Python execution not yet supported for workflow: {workflow_name}"
+                f"Python execution not yet supported for workflow: "
+                f"{workflow_name}"
             )
         else:
             raise ValueError(f"Unknown execution type: {exec_type}")
@@ -410,7 +419,8 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
         prompt_messages.extend(messages)
 
         # Determine which provider to use
-        # Priority: workflow-specified provider > request model > default provider
+        # Priority: workflow-specified provider > request model >
+        # default provider
         provider_to_use = None
 
         if provider_name:
@@ -460,7 +470,10 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
             logger.warning(f"Timeout for workflow {workflow_name}: {e}")
             raise HTTPException(
                 status_code=408,
-                detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}",
+                detail=(
+                    f"Request timeout: The LLM provider did not respond "
+                    f"within the specified timeout period. {str(e)}"
+                ),
             )
         except litellm.APIConnectionError as e:
             # Check if this is a timeout error wrapped in APIConnectionError
@@ -469,7 +482,11 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
                 logger.warning(f"Timeout for workflow {workflow_name}: {e}")
                 raise HTTPException(
                     status_code=408,
-                    detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}",
+                    detail=(
+                        f"Request timeout: The LLM provider did not "
+                        f"respond within the specified timeout period. "
+                        f"{str(e)}"
+                    ),
                 )
             # Otherwise, it's a different error
             logger.error(f"LLM call failed for workflow {workflow_name}: {e}")
@@ -479,7 +496,8 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
         except litellm.InternalServerError as e:
             # Log the error and crash to expose the issue
             logger.error(
-                f"InternalServerError from LLM provider in workflow {workflow_name}: {e}"
+                f"InternalServerError from LLM provider in workflow "
+                f"{workflow_name}: {e}"
             )
             raise
         except Exception as e:
@@ -493,11 +511,19 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
         content = choice.message.content
         # Check for empty content
         # if not content or content.strip() == "":
-        #     logger.error(f"LLM returned empty content for workflow {workflow_name}")
+        #     logger.error(
+        #         f"LLM returned empty content for workflow "
+        #         f"{workflow_name}"
+        #     )
         #     logger.error(f"Response choice: {choice}")
         #     raise HTTPException(
         #         status_code=500,
-        #         detail="LLM returned empty response. This may indicate the model does not support the requested operation (e.g., image processing without vision capabilities)."
+        #         detail=(
+        #             "LLM returned empty response. This may indicate "
+        #             "the model does not support the requested "
+        #             "operation (e.g., image processing without vision "
+        #             "capabilities)."
+        #         )
         #     )
         # For string schemas, return as-is
         if output_schema.get("type") == "string":
@@ -557,7 +583,8 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
 
         except json.JSONDecodeError as e:
             logger.error(
-                f"Failed to parse JSON response for workflow {workflow_name}: {e}"
+                f"Failed to parse JSON response for workflow "
+                f"{workflow_name}: {e}"
             )
             logger.error(f"Raw content: {content}")
             raise HTTPException(
@@ -673,7 +700,9 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
                             "description": "Role of the message sender",
                         },
                         "content": {
-                            "description": "Message content (text or multimodal)",
+                            "description": (
+                                "Message content (text or multimodal)"
+                            ),
                             "oneOf": [
                                 {
                                     "type": "string",
@@ -681,10 +710,15 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
                                 },
                                 {
                                     "type": "array",
-                                    "description": "Multimodal content with text and/or images",
+                                    "description": (
+                                        "Multimodal content with text "
+                                        "and/or images"
+                                    ),
                                     "items": {
                                         "type": "object",
-                                        "description": "Content part (text or image)",
+                                        "description": (
+                                            "Content part (text or image)"
+                                        ),
                                     },
                                 },
                             ],
@@ -696,7 +730,10 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
             },
             "model": {
                 "type": "string",
-                "description": "Model name (optional, may be overridden by workflow configuration)",
+                "description": (
+                    "Model name (optional, may be overridden by "
+                    "workflow configuration)"
+                ),
             },
             "temperature": {
                 "type": "number",
@@ -720,7 +757,11 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
                 "type": "string",
                 "enum": ["sse", "ndjson"],
                 "default": "sse",
-                "description": "Streaming format: 'sse' for Server-Sent Events (OpenAI-compatible), 'ndjson' for newline-delimited JSON (Ollama-style)",
+                "description": (
+                    "Streaming format: 'sse' for Server-Sent Events "
+                    "(OpenAI-compatible), 'ndjson' for newline-delimited "
+                    "JSON (Ollama-style)"
+                ),
             },
         },
         "required": ["messages"],
@@ -736,7 +777,8 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
             "content": {
                 "application/json": {
                     "schema": request_schema,
-                    "example": None,  # Will be set below based on input requirements
+                    # Will be set below based on input requirements
+                    "example": None,
                 }
             },
         },
@@ -754,7 +796,10 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
                             "properties": {
                                 "detail": {
                                     "type": "string",
-                                    "description": "Error message describing the validation failure",
+                                    "description": (
+                                        "Error message describing the "
+                                        "validation failure"
+                                    ),
                                 }
                             },
                         }
@@ -770,7 +815,10 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
                             "properties": {
                                 "detail": {
                                     "type": "string",
-                                    "description": "Error message indicating rate limit was exceeded",
+                                    "description": (
+                                        "Error message indicating rate "
+                                        "limit was exceeded"
+                                    ),
                                 }
                             },
                         }
@@ -818,7 +866,10 @@ def create_workflow_spec(workflow: Dict[str, Any]) -> Dict[str, Any]:
                         {
                             "type": "image_url",
                             "image_url": {
-                                "url": f"data:image/jpeg;base64,{example_image_base64}"
+                                "url": (
+                                    f"data:image/jpeg;base64,"
+                                    f"{example_image_base64}"
+                                )
                             },
                         }
                     ],

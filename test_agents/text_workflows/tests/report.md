@@ -164,13 +164,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "Okay! I need to know your current location to tell you the weather. Where are you? \ud83d\ude0a",
+  "message": "It\u2019s currently sunny and 72 degrees Fahrenheit in London, England.",
   "role": "assistant",
-  "created": 1771731467,
+  "created": 1771954220,
   "usage": {
-    "prompt_tokens": 1185,
-    "completion_tokens": 21,
-    "total_tokens": 1206
+    "prompt_tokens": 326,
+    "completion_tokens": 17,
+    "total_tokens": 343
   }
 }
 ```
@@ -721,24 +721,24 @@
 
 ```json
 {
-  "id": "chatcmpl-3ce5ee54e7124ef9a691fa0a",
+  "id": "chatcmpl-e7923a41f3094c47887cee3b",
   "object": "chat.completion",
-  "created": 1771731490,
+  "created": 1771954258,
   "model": "ollama/gemma3:1b",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is **Paris**. \n\nIt\u2019s a very popular question, and it\u2019s easy to remember because it\u2019s the city everyone thinks of when they think of France! \ud83d\ude0a"
+        "content": "The capital of France is **Paris**. \n\nDo you want to know more about Paris, like its history or famous landmarks?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 21,
-    "completion_tokens": 42,
-    "total_tokens": 63
+    "completion_tokens": 27,
+    "total_tokens": 48
   }
 }
 ```
@@ -967,24 +967,24 @@
 
 ```json
 {
-  "id": "chatcmpl-bdfc6de10b0c44e7af7ed9be",
+  "id": "chatcmpl-e9cc6679d10e46a7b1d99738",
   "object": "chat.completion",
-  "created": 1771731493,
+  "created": 1771954275,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay! That's the classic placeholder text. It's a placeholder used in design and typesetting to simulate the appearance of text without the actual content. \n\nIs there anything else you'd like me to do with this text? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify the characters)\n*   **Generate similar text?** (e.g., a longer sentence)\n*   **Explain its purpose?** (e.g., why it's used)"
+        "content": "Okay, I understand. You've provided the standard \"Lorem Ipsum\" text. \n\nIs there anything I can do with it? For example, would you like me to:\n\n*   **Generate more Lorem Ipsum text?** (e.g., a paragraph, a sentence, or a specific length?)\n*   **Explain the purpose of Lorem Ipsum?** (It's a placeholder text used in design and typesetting to simulate the reading experience of a document without the actual content.)\n*   **Suggest a way to use it in a specific context?** (e.g., for a book or website)\n*   **Just acknowledge that I have the text?**"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 113,
-    "total_tokens": 132
+    "completion_tokens": 142,
+    "total_tokens": 161
   }
 }
 ```
@@ -1048,24 +1048,24 @@
 
 ```json
 {
-  "id": "chatcmpl-92b1ebbe3edb4210a68c29c3",
+  "id": "chatcmpl-f7de8323f7974bec9adf4a3c",
   "object": "chat.completion",
-  "created": 1771731494,
+  "created": 1771954279,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the standard placeholder text for a document, likely a text editor or software. \n\nIt's a common practice to use this text as a placeholder until the final content is finalized. \n\nIs there anything specific you'd like me to do with this text? For example, would you like me to:\n\n*   **Translate it?**\n*   **Analyze it for formatting?**\n*   **Generate similar text?**"
+        "content": "Okay, I understand. You've provided the standard placeholder text: \"Lorem ipsum dolor sit amet.\" \n\nIs there anything I can help you with regarding this text? For example, are you looking for:\n\n*   **Meaning?** (It's a placeholder, meaning \"empty space\" for design purposes)\n*   **Related information?** (Perhaps its origin or purpose?)\n*   **Translation?** (It's Latin, and the text is often used as a placeholder in publishing)\n*   **Something else entirely?**\n\nLet me know what you'd like to do!"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 100,
-    "total_tokens": 119
+    "completion_tokens": 128,
+    "total_tokens": 147
   }
 }
 ```
@@ -1387,15 +1387,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-22T03:38:15.591437Z",
-  "response": "The capital of France is **Paris**. \n\nDo you want to know anything else about Paris or France?",
+  "created_at": "2026-02-24T17:31:22.401672Z",
+  "response": "The capital of France is **Paris**. \n\nDo you want to know more about Paris?",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 21,
   "prompt_eval_duration": 0,
-  "eval_count": 23,
+  "eval_count": 20,
   "eval_duration": 0
 }
 ```
@@ -1965,11 +1965,11 @@
 
 ```json
 {
-  "result": "Please provide the user message you\u2019d like me to clean up and summarize.",
+  "result": "Please provide the user message you want me to summarize.",
   "usage": {
     "prompt_tokens": 50,
-    "completion_tokens": 17,
-    "total_tokens": 67
+    "completion_tokens": 12,
+    "total_tokens": 62
   }
 }
 ```

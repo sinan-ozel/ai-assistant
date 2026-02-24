@@ -33,9 +33,9 @@ for d in "${targets[@]}"; do
 
     echo ""
     echo "=========================================="
-    echo "Running isort on $d..."
+    echo "Running ruff --select I on $d..."
     echo "=========================================="
-    isort "$d"
+    ruff check "$d" --fix --select I
   else
     echo "Skipping $d (directory not found)."
   fi

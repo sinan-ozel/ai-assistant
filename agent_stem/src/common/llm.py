@@ -35,7 +35,8 @@ def get_provider_config(
     provider_to_use = None
 
     if requested_model:
-        # Strip provider prefix if present (e.g., "ollama/gemma3:4b" -> "gemma3:4b")
+        # Strip provider prefix if present
+        # (e.g., "ollama/gemma3:4b" -> "gemma3:4b")
         model_without_prefix = requested_model
         if "/" in requested_model:
             parts = requested_model.split("/", 1)
@@ -150,7 +151,8 @@ def call_llm_by_model(
     if provider_config.get("api_key"):
         litellm_kwargs["api_key"] = provider_config["api_key"]
 
-    # Add timeout - prioritize request parameter, then provider config, then no timeout
+    # Add timeout - prioritize request parameter, then provider
+    # config, then no timeout
     if timeout is not None:
         litellm_kwargs["timeout"] = timeout
     elif provider_config.get("timeout"):
@@ -248,7 +250,8 @@ async def call_llm_by_model_streaming(
     if provider_config.get("api_key"):
         litellm_kwargs["api_key"] = provider_config["api_key"]
 
-    # Add timeout - prioritize request parameter, then provider config, then no timeout
+    # Add timeout - prioritize request parameter, then provider
+    # config, then no timeout
     if timeout is not None:
         litellm_kwargs["timeout"] = timeout
     elif provider_config.get("timeout"):

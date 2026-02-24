@@ -64,7 +64,8 @@ async def handler(request: dict, providers_state: dict):
         response_text = choice.message.content
 
         # Build Ollama-format response
-        # Note: Some fields are approximated since LiteLLM doesn't provide all Ollama metrics
+        # Note: Some fields are approximated since LiteLLM doesn't
+        # provide all Ollama metrics
         return {
             "model": model or response.model,
             "created_at": datetime.now(timezone.utc).strftime(
@@ -91,7 +92,10 @@ async def handler(request: dict, providers_state: dict):
     except litellm.Timeout as e:
         raise HTTPException(
             status_code=408,
-            detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}",
+            detail=(
+                f"Request timeout: The LLM provider did not respond "
+                f"within the specified timeout period. {str(e)}"
+            ),
         )
     except litellm.APIConnectionError as e:
         # Check if this is a timeout error wrapped in APIConnectionError
@@ -99,7 +103,10 @@ async def handler(request: dict, providers_state: dict):
         if "timeout" in error_msg or "timed out" in error_msg:
             raise HTTPException(
                 status_code=408,
-                detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}",
+                detail=(
+                    f"Request timeout: The LLM provider did not respond "
+                    f"within the specified timeout period. {str(e)}"
+                ),
             )
         # Otherwise, it's a different connection error
         raise HTTPException(
@@ -115,7 +122,10 @@ spec = {
     "path": "/v1/api/generate",
     "methods": ["POST"],
     "summary": "Generate completion (Ollama format)",
-    "description": "Generates a completion for a prompt using Ollama's native API format. Compatible with Ollama clients.",
+    "description": (
+        "Generates a completion for a prompt using Ollama's native API "
+        "format. Compatible with Ollama clients."
+    ),
     "requestBody": {
         "required": True,
         "content": {
@@ -125,23 +135,33 @@ spec = {
                     "properties": {
                         "model": {
                             "type": "string",
-                            "description": "Name of the model to use for generation",
+                            "description": (
+                                "Name of the model to use for generation"
+                            ),
                         },
                         "prompt": {
                             "type": "string",
-                            "description": "Human-readable text prompt to generate a completion for",
+                            "description": (
+                                "Human-readable text prompt to generate a "
+                                "completion for"
+                            ),
                         },
                         "stream": {
                             "type": "boolean",
                             "default": False,
-                            "description": "Whether to stream the response incrementally",
+                            "description": (
+                                "Whether to stream the response incrementally"
+                            ),
                         },
                         "temperature": {
                             "type": "number",
                             "minimum": 0.0,
                             "maximum": 2.0,
                             "default": 0.8,
-                            "description": "Temperature for sampling. Higher values increase randomness",
+                            "description": (
+                                "Temperature for sampling. Higher values "
+                                "increase randomness"
+                            ),
                         },
                         "top_p": {
                             "type": "number",
@@ -154,12 +174,18 @@ spec = {
                             "type": "integer",
                             "minimum": 1,
                             "default": 40,
-                            "description": "Top-k sampling parameter. Limits to top k tokens",
+                            "description": (
+                                "Top-k sampling parameter. Limits to top k "
+                                "tokens"
+                            ),
                         },
                         "timeout": {
                             "type": "number",
                             "minimum": 0,
-                            "description": "Request timeout in seconds. Overrides the provider's default timeout if specified.",
+                            "description": (
+                                "Request timeout in seconds. Overrides the "
+                                "provider's default timeout if specified."
+                            ),
                         },
                     },
                     "required": ["model", "prompt"],
@@ -208,7 +234,9 @@ spec = {
                             },
                             "load_duration": {
                                 "type": "integer",
-                                "description": "Model load duration in nanoseconds",
+                                "description": (
+                                    "Model load duration in nanoseconds"
+                                ),
                             },
                             "prompt_eval_count": {
                                 "type": "integer",
@@ -216,7 +244,10 @@ spec = {
                             },
                             "prompt_eval_duration": {
                                 "type": "integer",
-                                "description": "Prompt evaluation duration in nanoseconds",
+                                "description": (
+                                    "Prompt evaluation duration in "
+                                    "nanoseconds"
+                                ),
                             },
                             "eval_count": {
                                 "type": "integer",
@@ -224,7 +255,9 @@ spec = {
                             },
                             "eval_duration": {
                                 "type": "integer",
-                                "description": "Generation duration in nanoseconds",
+                                "description": (
+                                    "Generation duration in nanoseconds"
+                                ),
                             },
                         },
                         "required": ["model", "created_at", "response", "done"],
@@ -248,7 +281,10 @@ spec = {
         400: {"description": "Bad request - invalid parameters"},
         404: {"description": "Model not found or not available"},
         408: {
-            "description": "Request timeout - the LLM provider did not respond within the specified timeout period"
+            "description": (
+                "Request timeout - the LLM provider did not respond "
+                "within the specified timeout period"
+            )
         },
         422: {
             "description": "Validation error - request does not match schema"

@@ -31,8 +31,9 @@ async def run_provider_discovery():
     logger.info("Starting provider discovery in background...")
 
     # Run synchronous provider discovery in executor to avoid blocking.
-    # Retry a few times if provider files exist but no providers are yet available,
-    # to avoid a race where dependent LLM services become ready shortly after startup.
+    # Retry a few times if provider files exist but no providers are yet
+    # available, to avoid a race where dependent LLM services become
+    # ready shortly after startup.
     loop = asyncio.get_event_loop()
     max_retries = 5
     backoff_seconds = 3
@@ -40,14 +41,16 @@ async def run_provider_discovery():
     for attempt in range(1, max_retries + 1):
         discovery_result = await loop.run_in_executor(None, discover_providers)
 
-        # Update the existing dict instead of replacing it to maintain references
+        # Update the existing dict instead of replacing it to maintain
+        # references
         providers_state.update(discovery_result)
 
         available_count = len(providers_state.get("available_providers", []))
         total_providers = len(providers_state.get("providers", []))
 
         logger.info(
-            f"Found {available_count} available providers (attempt {attempt}/{max_retries})"
+            f"Found {available_count} available providers "
+            f"(attempt {attempt}/{max_retries})"
         )
 
         if providers_state.get("default_provider"):
@@ -72,7 +75,8 @@ async def run_provider_discovery():
         # If this was the last attempt, stop retrying
         if attempt == max_retries:
             logger.warning(
-                "Provider discovery completed with no available providers after retries"
+                "Provider discovery completed with no available "
+                "providers after retries"
             )
             break
 
@@ -111,8 +115,9 @@ async def startup_event():
 
         # Determine the appropriate route handler
         if "providers_state" in params or has_request:
-            # Create a wrapper that properly removes providers_state from the signature
-            # and adds proper Body parameter for request body validation
+            # Create a wrapper that properly removes providers_state
+            # from the signature and adds proper Body parameter for
+            # request body validation
             async def create_wrapper(original_handler, request_spec):
                 if has_request:
                     # Extract schema from requestBody

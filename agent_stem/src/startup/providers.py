@@ -88,7 +88,8 @@ def validate_provider(config: Dict[str, Any]) -> tuple[bool, str]:
     kwargs["max_tokens"] = kwargs.get("max_tokens", 10)
 
     # Add timeout to prevent hanging indefinitely on slow providers
-    # Allow up to 60 seconds for model loading and response (larger models can be slow)
+    # Allow up to 60 seconds for model loading and response
+    # (larger models can be slow)
     kwargs["timeout"] = 60
 
     try:
@@ -255,10 +256,12 @@ def discover_providers() -> Dict[str, Any]:
                 default_provider = env_default_provider
                 status = "multiple_providers_available"
             else:
-                # Error: DEFAULT_PROVIDER doesn't match any available provider
+                # Error: DEFAULT_PROVIDER doesn't match any available
+                # provider
                 raise RuntimeError(
-                    f"DEFAULT_PROVIDER env '{env_default_provider}' does not match "
-                    f"any available provider. Available providers: {available_names}"
+                    f"DEFAULT_PROVIDER env '{env_default_provider}' does "
+                    f"not match any available provider. Available "
+                    f"providers: {available_names}"
                 )
         else:
             # DEFAULT_PROVIDER not set
@@ -266,15 +269,16 @@ def discover_providers() -> Dict[str, Any]:
                 # Only one mounted provider - use it as default
                 default_provider = custom_available[0]["name"]
                 logger.info(
-                    f"Multiple providers available but only one mounted provider "
-                    f"'{default_provider}'. Using it as default."
+                    f"Multiple providers available but only one mounted "
+                    f"provider '{default_provider}'. Using it as default."
                 )
                 status = "multiple_providers_available"
             else:
                 # Multiple providers, no clear default
                 logger.warning(
                     f"Multiple providers available ({available_names}) "
-                    f"but no DEFAULT_PROVIDER env set. No default provider selected."
+                    f"but no DEFAULT_PROVIDER env set. No default provider "
+                    f"selected."
                 )
                 status = "multiple_providers_available"
 

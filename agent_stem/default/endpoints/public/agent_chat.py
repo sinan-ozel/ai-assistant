@@ -402,9 +402,11 @@ async def handler(request: dict, providers_state: dict):
         logger.info(
             f"Agent chat: Prompt messages count: {len(prompt_messages)}"
         )
+        content_preview = (
+            prompt_messages[0]["content"][:100] if prompt_messages else "N/A"
+        )
         logger.info(
-            f"Agent chat: System message in prompt: "
-            f"{prompt_messages[0]['content'][:100] if prompt_messages else 'N/A'}..."
+            f"Agent chat: System message in prompt: {content_preview}..."
         )
 
         # Handle streaming if requested
@@ -624,15 +626,21 @@ spec = {
                                 "properties": {
                                     "prompt_tokens": {
                                         "type": "integer",
-                                        "description": "Number of tokens in the prompt",
+                                        "description": (
+                                            "Number of tokens in the prompt"
+                                        ),
                                     },
                                     "completion_tokens": {
                                         "type": "integer",
-                                        "description": "Number of tokens in the completion",
+                                        "description": (
+                                            "Number of tokens in the completion"
+                                        ),
                                     },
                                     "total_tokens": {
                                         "type": "integer",
-                                        "description": "Total number of tokens used",
+                                        "description": (
+                                            "Total number of tokens used"
+                                        ),
                                     },
                                 },
                             },
@@ -661,7 +669,10 @@ spec = {
         },
         400: {"description": "Bad request - invalid input"},
         408: {
-            "description": "Request timeout - the LLM provider did not respond within the specified timeout period"
+            "description": (
+                "Request timeout - the LLM provider did not respond "
+                "within the specified timeout period"
+            )
         },
         422: {"description": "Validation error"},
         503: {"description": "Service unavailable - no provider available"},
