@@ -31,11 +31,16 @@ spec = {
                             },
                             "providers_loading": {
                                 "type": "boolean",
-                                "description": "Whether providers are still loading in the background",
+                                "description": (
+                                    "Whether providers are still "
+                                    "loading in the background"
+                                ),
                             },
                             "available_providers": {
                                 "type": "integer",
-                                "description": "Number of available LLM providers",
+                                "description": (
+                                    "Number of available LLM providers"
+                                ),
                             },
                         },
                         "required": ["status"],

@@ -21,7 +21,10 @@ spec = {
     "path": "/private/v1/providers",
     "methods": ["GET"],
     "summary": "Get providers information",
-    "description": "Retrieve information about available LLM providers, including which are available and the default provider",
+    "description": (
+        "Retrieve information about available LLM providers, "
+        "including which are available and the default provider"
+    ),
     "responses": {
         200: {
             "description": "Provider information retrieved successfully",
@@ -33,16 +36,22 @@ spec = {
                             "available": {
                                 "type": "array",
                                 "items": {"type": "string"},
-                                "description": "List of available provider names",
+                                "description": (
+                                    "List of available provider names"
+                                ),
                             },
                             "default": {
                                 "type": "string",
                                 "nullable": True,
-                                "description": "Default provider name, or null if none set",
+                                "description": (
+                                    "Default provider name, or null if none set"
+                                ),
                             },
                             "total": {
                                 "type": "integer",
-                                "description": "Total number of configured providers",
+                                "description": (
+                                    "Total number of configured providers"
+                                ),
                             },
                             "status": {
                                 "type": "string",
@@ -53,7 +62,17 @@ spec = {
                                     "multiple_providers_available",
                                     "unknown",
                                 ],
-                                "description": "Provider discovery status: 'initializing' (discovery in progress), 'no_providers_available' (no working providers found), 'one_provider_available' (exactly one provider available), 'multiple_providers_available' (multiple providers available), 'unknown' (unexpected state)",
+                                "description": (
+                                    "Provider discovery status: "
+                                    "'initializing' (discovery in progress), "
+                                    "'no_providers_available' "
+                                    "(no working providers found), "
+                                    "'one_provider_available' "
+                                    "(exactly one provider available), "
+                                    "'multiple_providers_available' "
+                                    "(multiple providers available), "
+                                    "'unknown' (unexpected state)"
+                                ),
                             },
                         },
                         "required": ["available", "total", "status"],

@@ -20,7 +20,8 @@ from situational.awareness import get_provider_context_window
 DEFAULT_SYSTEM_MESSAGE = os.environ.get(
     "DEFAULT_SYSTEM_MESSAGE",
     "You are a helpful assistant. "
-    "You have access to conversation history and can maintain context across messages."
+    "You have access to conversation history and can maintain "
+    "context across messages.",
 )
 
 logger = logging.getLogger(__name__)
@@ -112,8 +113,9 @@ def fit_messages_to_context(
         msg_tokens = estimate_token_count(text_content)
 
         if current_tokens + msg_tokens <= available_token_count:
-            # Create a fresh plain dict to avoid thread lock issues with redis-memory
-            # Use text-only content without base64 images
+            # Create a fresh plain dict to avoid thread lock issues
+            # with redis-memory. Use text-only content without base64
+            # images
             plain_msg = {"role": message.get("role"), "content": text_content}
             fitted_messages.insert(0, plain_msg)
             current_tokens += msg_tokens
@@ -311,7 +313,8 @@ async def handler(request: dict, providers_state: dict):
     if max_context_window is None:
         max_context_window = 4096
 
-    # TODO: Refactor this to add user, make sure that there are some reserved usernames, __admin and __default
+    # TODO: Refactor this to add user, make sure that there are some
+    # reserved usernames, __admin and __default
     # Get or create conversation memory
     conv_key = get_conversation_key(user_id, conversation_id)
 
@@ -341,7 +344,10 @@ async def handler(request: dict, providers_state: dict):
         if dsl_result:
             # Override system message from docstring
             system_message = dsl_result.system_message or DEFAULT_SYSTEM_MESSAGE
-            logger.info(f"Agent chat: Using DSL system message: {system_message[:100]}...")
+            logger.info(
+                f"Agent chat: Using DSL system message: "
+                f"{system_message[:100]}..."
+            )
 
             # Override user message from stdout
             if dsl_result.user_messages:
@@ -371,7 +377,10 @@ async def handler(request: dict, providers_state: dict):
             system_message = DEFAULT_SYSTEM_MESSAGE
             user_message_content = message
             extra_user_messages = []
-            logger.info(f"Agent chat: Using default system message: {system_message[:100]}...")
+            logger.info(
+                f"Agent chat: Using default system message: "
+                f"{system_message[:100]}..."
+            )
 
         # Fit messages to context window
         fitted_history = fit_messages_to_context(
@@ -390,8 +399,13 @@ async def handler(request: dict, providers_state: dict):
         for extra_msg in extra_user_messages:
             prompt_messages.append({"role": "user", "content": extra_msg})
 
-        logger.info(f"Agent chat: Prompt messages count: {len(prompt_messages)}")
-        logger.info(f"Agent chat: System message in prompt: {prompt_messages[0]['content'][:100] if prompt_messages else 'N/A'}...")
+        logger.info(
+            f"Agent chat: Prompt messages count: {len(prompt_messages)}"
+        )
+        logger.info(
+            f"Agent chat: System message in prompt: "
+            f"{prompt_messages[0]['content'][:100] if prompt_messages else 'N/A'}..."
+        )
 
         # Handle streaming if requested
         if stream:
@@ -408,8 +422,13 @@ async def handler(request: dict, providers_state: dict):
             )
 
         # Call LLM with default provider
-        logger.info(f"Agent chat: Calling LLM with {len(prompt_messages)} messages")
-        logger.info(f"Agent chat: First message (system): {prompt_messages[0] if prompt_messages else 'N/A'}")
+        logger.info(
+            f"Agent chat: Calling LLM with {len(prompt_messages)} messages"
+        )
+        logger.info(
+            f"Agent chat: First message (system): "
+            f"{prompt_messages[0] if prompt_messages else 'N/A'}"
+        )
         try:
             response = call_llm_by_model(
                 messages=prompt_messages,
@@ -421,7 +440,10 @@ async def handler(request: dict, providers_state: dict):
         except litellm.Timeout as e:
             raise HTTPException(
                 status_code=408,
-                detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}",
+                detail=(
+                    f"Request timeout: The LLM provider did not respond "
+                    f"within the specified timeout period. {str(e)}"
+                ),
             )
         except litellm.APIConnectionError as e:
             # Check if this is a timeout error wrapped in APIConnectionError
@@ -429,7 +451,11 @@ async def handler(request: dict, providers_state: dict):
             if "timeout" in error_msg or "timed out" in error_msg:
                 raise HTTPException(
                     status_code=408,
-                    detail=f"Request timeout: The LLM provider did not respond within the specified timeout period. {str(e)}",
+                    detail=(
+                        f"Request timeout: The LLM provider did not "
+                        f"respond within the specified timeout period. "
+                        f"{str(e)}"
+                    ),
                 )
             # Otherwise, re-raise to be handled by outer exception handler
             raise
@@ -476,7 +502,11 @@ spec = {
     "path": "/v1/agent/chat",
     "methods": ["POST"],
     "summary": "Send message to agent",
-    "description": "Send a message to an agent with stateful conversation memory. The server manages conversation history and context automatically.",
+    "description": (
+        "Send a message to an agent with stateful conversation memory. "
+        "The server manages conversation history and context "
+        "automatically."
+    ),
     "requestBody": {
         "required": True,
         "content": {
@@ -490,11 +520,17 @@ spec = {
                         },
                         "conversation_id": {
                             "type": "string",
-                            "description": "Conversation identifier (optional, will be generated if not provided)",
+                            "description": (
+                                "Conversation identifier (optional, will be "
+                                "generated if not provided)"
+                            ),
                         },
                         "user_id": {
                             "type": "string",
-                            "description": "User identifier for isolation (optional, defaults to 'default-user')",
+                            "description": (
+                                "User identifier for isolation (optional, "
+                                "defaults to 'default-user')"
+                            ),
                         },
                         "stream": {
                             "type": "boolean",
@@ -505,17 +541,27 @@ spec = {
                             "type": "string",
                             "enum": ["sse", "ndjson"],
                             "default": "sse",
-                            "description": "Streaming format: 'sse' for Server-Sent Events (OpenAI-compatible), 'ndjson' for newline-delimited JSON (Ollama-style)",
+                            "description": (
+                                "Streaming format: 'sse' for Server-Sent "
+                                "Events (OpenAI-compatible), 'ndjson' for "
+                                "newline-delimited JSON (Ollama-style)"
+                            ),
                         },
                         "timeout": {
                             "type": "number",
                             "minimum": 0,
-                            "description": "Request timeout in seconds. Overrides the provider's default timeout if specified.",
+                            "description": (
+                                "Request timeout in seconds. Overrides the "
+                                "provider's default timeout if specified."
+                            ),
                         },
                         "max_tokens": {
                             "type": "integer",
                             "minimum": 1,
-                            "description": "Maximum number of tokens to generate in the response.",
+                            "description": (
+                                "Maximum number of tokens to generate in the "
+                                "response."
+                            ),
                         },
                     },
                     "required": ["message"],
@@ -540,27 +586,41 @@ spec = {
                         "properties": {
                             "conversation_id": {
                                 "type": "string",
-                                "description": "Unique identifier for the conversation",
+                                "description": (
+                                    "Unique identifier for the conversation"
+                                ),
                             },
                             "user_id": {
                                 "type": "string",
-                                "description": "User identifier for conversation isolation",
+                                "description": (
+                                    "User identifier for conversation isolation"
+                                ),
                             },
                             "message": {
                                 "type": "string",
-                                "description": "The assistant's response message",
+                                "description": (
+                                    "The assistant's response message"
+                                ),
                             },
                             "role": {
                                 "type": "string",
-                                "description": "Message role (always 'assistant' for responses)",
+                                "description": (
+                                    "Message role (always 'assistant' for "
+                                    "responses)"
+                                ),
                             },
                             "created": {
                                 "type": "integer",
-                                "description": "Unix timestamp when the response was created",
+                                "description": (
+                                    "Unix timestamp when the response was "
+                                    "created"
+                                ),
                             },
                             "usage": {
                                 "type": "object",
-                                "description": "Token usage statistics for the request",
+                                "description": (
+                                    "Token usage statistics for the request"
+                                ),
                                 "properties": {
                                     "prompt_tokens": {
                                         "type": "integer",

@@ -22,7 +22,8 @@ def initialize_session_state():
 
 
 def send_message(message: str):
-    """Send a message to the agent chat endpoint and stream the response."""
+    """Send a message to the agent chat endpoint and stream the
+    response."""
     payload = {
         "message": message,
         "conversation_id": st.session_state.conversation_id,
@@ -32,7 +33,9 @@ def send_message(message: str):
     }
 
     try:
-        response = requests.post(CHAT_ENDPOINT, json=payload, timeout=60, stream=True)
+        response = requests.post(
+            CHAT_ENDPOINT, json=payload, timeout=60, stream=True
+        )
         response.raise_for_status()
 
         # Stream the response chunks

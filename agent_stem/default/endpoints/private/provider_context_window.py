@@ -22,7 +22,10 @@ async def handler(provider: str, providers_state: dict):
         # Provider exists but context window not available
         raise HTTPException(
             status_code=404,
-            detail=f"Context window information not available for provider '{provider}'",
+            detail=(
+                f"Context window information not available "
+                f"for provider '{provider}'"
+            ),
         )
 
     return {"provider": provider, "max_context_window": context_window}
@@ -32,7 +35,10 @@ spec = {
     "path": "/private/v1/providers/{provider}/max-context-window",
     "methods": ["GET"],
     "summary": "Get provider's maximum context window",
-    "description": "Retrieve the maximum context window size in tokens for a specific provider",
+    "description": (
+        "Retrieve the maximum context window size in tokens "
+        "for a specific provider"
+    ),
     "parameters": [
         {
             "name": "provider",
@@ -55,7 +61,9 @@ spec = {
                             },
                             "max_context_window": {
                                 "type": "integer",
-                                "description": "Maximum context window size in tokens",
+                                "description": (
+                                    "Maximum context window size in tokens"
+                                ),
                             },
                         },
                         "required": ["provider", "max_context_window"],
@@ -68,7 +76,10 @@ spec = {
             },
         },
         404: {
-            "description": "Provider not found, not available, or context window information not available",
+            "description": (
+                "Provider not found, not available, or context window "
+                "information not available"
+            ),
         },
     },
 }
