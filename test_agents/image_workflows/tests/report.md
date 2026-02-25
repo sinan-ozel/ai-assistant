@@ -109,9 +109,9 @@
     "pixtral",
     "voxtral-mini",
     "voxtral-small",
-    "llama_on_tailscale"
+    "vision"
   ],
-  "default": "llama_on_tailscale",
+  "default": "vision",
   "total": 12,
   "status": "multiple_providers_available"
 }
@@ -164,13 +164,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "I need to know where you are to check the weather! \ud83d\ude0a Could you please tell me your current location? For example, city name, country, or zip code? \ud83c\udf24\ufe0f",
+  "message": "I don\u2019t have real-time access to current weather data, but you can check the weather using a weather app, website like Weather.com, or your smartphone\u2019s built-in weather feature. For the latest updates, it\u2019s best to check a reliable source that provides live forecasts. Let me know if you\u2019d like help with anything else! \ud83d\ude0a",
   "role": "assistant",
-  "created": 1771730741,
+  "created": 1771982407,
   "usage": {
-    "prompt_tokens": 1143,
-    "completion_tokens": 587,
-    "total_tokens": 1730
+    "prompt_tokens": 543,
+    "completion_tokens": 1355,
+    "total_tokens": 1898
   }
 }
 ```
@@ -721,24 +721,24 @@
 
 ```json
 {
-  "id": "chatcmpl-7e6176056470451bbfa93c05",
+  "id": "chatcmpl-d5de537b99fa40489ee118e0",
   "object": "chat.completion",
-  "created": 1771730789,
+  "created": 1771982484,
   "model": "qwen3-vl:2b-q4km",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is **Paris**.  \n\nThis city has been the political, cultural, and economic heart of France for centuries, serving as the seat of government (including the National Assembly, the Senate, and the President of France). It's also renowned for its iconic landmarks like the Eiffel Tower, Louvre Museum, and Notre-Dame Cathedral.  \n\n*Note: While Paris is the capital, it's also the most famous city in France and a global hub for tourism, arts, and fashion.*"
+        "content": "The capital of **France** is **Paris**.  \n\nParis is not only the political center of France but also the heart of its culture, history, and economy. It hosts the French government, key institutions like the National Assembly and the Senate, and is home to iconic landmarks such as the Eiffel Tower, the Louvre Museum, and the Seine River.  \n\n**Why it matters**:  \n- Since 1871, Paris has been the undisputed capital of France (though the French government moved to the *Ch\u00e2teau de Vincennes* in 1871, it was Paris that became the capital in 1871).  \n- It is the country's most vibrant city, renowned for its art, history, and global influence.  \n\nIf you're curious about anything else\u2014like its history, culture, or why it's famous\u2014just ask! \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 17,
-    "completion_tokens": 611,
-    "total_tokens": 628
+    "completion_tokens": 401,
+    "total_tokens": 418
   }
 }
 ```
@@ -967,24 +967,24 @@
 
 ```json
 {
-  "id": "chatcmpl-18bb4169ddcd41b39a4459e8",
+  "id": "chatcmpl-2ab96851d5ec4e0481b56969",
   "object": "chat.completion",
-  "created": 1771730807,
+  "created": 1771982491,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "It seems like you've pasted placeholder text (\"Lorem ipsum dolor sit amet\") instead of a specific question or request. This is commonly used in design and publishing to represent content without actual text (like \"Lorem ipsum\" in typography).  \n\nIf you have a question or need help with something specific\u2014whether it's writing, design, or another topic\u2014I\u2019d be happy to assist! Just let me know how I can help. \ud83d\ude0a"
+        "content": "Hello! \ud83d\ude0a I notice you've shared some placeholder text\u2014commonly used in design or publishing to create space. Is there something specific you'd like to discuss or help with? Whether it's about layout, content, or just a fun conversation, I'm here to assist!"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 15,
-    "completion_tokens": 396,
-    "total_tokens": 411
+    "completion_tokens": 190,
+    "total_tokens": 205
   }
 }
 ```
@@ -1048,24 +1048,24 @@
 
 ```json
 {
-  "id": "chatcmpl-2a28aa9788c64d59b3c3faed",
+  "id": "chatcmpl-7d70e8294b4f4d949ff4597b",
   "object": "chat.completion",
-  "created": 1771730811,
+  "created": 1771982493,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Hello! I'm here to help. How can I assist you today? \ud83d\ude0a"
+        "content": "Ah, *Lorem ipsum*... a classic placeholder text often used in design and typography to fill space while waiting for actual content. \ud83d\ude04 I'm here to help with anything you might need\u2014whether it's clarifying questions, brainstorming ideas, or just having a chat! What would you like to explore today?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 15,
-    "completion_tokens": 283,
-    "total_tokens": 298
+    "completion_tokens": 250,
+    "total_tokens": 265
   }
 }
 ```
@@ -1387,15 +1387,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-22T03:27:03.946365Z",
-  "response": "The capital of France is **Paris**.  \n\nIt's the political, cultural, and historical center of France, home to iconic landmarks like the Eiffel Tower, the Louvre Museum, and the Seine River. Paris has been the capital since the Middle Ages and is a symbol of French identity. \ud83c\uddeb\ud83c\uddf7",
+  "created_at": "2026-02-25T01:23:45.532920Z",
+  "response": "The capital of France is **Paris**.  \n\n### Key Details:\n- **Official Status**: Paris has been the capital of France since the Middle Ages (officially recognized as the capital in 1792 during the French Revolution).\n- **Significance**: It is the largest city in France and home to iconic landmarks like the Eiffel Tower, Louvre Museum, and Notre-Dame Cathedral.\n- **Geographic Context**: Located in the \u00cele-de-France region, it serves as the political, cultural, and economic heart of France.\n\n*Note: While Paris is the capital, it is also France's most populous city and a global hub for culture, fashion, and tourism.* \ud83c\uddeb\ud83c\uddf7",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 17,
   "prompt_eval_duration": 0,
-  "eval_count": 534,
+  "eval_count": 765,
   "eval_duration": 0
 }
 ```
@@ -1980,17 +1980,17 @@
 ```json
 {
   "result": {
-    "title": "This is an Image",
-    "author": "The Author",
-    "subtitle": "A Description of the Book",
-    "publisher": "Example Publisher",
-    "series_title": "Example Series",
+    "title": "this",
+    "author": "is",
+    "subtitle": "an",
+    "publisher": "image",
+    "series_title": "this",
     "series_number": 0
   },
   "usage": {
     "prompt_tokens": 163,
-    "completion_tokens": 59,
-    "total_tokens": 222
+    "completion_tokens": 49,
+    "total_tokens": 212
   }
 }
 ```
@@ -2535,11 +2535,11 @@
 
 ```json
 {
-  "result": "this is an image",
+  "result": "This Is An Image",
   "usage": {
     "prompt_tokens": 90,
-    "completion_tokens": 687,
-    "total_tokens": 777
+    "completion_tokens": 575,
+    "total_tokens": 665
   }
 }
 ```
@@ -3045,9 +3045,9 @@
     "unit": "example"
   },
   "usage": {
-    "prompt_tokens": 199,
+    "prompt_tokens": 198,
     "completion_tokens": 26,
-    "total_tokens": 225
+    "total_tokens": 224
   }
 }
 ```

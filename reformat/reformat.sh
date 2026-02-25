@@ -10,7 +10,7 @@ echo "Running formatters..."
 echo "=========================================="
 
 # directories to format under the repository subfolder
-targets=("$mfolder/src" "$mfolder/default")
+targets=("$mfolder/src" "$mfolder/default" "test_agents/text_workflows/tests" "test_agents/image_workflows/tests" "test_environments/test_env_mistral" "test_environments/test_env_no_llm" "test_environments/test_env_nothing")
 
 for d in "${targets[@]}"; do
   if [ -d "$d" ]; then

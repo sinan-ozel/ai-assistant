@@ -1,7 +1,7 @@
-import requests
-import time
 import os
+import time
 
+import requests
 
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
@@ -20,15 +20,19 @@ def test_health_endpoint():
             raise
             pass
         if time.time() - start > timeout:
-            raise TimeoutError(f"/health endpoint did not return expected response within {timeout} seconds")
+            raise TimeoutError(
+                f"/health endpoint did not return expected response within {timeout} seconds"
+            )
         time.sleep(1)
 
     print(response.json())
 
     while True:
         response = requests.get(url)
-        if  response.json().get("status") == "ok":
+        if response.json().get("status") == "ok":
             break
         if time.time() - start > timeout:
-            raise TimeoutError(f"/health endpoint did not return expected response within {timeout} seconds")
+            raise TimeoutError(
+                f"/health endpoint did not return expected response within {timeout} seconds"
+            )
         time.sleep(1)

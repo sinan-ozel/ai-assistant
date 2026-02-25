@@ -18,7 +18,7 @@ def test_providers():
             response = requests.get(url)
             if response.status_code == 200 and response.json().get("status", "") == "no_providers_available":
                 break
-        except Exception:
+        except requests.exceptions.RequestException:
             pass
         if time.time() - start > timeout:
             break

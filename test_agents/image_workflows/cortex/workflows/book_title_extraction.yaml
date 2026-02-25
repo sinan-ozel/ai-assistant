@@ -1,7 +1,7 @@
 name: book_title_extraction
 path: /v1/extract-book-title
 description: Takes an image of a book cover and extracts the book title as a string.
-provider: llama_on_tailscale
+provider: vision
 timeout: 240
 
 input_requirements:

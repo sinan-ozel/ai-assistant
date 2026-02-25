@@ -17,7 +17,7 @@ def test_providers(mistral_api_key_available):
             response = requests.get(url)
             if response.status_code == 200 and response.json().get("status", "") == "multiple_providers_available":
                 break
-        except Exception:
+        except requests.exceptions.RequestException:
             pass
         if time.time() - start > timeout:
             break

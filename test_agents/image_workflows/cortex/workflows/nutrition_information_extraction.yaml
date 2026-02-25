@@ -1,7 +1,7 @@
 name: nutrition_information_extraction
 path: /v1/extract-nutrition-information
 description: Takes an image of a packaged food product label and extracts the nutrition information as JSON.
-provider: llama_on_tailscale
+provider: vision
 
 input_requirements:
   content_types: [image]
@@ -35,8 +35,30 @@ execution:
     Example:
     ```json
     {
-      "calories": 180,
+      "calories": 90,
       "serving_size": 28.0,
       "unit": "g"
     }
     ```
+
+evaluation:
+  repeat: 2
+  threshold: 2
+  cases:
+    - id: calories-label-180
+      steps:
+        - input:
+            image_path: "images/IMG_B768CE83-9FEC-461A-BE63-CDDF64EBEB58.jpeg"
+            max_tokens: 64
+          expectations:
+          - type: oneOf
+            values:
+              - calories: 180
+                serving_size: 40.0
+                unit: g
+              - calories: 180
+                serving_size: 2.0
+                unit: pieces
+              - calories: 180
+                serving_size: 2.0
+                unit: pcs

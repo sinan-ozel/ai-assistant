@@ -20,7 +20,7 @@ def test_providers():
                 # Wait until discovery completes (not initializing anymore)
                 if status != "initializing" and status == "one_provider_available":
                     break
-        except Exception:
+        except requests.exceptions.RequestException:
             pass
         if time.time() - start > timeout:
             break
@@ -60,7 +60,7 @@ def test_provider_context_window():
             response = requests.get(context_url)
             if response.status_code == 200:
                 break
-        except Exception:
+        except requests.exceptions.RequestException:
             pass
         if time.time() - start > timeout:
             break

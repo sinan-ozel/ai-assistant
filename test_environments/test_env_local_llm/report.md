@@ -153,13 +153,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "The weather is sunny.\n",
+  "message": "The weather is currently sunny with a high of 78 degrees Fahrenheit.\n",
   "role": "assistant",
-  "created": 1771953717,
+  "created": 1771983545,
   "usage": {
-    "prompt_tokens": 93,
-    "completion_tokens": 7,
-    "total_tokens": 100
+    "prompt_tokens": 46,
+    "completion_tokens": 17,
+    "total_tokens": 63
   }
 }
 ```
@@ -710,24 +710,24 @@
 
 ```json
 {
-  "id": "chatcmpl-a98ddf4f39a54317a980d2c8",
+  "id": "chatcmpl-45e6c423a2dc4437bdf43259",
   "object": "chat.completion",
-  "created": 1771953743,
+  "created": 1771983566,
   "model": "ollama/gemma3:270m",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is Paris.\n"
+        "content": "The capital of France is Paris."
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 22,
-    "completion_tokens": 9,
-    "total_tokens": 31
+    "completion_tokens": 8,
+    "total_tokens": 30
   }
 }
 ```
@@ -956,9 +956,9 @@
 
 ```json
 {
-  "id": "chatcmpl-f73b61d731d446098a9ccff5",
+  "id": "chatcmpl-b873cc359e9948d48445d776",
   "object": "chat.completion",
-  "created": 1771953744,
+  "created": 1771983567,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1037,9 +1037,9 @@
 
 ```json
 {
-  "id": "chatcmpl-f3ebf663b2734277b03c22df",
+  "id": "chatcmpl-597f4d2f041a4496b1faea6e",
   "object": "chat.completion",
-  "created": 1771953744,
+  "created": 1771983567,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1376,15 +1376,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-24T17:22:25.556160Z",
-  "response": "The capital of France is Paris.",
+  "created_at": "2026-02-25T01:39:28.813560Z",
+  "response": "The capital of France is Paris.\n",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 22,
   "prompt_eval_duration": 0,
-  "eval_count": 8,
+  "eval_count": 9,
   "eval_duration": 0
 }
 ```

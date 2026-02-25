@@ -34,7 +34,7 @@
 {
   "status": "ok",
   "providers_loading": false,
-  "available_providers": 12
+  "available_providers": 13
 }
 ```
 
@@ -109,10 +109,11 @@
     "pixtral",
     "voxtral-mini",
     "voxtral-small",
-    "ollama_on_tailscale"
+    "default",
+    "vision"
   ],
-  "default": "ollama_on_tailscale",
-  "total": 12,
+  "default": null,
+  "total": 13,
   "status": "multiple_providers_available"
 }
 ```
@@ -158,20 +159,11 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
 {
-  "conversation_id": "conv-123",
-  "user_id": "user-456",
-  "message": "It\u2019s currently sunny and 72 degrees Fahrenheit in London, England.",
-  "role": "assistant",
-  "created": 1771954220,
-  "usage": {
-    "prompt_tokens": 326,
-    "completion_tokens": 17,
-    "total_tokens": 343
-  }
+  "detail": "No default provider available"
 }
 ```
 
@@ -218,10 +210,12 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
-"[Streaming response: text/event-stream; charset=utf-8]"
+{
+  "detail": "No default provider available"
+}
 ```
 
 ---
@@ -267,10 +261,12 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
-"[Streaming response: text/event-stream; charset=utf-8]"
+{
+  "detail": "No default provider available"
+}
 ```
 
 ---
@@ -316,10 +312,12 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
-"[Streaming response: text/event-stream; charset=utf-8]"
+{
+  "detail": "No default provider available"
+}
 ```
 
 ---
@@ -365,10 +363,12 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
-"[Streaming response: text/event-stream; charset=utf-8]"
+{
+  "detail": "No default provider available"
+}
 ```
 
 ---
@@ -414,10 +414,12 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
-"[Streaming response: text/event-stream; charset=utf-8]"
+{
+  "detail": "No default provider available"
+}
 ```
 
 ---
@@ -463,10 +465,12 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
-"[Streaming response: text/event-stream; charset=utf-8]"
+{
+  "detail": "No default provider available"
+}
 ```
 
 ---
@@ -512,10 +516,12 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
-"[Streaming response: text/event-stream; charset=utf-8]"
+{
+  "detail": "No default provider available"
+}
 ```
 
 ---
@@ -561,10 +567,12 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
-"[Streaming response: text/event-stream; charset=utf-8]"
+{
+  "detail": "No default provider available"
+}
 ```
 
 ---
@@ -610,10 +618,12 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
-"[Streaming response: text/event-stream; charset=utf-8]"
+{
+  "detail": "No default provider available"
+}
 ```
 
 ---
@@ -659,10 +669,12 @@
 
 ### Actual Response
 
-**Status:** `200`
+**Status:** `503`
 
 ```json
-"[Streaming response: text/event-stream; charset=utf-8]"
+{
+  "detail": "No default provider available"
+}
 ```
 
 ---
@@ -721,24 +733,24 @@
 
 ```json
 {
-  "id": "chatcmpl-e7923a41f3094c47887cee3b",
+  "id": "chatcmpl-26819c30107a467cb7fdfeb2",
   "object": "chat.completion",
-  "created": 1771954258,
-  "model": "ollama/gemma3:1b",
+  "created": 1771983875,
+  "model": "codestral-2501",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is **Paris**. \n\nDo you want to know more about Paris, like its history or famous landmarks?"
+        "content": "The capital of France is **Paris**."
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 21,
-    "completion_tokens": 27,
-    "total_tokens": 48
+    "prompt_tokens": 10,
+    "completion_tokens": 9,
+    "total_tokens": 19
   }
 }
 ```
@@ -967,24 +979,24 @@
 
 ```json
 {
-  "id": "chatcmpl-e9cc6679d10e46a7b1d99738",
+  "id": "chatcmpl-9b68d046bb4b432a8fb2cdbe",
   "object": "chat.completion",
-  "created": 1771954275,
+  "created": 1771983878,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the standard \"Lorem Ipsum\" text. \n\nIs there anything I can do with it? For example, would you like me to:\n\n*   **Generate more Lorem Ipsum text?** (e.g., a paragraph, a sentence, or a specific length?)\n*   **Explain the purpose of Lorem Ipsum?** (It's a placeholder text used in design and typesetting to simulate the reading experience of a document without the actual content.)\n*   **Suggest a way to use it in a specific context?** (e.g., for a book or website)\n*   **Just acknowledge that I have the text?**"
+        "content": "It looks like you've entered a placeholder text (\"Lorem ipsum dolor sit amet\"). This is commonly used in design and publishing as a placeholder for actual content. If you meant to ask something specific or need help with a particular topic, feel free to provide more details! Otherwise, here\u2019s a brief explanation of \"Lorem ipsum\":\n\n- **Lorem ipsum** is a dummy text used to fill space in design layouts, web development, and publishing.\n- It resembles Latin but is nonsensical, making it ideal for focusing on visual elements rather than content.\n- The text starts with \"Lorem ipsum dolor sit amet...\" and repeats in a predictable pattern.\n\nIf you'd like help with something else, let me know!"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 19,
-    "completion_tokens": 142,
-    "total_tokens": 161
+    "prompt_tokens": 8,
+    "completion_tokens": 143,
+    "total_tokens": 151
   }
 }
 ```
@@ -1048,24 +1060,24 @@
 
 ```json
 {
-  "id": "chatcmpl-f7de8323f7974bec9adf4a3c",
+  "id": "chatcmpl-dad87f101ca14d319e6dc90f",
   "object": "chat.completion",
-  "created": 1771954279,
+  "created": 1771983878,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the standard placeholder text: \"Lorem ipsum dolor sit amet.\" \n\nIs there anything I can help you with regarding this text? For example, are you looking for:\n\n*   **Meaning?** (It's a placeholder, meaning \"empty space\" for design purposes)\n*   **Related information?** (Perhaps its origin or purpose?)\n*   **Translation?** (It's Latin, and the text is often used as a placeholder in publishing)\n*   **Something else entirely?**\n\nLet me know what you'd like to do!"
+        "content": "It looks like you've started with a placeholder text (\"Lorem ipsum...\"), which is commonly used in design and publishing as filler text. If you meant to ask something specific or need help with a particular topic, feel free to provide more details!\n\nFor example:\n- Are you looking for help with writing, coding, or another subject?\n- Do you need explanations or examples related to \"Lorem ipsum\"?\n- Or is there another topic you'd like assistance with?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 19,
-    "completion_tokens": 128,
-    "total_tokens": 147
+    "prompt_tokens": 8,
+    "completion_tokens": 94,
+    "total_tokens": 102
   }
 }
 ```
@@ -1337,7 +1349,7 @@
 
 ```json
 {
-  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 0.123456789 seconds."
+  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.Timeout: Timeout Error: MistralException - litellm.Timeout: Connection timed out after 0.123456789 seconds."
 }
 ```
 
@@ -1387,15 +1399,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-24T17:31:22.401672Z",
-  "response": "The capital of France is **Paris**. \n\nDo you want to know more about Paris?",
+  "created_at": "2026-02-25T01:44:39.625966Z",
+  "response": "The capital of France is **Paris**.",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
-  "prompt_eval_count": 21,
+  "prompt_eval_count": 10,
   "prompt_eval_duration": 0,
-  "eval_count": 20,
+  "eval_count": 9,
   "eval_duration": 0
 }
 ```
@@ -1965,11 +1977,11 @@
 
 ```json
 {
-  "result": "Please provide the user message you want me to summarize.",
+  "result": "Please provide the user's message you'd like me to clean up and summarize.",
   "usage": {
-    "prompt_tokens": 50,
-    "completion_tokens": 12,
-    "total_tokens": 62
+    "prompt_tokens": 35,
+    "completion_tokens": 17,
+    "total_tokens": 52
   }
 }
 ```

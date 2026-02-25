@@ -109,9 +109,9 @@
     "pixtral",
     "voxtral-mini",
     "voxtral-small",
-    "ollama_on_tailscale"
+    "default"
   ],
-  "default": "ollama_on_tailscale",
+  "default": "default",
   "total": 12,
   "status": "multiple_providers_available"
 }
@@ -164,13 +164,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "I am Son of Anton, your ever-faithful assistant.\n\nUnfortunately, I don\u2019t have access to real-time weather information. I\u2019m a bit of a digital hermit, you know? But if you need it, I can point you towards a surprisingly accurate weather forecast \u2013 it\u2019s about as reliable as a perfectly cooked hamburger, but I\u2019ll try my best!",
+  "message": "I don\u2019t have real-time access to current weather data, but you can check the weather using a weather app, website like Weather.com, or your smartphone\u2019s built-in weather feature. For the latest updates, it\u2019s best to check a reliable source that provides live forecasts. Let me know if you\u2019d like help with anything else! \ud83d\ude0a",
   "role": "assistant",
-  "created": 1771954114,
+  "created": 1771983778,
   "usage": {
-    "prompt_tokens": 276,
-    "completion_tokens": 79,
-    "total_tokens": 355
+    "prompt_tokens": 725,
+    "completion_tokens": 76,
+    "total_tokens": 801
   }
 }
 ```
@@ -721,24 +721,24 @@
 
 ```json
 {
-  "id": "chatcmpl-c803c80edf6a43a4a52a4725",
+  "id": "chatcmpl-7f383ce45eaf4f4b912e99df",
   "object": "chat.completion",
-  "created": 1771954152,
+  "created": 1771983822,
   "model": "ollama/gemma3:1b",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "IThe capital of France is **Paris**. \ud83c\uddeb\ud83c\uddf7\n"
+        "content": "AhThe capital of France is **Paris**. \n\nIt\u2019s a fantastic question! \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 21,
-    "completion_tokens": 13,
-    "total_tokens": 34
+    "completion_tokens": 19,
+    "total_tokens": 40
   }
 }
 ```
@@ -967,24 +967,24 @@
 
 ```json
 {
-  "id": "chatcmpl-c03d7afda94b49e1ad51ff83",
+  "id": "chatcmpl-cf4d1fa732c94aa383cb8d97",
   "object": "chat.completion",
-  "created": 1771954167,
+  "created": 1771983838,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "This is a classic placeholder text. It's a very common practice in the printing and design industries to use a large block of seemingly random text to allow designers to focus on the layout and design of the final product without having to worry about actual content. \n\nIt's usually in a standard font (like Arial or Helvetica) and is usually a beige or light color. \n\n**Do you want me to do anything with this text? For example, would you like me to:**\n\n*   Generate something based on it? (e.g., a story, a poem, etc.)\n*   Explain its purpose?\n*   Translate it into another language?"
+        "content": "Okay, I understand. You've provided the standard placeholder text \u2013 \"Lorem ipsum dolor sit amet\". \n\nIs there anything I can do with this? For example, would you like me to:\n\n*   **Generate more Lorem Ipsum text?** (e.g., a paragraph, a few lines, etc.)\n*   **Explain what it is?** (It's a placeholder text used in the printing and design industries to display text in a way that doesn't distract from the design.)\n*   **Translate it?** (It's Latin, a language that\u2019s been used for centuries and has a long history of typesetting.)\n*   **Something else entirely?**\n\nLet me know what you\u2019re hoping for."
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 138,
-    "total_tokens": 157
+    "completion_tokens": 157,
+    "total_tokens": 176
   }
 }
 ```
@@ -1048,24 +1048,24 @@
 
 ```json
 {
-  "id": "chatcmpl-c6cdf64e617342449dcb05ac",
+  "id": "chatcmpl-09e583606ad343998e27b126",
   "object": "chat.completion",
-  "created": 1771954172,
+  "created": 1771983842,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything I can do with it? For example, would you like me to:\n\n*   **Generate more Lorem Ipsum text?** (e.g., a longer paragraph)\n*   **Explain what it is?**\n*   **Convert it to a specific format?** (like a specific length or layout?)\n*   **Just acknowledge its presence?**\n\nLet me know how I can help!"
+        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything I can do with it? For example, would you like me to:\n\n*   **Explain its purpose?** It's a placeholder text used in printing and design to fill space before the actual content is presented.\n*   **Generate text based on it?** (e.g., a story, a description, etc.)\n*   **Convert it to a different format?** (e.g., a simple code snippet)\n*   **Just acknowledge that I've received it?**"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 108,
-    "total_tokens": 127
+    "completion_tokens": 129,
+    "total_tokens": 148
   }
 }
 ```
@@ -1387,15 +1387,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-24T17:29:34.282736Z",
-  "response": "The capital of France is **Paris**. \n\n\ud83d\ude0a",
+  "created_at": "2026-02-25T01:44:04.431733Z",
+  "response": "The capital of France is **Paris**. \ud83c\uddeb\ud83c\uddf7\n",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 21,
   "prompt_eval_duration": 0,
-  "eval_count": 12,
+  "eval_count": 13,
   "eval_duration": 0
 }
 ```

@@ -17,7 +17,7 @@ def test_providers(ollama_server_available):
             response = requests.get(url)
             if response.status_code == 200 and response.json().get("status", "") == "one_provider_available":
                 break
-        except Exception:
+        except requests.exceptions.RequestException:
             pass
         if time.time() - start > timeout:
             break
@@ -56,7 +56,7 @@ def test_provider_context_window(ollama_server_available):
             response = requests.get(context_url)
             if response.status_code == 200:
                 break
-        except Exception:
+        except requests.exceptions.RequestException:
             pass
         if time.time() - start > timeout:
             break

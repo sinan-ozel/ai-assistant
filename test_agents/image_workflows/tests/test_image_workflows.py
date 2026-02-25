@@ -1,4 +1,5 @@
 """Tests for image-based workflow endpoints."""
+
 import base64
 import json
 import os
@@ -34,7 +35,9 @@ def test_nutrition_information_extraction():
                     "content": [
                         {
                             "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"},
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}"
+                            },
                         }
                     ],
                 }
@@ -51,8 +54,8 @@ def test_nutrition_information_extraction():
     print(data)
 
     assert isinstance(data, dict)
-    assert 'result' in data
-    result = data['result']
+    assert "result" in data
+    result = data["result"]
 
     # User will write final assertions
     # Expected structure: {"calories": int, "serving_size": float, "unit": str}
@@ -83,7 +86,9 @@ def test_nutrition_information_extraction_streaming_sse():
                     "content": [
                         {
                             "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"},
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}"
+                            },
                         }
                     ],
                 }
@@ -91,14 +96,17 @@ def test_nutrition_information_extraction_streaming_sse():
             "temperature": 0.0,
             "max_tokens": 500,
             "stream": True,
-            "stream_format": "sse"
+            "stream_format": "sse",
         },
         timeout=300,
-        stream=True
+        stream=True,
     )
 
     assert response.status_code == 200
-    assert response.headers.get("content-type") == "text/event-stream; charset=utf-8"
+    assert (
+        response.headers.get("content-type")
+        == "text/event-stream; charset=utf-8"
+    )
 
     chunks = []
     content_parts = []
@@ -149,7 +157,9 @@ def test_nutrition_information_extraction_streaming_ndjson():
                     "content": [
                         {
                             "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"},
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}"
+                            },
                         }
                     ],
                 }
@@ -157,10 +167,10 @@ def test_nutrition_information_extraction_streaming_ndjson():
             "temperature": 0.0,
             "max_tokens": 500,
             "stream": True,
-            "stream_format": "ndjson"
+            "stream_format": "ndjson",
         },
         timeout=300,
-        stream=True
+        stream=True,
     )
 
     assert response.status_code == 200
@@ -197,8 +207,10 @@ def test_nutrition_information_extraction_streaming_ndjson():
     assert isinstance(result["serving_size"], (int, float))
     assert isinstance(result["unit"], str)
 
+
 def test_book_title_extraction_image_0161():
-    """Test book title extraction from book cover image (IMG_0161.JPG)."""
+    """Test book title extraction from book cover image
+    (IMG_0161.JPG)."""
     image_path = IMAGES_DIR / "IMG_0161.JPG"
     image_base64 = get_image_base64(image_path)
     url = f"{BASE_URL}/v1/extract-book-title"
@@ -212,7 +224,9 @@ def test_book_title_extraction_image_0161():
                     "content": [
                         {
                             "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"},
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}"
+                            },
                         }
                     ],
                 }
@@ -229,9 +243,9 @@ def test_book_title_extraction_image_0161():
     # User will write final assertions
     # Expected: string containing book title
     assert isinstance(data, dict)
-    assert len(data['result']) > 0
+    assert len(data["result"]) > 0
     print(data)
-    assert data['result'].strip() == 'THE BIG STICK'
+    assert data["result"].strip() == "THE BIG STICK"
 
 
 def test_book_title_extraction_image_0161_streaming_sse():
@@ -249,7 +263,9 @@ def test_book_title_extraction_image_0161_streaming_sse():
                     "content": [
                         {
                             "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"},
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}"
+                            },
                         }
                     ],
                 }
@@ -257,14 +273,17 @@ def test_book_title_extraction_image_0161_streaming_sse():
             "temperature": 0.0,
             "max_tokens": 100,
             "stream": True,
-            "stream_format": "sse"
+            "stream_format": "sse",
         },
         timeout=300,
-        stream=True
+        stream=True,
     )
 
     assert response.status_code == 200
-    assert response.headers.get("content-type") == "text/event-stream; charset=utf-8"
+    assert (
+        response.headers.get("content-type")
+        == "text/event-stream; charset=utf-8"
+    )
 
     chunks = []
     content_parts = []
@@ -289,11 +308,12 @@ def test_book_title_extraction_image_0161_streaming_sse():
     # Verify we got content
     full_content = "".join(content_parts)
     assert len(full_content) > 0, "Expected content in streaming response"
-    assert 'THE BIG STICK' in full_content.strip()
+    assert "THE BIG STICK" in full_content.strip()
 
 
 def test_book_title_extraction_image_0161_streaming_ndjson():
-    """Test book title extraction with NDJSON streaming (IMG_0161.JPG)."""
+    """Test book title extraction with NDJSON streaming
+    (IMG_0161.JPG)."""
     image_path = IMAGES_DIR / "IMG_0161.JPG"
     image_base64 = get_image_base64(image_path)
     url = f"{BASE_URL}/v1/extract-book-title"
@@ -307,7 +327,9 @@ def test_book_title_extraction_image_0161_streaming_ndjson():
                     "content": [
                         {
                             "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"},
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}"
+                            },
                         }
                     ],
                 }
@@ -315,10 +337,10 @@ def test_book_title_extraction_image_0161_streaming_ndjson():
             "temperature": 0.0,
             "max_tokens": 100,
             "stream": True,
-            "stream_format": "ndjson"
+            "stream_format": "ndjson",
         },
         timeout=300,
-        stream=True
+        stream=True,
     )
 
     assert response.status_code == 200
@@ -345,4 +367,4 @@ def test_book_title_extraction_image_0161_streaming_ndjson():
     # Verify we got content
     full_content = "".join(content_parts)
     assert len(full_content) > 0, "Expected content in streaming response"
-    assert 'THE BIG STICK' in full_content.strip()
+    assert "THE BIG STICK" in full_content.strip()

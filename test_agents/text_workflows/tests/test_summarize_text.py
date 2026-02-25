@@ -1,14 +1,16 @@
 """Tests for the summarize-text workflow endpoint."""
+
 import json
 import os
-import requests
 
+import requests
 
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 
 def test_summarize_text_endpoint():
-    """Ensure the /v1/summarize-text endpoint returns a short string summary."""
+    """Ensure the /v1/summarize-text endpoint returns a short string
+    summary."""
     url = f"{BASE_URL}/v1/summarize-text"
 
     response = requests.post(
@@ -62,14 +64,17 @@ def test_summarize_text_streaming_sse():
             "temperature": 0.0,
             "max_tokens": 200,
             "stream": True,
-            "stream_format": "sse"
+            "stream_format": "sse",
         },
         timeout=10,
-        stream=True
+        stream=True,
     )
 
     assert response.status_code == 200
-    assert response.headers.get("content-type") == "text/event-stream; charset=utf-8"
+    assert (
+        response.headers.get("content-type")
+        == "text/event-stream; charset=utf-8"
+    )
 
     chunks = []
     content_parts = []
@@ -116,10 +121,10 @@ def test_summarize_text_streaming_ndjson():
             "temperature": 0.0,
             "max_tokens": 200,
             "stream": True,
-            "stream_format": "ndjson"
+            "stream_format": "ndjson",
         },
         timeout=10,
-        stream=True
+        stream=True,
     )
 
     assert response.status_code == 200

@@ -1,9 +1,9 @@
 """Pytest configuration and fixtures for image workflow tests."""
+
 import pytest
 import requests
 import os
 import time
-
 
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
