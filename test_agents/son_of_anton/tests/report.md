@@ -98,15 +98,15 @@
 ```json
 {
   "available": [
-    "codestral",
+    "coding",
+    "default",
     "magistral-small",
     "ministral-14b",
     "ministral-3b",
-    "ministral-8b",
     "mistral-7b",
-    "mistral-large",
     "mistral-small",
-    "pixtral",
+    "small",
+    "vision",
     "voxtral-mini",
     "voxtral-small",
     "default"
@@ -164,13 +164,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "I don\u2019t have real-time access to current weather data, but you can check the weather using a weather app, website like Weather.com, or your smartphone\u2019s built-in weather feature. For the latest updates, it\u2019s best to check a reliable source that provides live forecasts. Let me know if you\u2019d like help with anything else! \ud83d\ude0a",
+  "message": "I am Son of Anton, your ever-faithful assistant.\n\nWhile I can't fetch real-time weather updates, I *can* help you debug code or find the best burger deals in Silicon Valley! If you'd like, I can also guide you on how to check the weather programmatically (e.g., using Python with APIs like OpenWeatherMap).\n\nOtherwise, try asking Siri, Google, or a weather app for the latest forecast. How else can I assist? \ud83c\udf54\ud83d\udcbb",
   "role": "assistant",
-  "created": 1771983778,
+  "created": 1771986571,
   "usage": {
-    "prompt_tokens": 725,
-    "completion_tokens": 76,
-    "total_tokens": 801
+    "prompt_tokens": 699,
+    "completion_tokens": 105,
+    "total_tokens": 804
   }
 }
 ```
@@ -721,24 +721,24 @@
 
 ```json
 {
-  "id": "chatcmpl-7f383ce45eaf4f4b912e99df",
+  "id": "chatcmpl-eb974971123c4fbe8fbfc0b8",
   "object": "chat.completion",
-  "created": 1771983822,
-  "model": "ollama/gemma3:1b",
+  "created": 1771986598,
+  "model": "mistral-large-2512",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "AhThe capital of France is **Paris**. \n\nIt\u2019s a fantastic question! \ud83d\ude0a"
+        "content": "The capital of France is **Paris**."
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 21,
-    "completion_tokens": 19,
-    "total_tokens": 40
+    "prompt_tokens": 10,
+    "completion_tokens": 9,
+    "total_tokens": 19
   }
 }
 ```
@@ -967,24 +967,24 @@
 
 ```json
 {
-  "id": "chatcmpl-cf4d1fa732c94aa383cb8d97",
+  "id": "chatcmpl-5fa286a5903e4a7e95f848fb",
   "object": "chat.completion",
-  "created": 1771983838,
+  "created": 1771986622,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the standard placeholder text \u2013 \"Lorem ipsum dolor sit amet\". \n\nIs there anything I can do with this? For example, would you like me to:\n\n*   **Generate more Lorem Ipsum text?** (e.g., a paragraph, a few lines, etc.)\n*   **Explain what it is?** (It's a placeholder text used in the printing and design industries to display text in a way that doesn't distract from the design.)\n*   **Translate it?** (It's Latin, a language that\u2019s been used for centuries and has a long history of typesetting.)\n*   **Something else entirely?**\n\nLet me know what you\u2019re hoping for."
+        "content": "Sure! \"Lorem ipsum dolor sit amet\" is a classic placeholder text used in the publishing and design industries. It's derived from a work by the Roman philosopher Cicero, specifically from his piece *\"De finibus bonorum et malorum\"* (On the Ends of Goods and Evils).\n\nThe original passage reads:\n*\"Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...\"*\n(Translation: \"Nor is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain...\")\n\nThe scrambled version (\"Lorem ipsum...\") has been used since the 1500s to demonstrate fonts, layouts, and designs without distracting the viewer with readable content. It\u2019s become a standard in the design world!\n\nWould you like a full \"Lorem ipsum\" paragraph for a project? \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 19,
-    "completion_tokens": 157,
-    "total_tokens": 176
+    "prompt_tokens": 8,
+    "completion_tokens": 183,
+    "total_tokens": 191
   }
 }
 ```
@@ -1048,24 +1048,24 @@
 
 ```json
 {
-  "id": "chatcmpl-09e583606ad343998e27b126",
+  "id": "chatcmpl-87e0538fd7e64b4cb181ea4b",
   "object": "chat.completion",
-  "created": 1771983842,
+  "created": 1771986627,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything I can do with it? For example, would you like me to:\n\n*   **Explain its purpose?** It's a placeholder text used in printing and design to fill space before the actual content is presented.\n*   **Generate text based on it?** (e.g., a story, a description, etc.)\n*   **Convert it to a different format?** (e.g., a simple code snippet)\n*   **Just acknowledge that I've received it?**"
+        "content": "Sure! \"Lorem ipsum dolor sit amet\" is a classic placeholder text used in the publishing and design industries. It's derived from a work by the Roman philosopher Cicero, specifically from his piece *\"De finibus bonorum et malorum\"* (On the Ends of Goods and Evils).\n\nThe original passage reads:\n*\"Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...\"*\n(Translation: \"Nor is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain...\")\n\nThe scrambled version (\"Lorem ipsum...\") has been used since the 1500s to demonstrate fonts, layouts, and designs without distracting the viewer with readable content. It\u2019s become a standard in the design world!\n\nWould you like a full \"Lorem ipsum\" paragraph for a project? \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 19,
-    "completion_tokens": 129,
-    "total_tokens": 148
+    "prompt_tokens": 8,
+    "completion_tokens": 183,
+    "total_tokens": 191
   }
 }
 ```
@@ -1337,7 +1337,7 @@
 
 ```json
 {
-  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 0.123456789 seconds."
+  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.Timeout: Timeout Error: MistralException - litellm.Timeout: Connection timed out after 0.123456789 seconds."
 }
 ```
 
@@ -1387,15 +1387,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-25T01:44:04.431733Z",
-  "response": "The capital of France is **Paris**. \ud83c\uddeb\ud83c\uddf7\n",
+  "created_at": "2026-02-25T02:30:28.990915Z",
+  "response": "The capital of France is **Paris**.",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
-  "prompt_eval_count": 21,
+  "prompt_eval_count": 10,
   "prompt_eval_duration": 0,
-  "eval_count": 13,
+  "eval_count": 9,
   "eval_duration": 0
 }
 ```

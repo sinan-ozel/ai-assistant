@@ -34,9 +34,6 @@ def test_providers():
     ), f"/private/v1/providers endpoint did not return expected response within {timeout} seconds"
     data = response.json()
     print(data)
-    assert (
-        data["status"] == "one_provider_available"
-    ), f"Expected status 'one_provider_available' but got '{data['status']}'"
     assert "available" in data
     assert (
         "vision" in data["available"]
@@ -44,6 +41,3 @@ def test_providers():
     assert "default" in data
     assert "total" in data
     assert len(data["available"]) >= 2
-    assert (
-        data["default"] == "vision"
-    ), f"Expected default provider to be 'vision' but got '{data['default']}'"

@@ -153,13 +153,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "Okay! To give you the most accurate weather information, I need to know your location. Could you please tell me where you are? \ud83d\ude0a",
+  "message": "Okay! The weather in Paris, France, is currently sunny with a temperature of 22\u00b0C (72\u00b0F) and a humidity of 68%. It will be partly cloudy with a chance of showers. \ud83d\ude0a",
   "role": "assistant",
-  "created": 1771983652,
+  "created": 1771986463,
   "usage": {
-    "prompt_tokens": 44,
-    "completion_tokens": 29,
-    "total_tokens": 73
+    "prompt_tokens": 158,
+    "completion_tokens": 48,
+    "total_tokens": 206
   }
 }
 ```
@@ -710,24 +710,24 @@
 
 ```json
 {
-  "id": "chatcmpl-d67bb470f8a74f4dbacdd4a2",
+  "id": "chatcmpl-64407b3d65da4638b832b230",
   "object": "chat.completion",
-  "created": 1771983678,
+  "created": 1771986488,
   "model": "ollama/gemma3:1b",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is **Paris**. \ud83c\uddeb\ud83c\uddf7\n"
+        "content": "The capital of France is **Paris**. \n\n\ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 21,
-    "completion_tokens": 13,
-    "total_tokens": 34
+    "completion_tokens": 12,
+    "total_tokens": 33
   }
 }
 ```
@@ -956,24 +956,24 @@
 
 ```json
 {
-  "id": "chatcmpl-4032396ec753424aaa87f758",
+  "id": "chatcmpl-2fb248ab9fe54e6c9b6bdc98",
   "object": "chat.completion",
-  "created": 1771983693,
+  "created": 1771986502,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic placeholder text, \"Lorem ipsum dolor sit amet\". \n\nIt's a very common and often used placeholder text in the printing and design industries. It's not meant to be read or interpreted, but rather used to fill space in a document before the actual content is revealed. \n\nIs there anything specific you'd like me to do with it? For example, would you like me to:\n\n*   **Explain its purpose?**\n*   **Provide some context about its origin?**\n*   **Generate similar text?**"
+        "content": "Okay! It seems like you've provided the classic placeholder text \"Lorem ipsum dolor sit amet\". \n\nIt's a common practice in design and printing to use this text \u2013 it's a placeholder that allows designers and printers to see the page layout without needing to see actual content. \n\nIs there anything specific you'd like to do with this text?  Do you want me to:\n\n*   **Analyze it?** (e.g., identify its grammatical structure?)\n*   **Generate similar text?** (e.g., a paragraph of text with a similar style?)\n*   **Help you with something related to it?** (e.g., understand its purpose?)"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 124,
-    "total_tokens": 143
+    "completion_tokens": 146,
+    "total_tokens": 165
   }
 }
 ```
@@ -1037,24 +1037,24 @@
 
 ```json
 {
-  "id": "chatcmpl-8852511055784a61a8b8ff30",
+  "id": "chatcmpl-4c4aff64781e4e929b9f605e",
   "object": "chat.completion",
-  "created": 1771983698,
+  "created": 1771986507,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything you'd like me to do with it? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify the types of text it represents)\n*   **Generate something related to it?** (e.g., a story, a poem, a code snippet?)\n*   **Explain its purpose?** (e.g., why it's used in design?)\n*   **Just acknowledge it?** (e.g., \"Okay, that's the Lorem Ipsum text.\")\n\nLet me know how I can help!"
+        "content": "Okay, I understand. You've provided the standard placeholder text \"Lorem ipsum dolor sit amet.\" \n\nIs there anything specific you'd like me to do with this text? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify common words, see if it's a placeholder?)\n*   **Generate text based on it?** (e.g., a paragraph of text?)\n*   **Translate it?** (although it's not a real translation)\n*   **Explain its purpose?** (as a placeholder)\n\nLet me know what you have in mind!"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 146,
-    "total_tokens": 165
+    "completion_tokens": 135,
+    "total_tokens": 154
   }
 }
 ```
@@ -1376,15 +1376,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-25T01:41:40.599862Z",
-  "response": "The capital of France is **Paris**. \n\nIt\u2019s a great city! \ud83d\ude0a \n\nWould you like to know more about Paris?",
+  "created_at": "2026-02-25T02:28:29.190184Z",
+  "response": "The capital of France is **Paris**. \n\nIt\u2019s a great question! \ud83d\ude0a",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 21,
   "prompt_eval_duration": 0,
-  "eval_count": 30,
+  "eval_count": 19,
   "eval_duration": 0
 }
 ```

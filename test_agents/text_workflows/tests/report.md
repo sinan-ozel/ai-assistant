@@ -98,15 +98,15 @@
 ```json
 {
   "available": [
-    "codestral",
+    "coding",
+    "default",
     "magistral-small",
     "ministral-14b",
     "ministral-3b",
-    "ministral-8b",
     "mistral-7b",
-    "mistral-large",
     "mistral-small",
-    "pixtral",
+    "small",
+    "vision",
     "voxtral-mini",
     "voxtral-small",
     "default",
@@ -733,24 +733,24 @@
 
 ```json
 {
-  "id": "chatcmpl-26819c30107a467cb7fdfeb2",
+  "id": "chatcmpl-0974e98f5b684844943ed53b",
   "object": "chat.completion",
-  "created": 1771983875,
+  "created": 1771986668,
   "model": "codestral-2501",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is **Paris**."
+        "content": "The capital of France is **Paris**. It is one of the most famous and iconic cities in the world, known for its rich history, culture, art, and landmarks such as the Eiffel Tower, the Louvre Museum, and Notre-Dame Cathedral."
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 10,
-    "completion_tokens": 9,
-    "total_tokens": 19
+    "completion_tokens": 52,
+    "total_tokens": 62
   }
 }
 ```
@@ -979,24 +979,24 @@
 
 ```json
 {
-  "id": "chatcmpl-9b68d046bb4b432a8fb2cdbe",
+  "id": "chatcmpl-dc30878a1d0a45d1980b3fa6",
   "object": "chat.completion",
-  "created": 1771983878,
+  "created": 1771986670,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "It looks like you've entered a placeholder text (\"Lorem ipsum dolor sit amet\"). This is commonly used in design and publishing as a placeholder for actual content. If you meant to ask something specific or need help with a particular topic, feel free to provide more details! Otherwise, here\u2019s a brief explanation of \"Lorem ipsum\":\n\n- **Lorem ipsum** is a dummy text used to fill space in design layouts, web development, and publishing.\n- It resembles Latin but is nonsensical, making it ideal for focusing on visual elements rather than content.\n- The text starts with \"Lorem ipsum dolor sit amet...\" and repeats in a predictable pattern.\n\nIf you'd like help with something else, let me know!"
+        "content": "\"Lorem ipsum dolor sit amet\" is a placeholder text commonly used in design, publishing, and web development to demonstrate the visual form of documents or showcase fonts without relying on meaningful content. It is derived from a scrambled section of Cicero's *De finibus bonorum et malorum* (On the Ends of Good and Evil), a Latin text written in 45 BCE.\n\nThe phrase is often followed by:\n*\"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\"*\n\nWould you like help with something specific related to this placeholder text?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 8,
-    "completion_tokens": 143,
-    "total_tokens": 151
+    "completion_tokens": 124,
+    "total_tokens": 132
   }
 }
 ```
@@ -1060,24 +1060,24 @@
 
 ```json
 {
-  "id": "chatcmpl-dad87f101ca14d319e6dc90f",
+  "id": "chatcmpl-314bb7599d564556b624ae7c",
   "object": "chat.completion",
-  "created": 1771983878,
+  "created": 1771986671,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "It looks like you've started with a placeholder text (\"Lorem ipsum...\"), which is commonly used in design and publishing as filler text. If you meant to ask something specific or need help with a particular topic, feel free to provide more details!\n\nFor example:\n- Are you looking for help with writing, coding, or another subject?\n- Do you need explanations or examples related to \"Lorem ipsum\"?\n- Or is there another topic you'd like assistance with?"
+        "content": "\"Lorem ipsum dolor sit amet\" is a placeholder text commonly used in design, publishing, and web development to demonstrate the visual form of documents or showcase fonts without relying on meaningful content. It is derived from a scrambled section of Cicero's *De finibus bonorum et malorum* (On the Ends of Good and Evil), a Latin text written in 45 BCE.\n\n### Example Usage:\n```plaintext\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n```\n\n### Key Features:\n- **Non-meaningful**: The text is random and lacks coherent meaning.\n- **Filler Content**: Used to test layouts, fonts, or software without distracting from the design.\n- **Standardized**: The same text appears in many design tools and templates.\n\nWould you like variations or a specific use case for this placeholder text?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 8,
-    "completion_tokens": 94,
-    "total_tokens": 102
+    "completion_tokens": 184,
+    "total_tokens": 192
   }
 }
 ```
@@ -1399,7 +1399,7 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-25T01:44:39.625966Z",
+  "created_at": "2026-02-25T02:31:12.257925Z",
   "response": "The capital of France is **Paris**.",
   "done": true,
   "context": [],
@@ -1977,11 +1977,11 @@
 
 ```json
 {
-  "result": "Please provide the user's message you'd like me to clean up and summarize.",
+  "result": "Please provide the user message you'd like me to clean up and summarize.",
   "usage": {
     "prompt_tokens": 35,
-    "completion_tokens": 17,
-    "total_tokens": 52
+    "completion_tokens": 16,
+    "total_tokens": 51
   }
 }
 ```
