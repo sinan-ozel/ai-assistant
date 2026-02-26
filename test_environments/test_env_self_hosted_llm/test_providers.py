@@ -15,7 +15,7 @@ def test_providers(ollama_server_available):
     while True:
         try:
             response = requests.get(url)
-            if response.status_code == 200 and response.json().get("status", "") == "one_provider_available":
+            if response.status_code == 200 and response.json().get("status", "") == "ready":
                 break
         except requests.exceptions.RequestException:
             pass
@@ -24,13 +24,14 @@ def test_providers(ollama_server_available):
         time.sleep(1)
     assert response.status_code == 200, f"/private/v1/providers endpoint did not return expected response within {timeout} seconds"
     data = response.json()
-    assert data["status"] == "one_provider_available"
+    print(data)
+    assert data["status"] == "ready", f"Expected status 'ready' but got '{data['status']}'"
     assert "available" in data
     assert "default" in data
     assert "total" in data
     assert len(data["available"]) == 1
     # Check for self-hosted provider name (adjust based on your provider config)
-    assert data["default"] is not None
+    assert data["default"] == 'ollama_on_tailscale', f"Expected default provider to be 'ollama_on_tailscale' but got '{data['default']}'"
 
 
 @pytest.mark.depends(name='test_provider_context_window')

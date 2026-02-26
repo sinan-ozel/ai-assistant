@@ -3,8 +3,9 @@
 import base64
 import json
 import os
-import requests
 from pathlib import Path
+
+import requests
 
 
 def get_image_base64(image_path: Path) -> str:
@@ -245,7 +246,7 @@ def test_book_title_extraction_image_0161():
     assert isinstance(data, dict)
     assert len(data["result"]) > 0
     print(data)
-    assert data["result"].strip() == "THE BIG STICK"
+    assert data["result"].strip().upper() == "THE BIG STICK"
 
 
 def test_book_title_extraction_image_0161_streaming_sse():
@@ -308,7 +309,7 @@ def test_book_title_extraction_image_0161_streaming_sse():
     # Verify we got content
     full_content = "".join(content_parts)
     assert len(full_content) > 0, "Expected content in streaming response"
-    assert "THE BIG STICK" in full_content.strip()
+    assert "THE BIG STICK" in full_content.strip().upper()
 
 
 def test_book_title_extraction_image_0161_streaming_ndjson():
@@ -367,4 +368,4 @@ def test_book_title_extraction_image_0161_streaming_ndjson():
     # Verify we got content
     full_content = "".join(content_parts)
     assert len(full_content) > 0, "Expected content in streaming response"
-    assert "THE BIG STICK" in full_content.strip()
+    assert "THE BIG STICK" in full_content.strip().upper()

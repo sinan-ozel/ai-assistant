@@ -14,8 +14,8 @@ GOALS
 - [ ] (*) Local Run docker-compose examples
 
 - [ ] Upgrade pytest-openapi to 0.2.2
-- [ ] (*) Finish logic / protocol for the default provider: if multiple custom, the one called default is default. Also: vision, large, small, default, reasoning, evaluation, coding
-- [ ] (*) Rename the default providers.
+- [x] (*) Finish logic / protocol for the default provider: if multiple custom, the one called default is default. Also: vision, large, small, default, reasoning, evaluation, coding
+- [x] (*) Rename the default providers.
 
 
 - [ ] Add some sort of agent_id and use as a prefix. agent:short-term-memory:<user_id>:<convo_id>

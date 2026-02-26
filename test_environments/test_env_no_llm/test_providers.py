@@ -1,8 +1,8 @@
+import os
+import time
+
 import pytest
 import requests
-import time
-import os
-
 
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
@@ -16,14 +16,20 @@ def test_providers():
     while True:
         try:
             response = requests.get(url)
-            if response.status_code == 200 and response.json().get("status", "") == "no_providers_available":
+            if (
+                response.status_code == 200
+                and response.json().get("status", "")
+                == "no_providers_available"
+            ):
                 break
         except requests.exceptions.RequestException:
             pass
         if time.time() - start > timeout:
             break
         time.sleep(1)
-    assert response.status_code == 200, f"/private/v1/providers endpoint did not return expected response within {timeout} seconds"
+    assert (
+        response.status_code == 200
+    ), f"/private/v1/providers endpoint did not return expected response within {timeout} seconds"
     data = response.json()
     assert data["status"] == "no_providers_available"
     assert "available" in data

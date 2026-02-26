@@ -18,7 +18,7 @@ def test_providers():
             if response.status_code == 200:
                 status = response.json().get("status", "")
                 # Wait until discovery completes (not initializing anymore)
-                if status != "initializing" and status == "one_provider_available":
+                if status != "initializing" and status == "ready":
                     break
         except requests.exceptions.RequestException:
             pass
@@ -28,12 +28,13 @@ def test_providers():
     assert response.status_code == 200, f"/private/v1/providers endpoint did not return expected response within {timeout} seconds"
     data = response.json()
     print(data)
-    assert data["status"] == "one_provider_available", f"Expected status 'one_provider_available' but got '{data['status']}'"
+    assert data["status"] == "ready", f"Expected status 'ready' but got '{data['status']}'"
     assert "available" in data
+    assert 'local_gemma3_270m' in data['available'], f"Expected 'local_gemma3_270m' to be in available providers but got {data['available']}"
     assert "default" in data
     assert "total" in data
-    assert len(data["available"]) == 1
-    assert data["default"] is not None
+    assert len(data["available"]) >= 1
+    assert data["default"] == 'local_gemma3_270m', f"Expected default provider to be 'local_gemma3_270m' but got '{data['default']}'"
 
 
 @pytest.mark.depends(on=["test_providers"], name="test_provider_context_window")

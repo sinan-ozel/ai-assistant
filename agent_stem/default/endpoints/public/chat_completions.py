@@ -96,6 +96,12 @@ async def handle_streaming(
                 yield json.dumps({"done": True}) + "\n"
 
         except litellm.Timeout as e:
+            logger.error(
+                f"Streaming request timeout - LLM provider did not respond. "
+                f"Model: {model}, Messages: {messages}, "
+                f"Temperature: {temperature}, Max tokens: {max_tokens}, "
+                f"Timeout: {timeout}s, Error: {str(e)}"
+            )
             error_data = {"error": {"message": str(e), "type": "timeout"}}
             if stream_format == STREAM_FORMAT_SSE:
                 yield f"data: {json.dumps(error_data)}\n\n"
@@ -104,6 +110,13 @@ async def handle_streaming(
         except litellm.APIConnectionError as e:
             error_msg = str(e).lower()
             if "timeout" in error_msg or "timed out" in error_msg:
+                logger.error(
+                    f"Streaming request timeout (APIConnectionError) - "
+                    f"LLM provider did not respond. "
+                    f"Model: {model}, Messages: {messages}, "
+                    f"Temperature: {temperature}, Max tokens: {max_tokens}, "
+                    f"Timeout: {timeout}s, Error: {str(e)}"
+                )
                 error_data = {"error": {"message": str(e), "type": "timeout"}}
             else:
                 error_data = {
@@ -235,6 +248,12 @@ async def handler(request: dict, providers_state: dict):
     except NotImplementedError as e:
         raise HTTPException(status_code=501, detail=str(e))
     except litellm.Timeout as e:
+        logger.error(
+            f"Request timeout - LLM provider did not respond. "
+            f"Model: {model}, Messages: {messages}, "
+            f"Temperature: {temperature}, Max tokens: {max_tokens}, "
+            f"Timeout: {timeout}s, Error: {str(e)}"
+        )
         raise HTTPException(
             status_code=408,
             detail=(
@@ -246,6 +265,12 @@ async def handler(request: dict, providers_state: dict):
         # Check if this is a timeout error wrapped in APIConnectionError
         error_msg = str(e).lower()
         if "timeout" in error_msg or "timed out" in error_msg:
+            logger.error(
+                f"Request timeout (APIConnectionError) - LLM provider did not respond. "
+                f"Model: {model}, Messages: {messages}, "
+                f"Temperature: {temperature}, Max tokens: {max_tokens}, "
+                f"Timeout: {timeout}s, Error: {str(e)}"
+            )
             raise HTTPException(
                 status_code=408,
                 detail=(

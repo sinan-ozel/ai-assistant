@@ -1,13 +1,16 @@
 """Pytest configuration and fixtures for Mistral provider tests."""
-import pytest
+
 import os
+
+import pytest
 
 
 @pytest.fixture(scope="session")
 def mistral_api_key_available():
     """Check if the MISTRAL_API_KEY environment variable is set.
 
-    This fixture runs once per test session and is available to all tests.
+    This fixture runs once per test session and is available to all
+    tests.
     """
     api_key = os.getenv("MISTRAL_API_KEY")
 
@@ -30,7 +33,9 @@ def clear_test_memory():
     redis_port = int(os.getenv("REDIS_PORT", 6379))
 
     # Connect to Redis (should be healthy due to depends_on)
-    client = redis.Redis(host=redis_host, port=redis_port, decode_responses=False)
+    client = redis.Redis(
+        host=redis_host, port=redis_port, decode_responses=False
+    )
 
     # Clear test-related keys before test
     test_keys = client.keys("memory:test-user-memory:test-memory-conv*")

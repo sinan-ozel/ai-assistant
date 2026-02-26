@@ -34,7 +34,7 @@
 {
   "status": "ok",
   "providers_loading": false,
-  "available_providers": 12
+  "available_providers": 10
 }
 ```
 
@@ -87,7 +87,7 @@
   ],
   "default": "pixtral",
   "total": 2,
-  "status": "multiple_providers_available"
+  "status": "ready"
 }
 ```
 
@@ -98,22 +98,20 @@
 ```json
 {
   "available": [
-    "coding",
     "default",
+    "coding",
     "magistral-small",
     "ministral-14b",
     "ministral-3b",
     "mistral-7b",
     "mistral-small",
-    "small",
     "vision",
     "voxtral-mini",
-    "voxtral-small",
-    "default"
+    "voxtral-small"
   ],
   "default": "default",
-  "total": 12,
-  "status": "multiple_providers_available"
+  "total": 10,
+  "status": "ready"
 }
 ```
 
@@ -164,13 +162,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "I am Son of Anton, your ever-faithful assistant.\n\nWhile I can't fetch real-time weather updates, I *can* help you debug code or find the best burger deals in Silicon Valley! If you'd like, I can also guide you on how to check the weather programmatically (e.g., using Python with APIs like OpenWeatherMap).\n\nOtherwise, try asking Siri, Google, or a weather app for the latest forecast. How else can I assist? \ud83c\udf54\ud83d\udcbb",
+  "message": "I don\u2019t have real-time access to current weather data, but you can check the weather using a weather app, website like Weather.com, or your smartphone\u2019s built-in weather feature. For the latest updates, it\u2019s best to check a reliable source that provides live forecasts. Let me know if you\u2019d like help with anything else! \ud83d\ude0a",
   "role": "assistant",
-  "created": 1771986571,
+  "created": 1772071312,
   "usage": {
-    "prompt_tokens": 699,
-    "completion_tokens": 105,
-    "total_tokens": 804
+    "prompt_tokens": 1580,
+    "completion_tokens": 76,
+    "total_tokens": 1656
   }
 }
 ```
@@ -721,24 +719,24 @@
 
 ```json
 {
-  "id": "chatcmpl-eb974971123c4fbe8fbfc0b8",
+  "id": "chatcmpl-7ddda8b7393f437bb6edf7f2",
   "object": "chat.completion",
-  "created": 1771986598,
-  "model": "mistral-large-2512",
+  "created": 1772071437,
+  "model": "ollama/gemma3:1b",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is **Paris**."
+        "content": "###The capital of France is **Paris**. \n\nDo you want to know more about Paris, like its history or famous landmarks?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 10,
-    "completion_tokens": 9,
-    "total_tokens": 19
+    "prompt_tokens": 21,
+    "completion_tokens": 27,
+    "total_tokens": 48
   }
 }
 ```
@@ -967,24 +965,24 @@
 
 ```json
 {
-  "id": "chatcmpl-5fa286a5903e4a7e95f848fb",
+  "id": "chatcmpl-a5f49fde02934d6397123acb",
   "object": "chat.completion",
-  "created": 1771986622,
+  "created": 1772071451,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Sure! \"Lorem ipsum dolor sit amet\" is a classic placeholder text used in the publishing and design industries. It's derived from a work by the Roman philosopher Cicero, specifically from his piece *\"De finibus bonorum et malorum\"* (On the Ends of Goods and Evils).\n\nThe original passage reads:\n*\"Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...\"*\n(Translation: \"Nor is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain...\")\n\nThe scrambled version (\"Lorem ipsum...\") has been used since the 1500s to demonstrate fonts, layouts, and designs without distracting the viewer with readable content. It\u2019s become a standard in the design world!\n\nWould you like a full \"Lorem ipsum\" paragraph for a project? \ud83d\ude0a"
+        "content": "Okay, I understand. You've provided the classic \"Lorem Ipsum\" text. \n\nIs there anything specific you'd like me to do with it? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify word types, lengths, etc.)\n*   **Generate text around it?** (e.g., a paragraph or short story)\n*   **Explain its purpose?**\n*   **Something else entirely?**"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 8,
-    "completion_tokens": 183,
-    "total_tokens": 191
+    "prompt_tokens": 19,
+    "completion_tokens": 103,
+    "total_tokens": 122
   }
 }
 ```
@@ -1048,24 +1046,24 @@
 
 ```json
 {
-  "id": "chatcmpl-87e0538fd7e64b4cb181ea4b",
+  "id": "chatcmpl-9c7ed3b9f1384fb1b8889f88",
   "object": "chat.completion",
-  "created": 1771986627,
+  "created": 1772071454,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Sure! \"Lorem ipsum dolor sit amet\" is a classic placeholder text used in the publishing and design industries. It's derived from a work by the Roman philosopher Cicero, specifically from his piece *\"De finibus bonorum et malorum\"* (On the Ends of Goods and Evils).\n\nThe original passage reads:\n*\"Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...\"*\n(Translation: \"Nor is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain...\")\n\nThe scrambled version (\"Lorem ipsum...\") has been used since the 1500s to demonstrate fonts, layouts, and designs without distracting the viewer with readable content. It\u2019s become a standard in the design world!\n\nWould you like a full \"Lorem ipsum\" paragraph for a project? \ud83d\ude0a"
+        "content": "Okay! You've provided the classic placeholder text. It's a standard way to represent placeholder text in design and typesetting. \ud83d\ude0a \n\nIs there anything I can help you with regarding this placeholder text?  Do you want me to:\n\n*   Generate some more?\n*   Explain its purpose?\n*   Do something else related to it?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 8,
-    "completion_tokens": 183,
-    "total_tokens": 191
+    "prompt_tokens": 19,
+    "completion_tokens": 74,
+    "total_tokens": 93
   }
 }
 ```
@@ -1337,7 +1335,7 @@
 
 ```json
 {
-  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.Timeout: Timeout Error: MistralException - litellm.Timeout: Connection timed out after 0.123456789 seconds."
+  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 0.123456789 seconds."
 }
 ```
 
@@ -1387,15 +1385,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-25T02:30:28.990915Z",
-  "response": "The capital of France is **Paris**.",
+  "created_at": "2026-02-26T02:04:15.673201Z",
+  "response": "The capital of France is **Paris**. \n\n\ud83d\ude0a",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
-  "prompt_eval_count": 10,
+  "prompt_eval_count": 21,
   "prompt_eval_duration": 0,
-  "eval_count": 9,
+  "eval_count": 12,
   "eval_duration": 0
 }
 ```

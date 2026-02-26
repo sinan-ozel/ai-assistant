@@ -87,7 +87,7 @@
   ],
   "default": "pixtral",
   "total": 2,
-  "status": "multiple_providers_available"
+  "status": "ready"
 }
 ```
 
@@ -101,8 +101,8 @@
     "local_gemma3_270m"
   ],
   "default": "local_gemma3_270m",
-  "total": 13,
-  "status": "one_provider_available"
+  "total": 12,
+  "status": "ready"
 }
 ```
 
@@ -155,11 +155,11 @@
   "user_id": "user-456",
   "message": "The weather is currently sunny with a high of 78 degrees Fahrenheit.\n",
   "role": "assistant",
-  "created": 1771986354,
+  "created": 1772071023,
   "usage": {
-    "prompt_tokens": 80,
+    "prompt_tokens": 317,
     "completion_tokens": 17,
-    "total_tokens": 97
+    "total_tokens": 334
   }
 }
 ```
@@ -710,9 +710,9 @@
 
 ```json
 {
-  "id": "chatcmpl-fcf3d4a30dbb44999de28966",
+  "id": "chatcmpl-fa55a2c33f9d426fb7820d65",
   "object": "chat.completion",
-  "created": 1771986377,
+  "created": 1772071054,
   "model": "ollama/gemma3:270m",
   "choices": [
     {
@@ -956,9 +956,9 @@
 
 ```json
 {
-  "id": "chatcmpl-7b02270407c3454abb4a4134",
+  "id": "chatcmpl-8371014a9ac94ddeac1892f5",
   "object": "chat.completion",
-  "created": 1771986378,
+  "created": 1772071055,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1037,9 +1037,9 @@
 
 ```json
 {
-  "id": "chatcmpl-2155061224854292b343f1d0",
+  "id": "chatcmpl-16141e8f6e30448d8f36d7d6",
   "object": "chat.completion",
-  "created": 1771986378,
+  "created": 1772071055,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1376,7 +1376,7 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-25T02:26:19.267342Z",
+  "created_at": "2026-02-26T01:57:36.856830Z",
   "response": "The capital of France is Paris.",
   "done": true,
   "context": [],

@@ -57,6 +57,7 @@ spec = {
                                 "type": "string",
                                 "enum": [
                                     "initializing",
+                                    "ready",
                                     "no_providers_available",
                                     "one_provider_available",
                                     "multiple_providers_available",
@@ -65,6 +66,7 @@ spec = {
                                 "description": (
                                     "Provider discovery status: "
                                     "'initializing' (discovery in progress), "
+                                    "'ready' (discovery complete), "
                                     "'no_providers_available' "
                                     "(no working providers found), "
                                     "'one_provider_available' "
@@ -81,7 +83,7 @@ spec = {
                         "available": ["pixtral", "gemma3_on_vpn"],
                         "default": "pixtral",
                         "total": 2,
-                        "status": "multiple_providers_available",
+                        "status": "ready",
                     },
                 }
             },

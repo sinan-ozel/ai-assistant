@@ -87,7 +87,7 @@
   ],
   "default": "pixtral",
   "total": 2,
-  "status": "multiple_providers_available"
+  "status": "ready"
 }
 ```
 
@@ -101,8 +101,8 @@
     "ollama_on_tailscale"
   ],
   "default": "ollama_on_tailscale",
-  "total": 12,
-  "status": "one_provider_available"
+  "total": 11,
+  "status": "ready"
 }
 ```
 
@@ -153,13 +153,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "Okay! The weather in Paris, France, is currently sunny with a temperature of 22\u00b0C (72\u00b0F) and a humidity of 68%. It will be partly cloudy with a chance of showers. \ud83d\ude0a",
+  "message": "Okay! The weather in Boise, Idaho is sunny with a high of 18\u00b0C (64\u00b0F) and a low of 12\u00b0C (54\u00b0F). It\u2019s windy with a slight chance of thunderstorms. \ud83d\ude0a",
   "role": "assistant",
-  "created": 1771986463,
+  "created": 1772071158,
   "usage": {
-    "prompt_tokens": 158,
-    "completion_tokens": 48,
-    "total_tokens": 206
+    "prompt_tokens": 557,
+    "completion_tokens": 53,
+    "total_tokens": 610
   }
 }
 ```
@@ -710,24 +710,24 @@
 
 ```json
 {
-  "id": "chatcmpl-64407b3d65da4638b832b230",
+  "id": "chatcmpl-1875a390faf24ffd9f2f4346",
   "object": "chat.completion",
-  "created": 1771986488,
+  "created": 1772071206,
   "model": "ollama/gemma3:1b",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is **Paris**. \n\n\ud83d\ude0a"
+        "content": "OkayThe capital of France is **Paris**. \n\n\ud83c\uddeb\ud83c\uddf7\n"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 21,
-    "completion_tokens": 12,
-    "total_tokens": 33
+    "completion_tokens": 14,
+    "total_tokens": 35
   }
 }
 ```
@@ -956,24 +956,24 @@
 
 ```json
 {
-  "id": "chatcmpl-2fb248ab9fe54e6c9b6bdc98",
+  "id": "chatcmpl-9658e3d570a444e6998fa7b2",
   "object": "chat.completion",
-  "created": 1771986502,
+  "created": 1772071222,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay! It seems like you've provided the classic placeholder text \"Lorem ipsum dolor sit amet\". \n\nIt's a common practice in design and printing to use this text \u2013 it's a placeholder that allows designers and printers to see the page layout without needing to see actual content. \n\nIs there anything specific you'd like to do with this text?  Do you want me to:\n\n*   **Analyze it?** (e.g., identify its grammatical structure?)\n*   **Generate similar text?** (e.g., a paragraph of text with a similar style?)\n*   **Help you with something related to it?** (e.g., understand its purpose?)"
+        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIt's a very common and used placeholder text in design and typesetting. It's intentionally meaningless text designed to fill space and provide a visual reference. \n\nIs there anything specific you'd like to do with it? For example, would you like me to:\n\n*   **Generate some text around it?** (e.g., \"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\")\n*   **Explain the purpose of Lorem Ipsum?**\n*   **Suggest similar placeholder text for different contexts?**\n*   **Just acknowledge that you've provided it?**"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 146,
-    "total_tokens": 165
+    "completion_tokens": 154,
+    "total_tokens": 173
   }
 }
 ```
@@ -1037,24 +1037,24 @@
 
 ```json
 {
-  "id": "chatcmpl-4c4aff64781e4e929b9f605e",
+  "id": "chatcmpl-66290854f55c41509cea505e",
   "object": "chat.completion",
-  "created": 1771986507,
+  "created": 1772071227,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the standard placeholder text \"Lorem ipsum dolor sit amet.\" \n\nIs there anything specific you'd like me to do with this text? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify common words, see if it's a placeholder?)\n*   **Generate text based on it?** (e.g., a paragraph of text?)\n*   **Translate it?** (although it's not a real translation)\n*   **Explain its purpose?** (as a placeholder)\n\nLet me know what you have in mind!"
+        "content": "Okay, I understand. You've provided the standard placeholder text \"Lorem ipsum dolor sit amet\". \n\nIs there anything specific you'd like me to do with this text? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify its purpose, suggest interpretations)\n*   **Generate something with it?** (e.g., a story, a poem, a visual description)\n*   **Translate it?** (Though it's not a translation, it's still a representation of text)\n*   **Just acknowledge it?**"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 135,
-    "total_tokens": 154
+    "completion_tokens": 127,
+    "total_tokens": 146
   }
 }
 ```
@@ -1376,15 +1376,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-25T02:28:29.190184Z",
-  "response": "The capital of France is **Paris**. \n\nIt\u2019s a great question! \ud83d\ude0a",
+  "created_at": "2026-02-26T02:00:29.036206Z",
+  "response": "The capital of France is **Paris**. \ud83c\uddeb\ud83c\uddf7\n",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 21,
   "prompt_eval_duration": 0,
-  "eval_count": 19,
+  "eval_count": 13,
   "eval_duration": 0
 }
 ```

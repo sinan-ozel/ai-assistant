@@ -34,7 +34,7 @@
 {
   "status": "ok",
   "providers_loading": false,
-  "available_providers": 13
+  "available_providers": 11
 }
 ```
 
@@ -87,7 +87,7 @@
   ],
   "default": "pixtral",
   "total": 2,
-  "status": "multiple_providers_available"
+  "status": "ready"
 }
 ```
 
@@ -98,23 +98,21 @@
 ```json
 {
   "available": [
-    "coding",
     "default",
+    "coding",
     "magistral-small",
     "ministral-14b",
     "ministral-3b",
     "mistral-7b",
     "mistral-small",
-    "small",
     "vision",
     "voxtral-mini",
     "voxtral-small",
-    "default",
     "vision"
   ],
-  "default": null,
-  "total": 13,
-  "status": "multiple_providers_available"
+  "default": "default",
+  "total": 11,
+  "status": "ready"
 }
 ```
 
@@ -159,11 +157,20 @@
 
 ### Actual Response
 
-**Status:** `503`
+**Status:** `200`
 
 ```json
 {
-  "detail": "No default provider available"
+  "conversation_id": "conv-123",
+  "user_id": "user-456",
+  "message": "I don\u2019t have real-time access to current weather data, but you can check the weather using a weather app, website like Weather.com, or your smartphone\u2019s built-in weather feature. For the latest updates, it\u2019s best to check a reliable source that provides live forecasts. Let me know if you\u2019d like help with anything else! \ud83d\ude0a",
+  "role": "assistant",
+  "created": 1772071502,
+  "usage": {
+    "prompt_tokens": 1627,
+    "completion_tokens": 76,
+    "total_tokens": 1703
+  }
 }
 ```
 
@@ -210,12 +217,10 @@
 
 ### Actual Response
 
-**Status:** `503`
+**Status:** `200`
 
 ```json
-{
-  "detail": "No default provider available"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
@@ -261,12 +266,10 @@
 
 ### Actual Response
 
-**Status:** `503`
+**Status:** `200`
 
 ```json
-{
-  "detail": "No default provider available"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
@@ -312,12 +315,10 @@
 
 ### Actual Response
 
-**Status:** `503`
+**Status:** `200`
 
 ```json
-{
-  "detail": "No default provider available"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
@@ -363,12 +364,10 @@
 
 ### Actual Response
 
-**Status:** `503`
+**Status:** `200`
 
 ```json
-{
-  "detail": "No default provider available"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
@@ -414,12 +413,10 @@
 
 ### Actual Response
 
-**Status:** `503`
+**Status:** `200`
 
 ```json
-{
-  "detail": "No default provider available"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
@@ -465,12 +462,10 @@
 
 ### Actual Response
 
-**Status:** `503`
+**Status:** `200`
 
 ```json
-{
-  "detail": "No default provider available"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
@@ -516,12 +511,10 @@
 
 ### Actual Response
 
-**Status:** `503`
+**Status:** `200`
 
 ```json
-{
-  "detail": "No default provider available"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
@@ -567,12 +560,10 @@
 
 ### Actual Response
 
-**Status:** `503`
+**Status:** `200`
 
 ```json
-{
-  "detail": "No default provider available"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
@@ -618,12 +609,10 @@
 
 ### Actual Response
 
-**Status:** `503`
+**Status:** `200`
 
 ```json
-{
-  "detail": "No default provider available"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
@@ -669,12 +658,10 @@
 
 ### Actual Response
 
-**Status:** `503`
+**Status:** `200`
 
 ```json
-{
-  "detail": "No default provider available"
-}
+"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
@@ -733,24 +720,24 @@
 
 ```json
 {
-  "id": "chatcmpl-0974e98f5b684844943ed53b",
+  "id": "chatcmpl-774f77a58d084783a7ba169c",
   "object": "chat.completion",
-  "created": 1771986668,
-  "model": "codestral-2501",
+  "created": 1772071664,
+  "model": "ollama/gemma3:1b",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is **Paris**. It is one of the most famous and iconic cities in the world, known for its rich history, culture, art, and landmarks such as the Eiffel Tower, the Louvre Museum, and Notre-Dame Cathedral."
+        "content": "###The capital of France is **Paris**. \n\nIt\u2019s a good one to know! \ud83d\ude0a \n\nDo you want to know more about Paris?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 10,
-    "completion_tokens": 52,
-    "total_tokens": 62
+    "prompt_tokens": 21,
+    "completion_tokens": 32,
+    "total_tokens": 53
   }
 }
 ```
@@ -979,24 +966,24 @@
 
 ```json
 {
-  "id": "chatcmpl-dc30878a1d0a45d1980b3fa6",
+  "id": "chatcmpl-95380d58dab14b3f86084d1d",
   "object": "chat.completion",
-  "created": 1771986670,
+  "created": 1772071681,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "\"Lorem ipsum dolor sit amet\" is a placeholder text commonly used in design, publishing, and web development to demonstrate the visual form of documents or showcase fonts without relying on meaningful content. It is derived from a scrambled section of Cicero's *De finibus bonorum et malorum* (On the Ends of Good and Evil), a Latin text written in 45 BCE.\n\nThe phrase is often followed by:\n*\"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\"*\n\nWould you like help with something specific related to this placeholder text?"
+        "content": "Okay, I understand. You've provided the classic placeholder text \u2013 \"Lorem ipsum dolor sit amet.\" \n\nIt's a very common and widely used placeholder text in the printing and design industries. It's used to fill space and provide a visual representation of a document before the actual content is finalized. \n\nIs there anything specific you'd like me to do with this placeholder text? For example, would you like me to:\n\n*   **Translate it?** (It's Latin, a language with a lot of technical terms, so it's often translated into English.)\n*   **Explain its purpose?** (It's designed to simulate the reading experience of a page, without any real text.)\n*   **Generate a different text based on it?** (e.g., a short story, a paragraph, or even a sentence.)\n*   **Something else?**"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 8,
-    "completion_tokens": 124,
-    "total_tokens": 132
+    "prompt_tokens": 19,
+    "completion_tokens": 189,
+    "total_tokens": 208
   }
 }
 ```
@@ -1060,24 +1047,24 @@
 
 ```json
 {
-  "id": "chatcmpl-314bb7599d564556b624ae7c",
+  "id": "chatcmpl-60a0b51021be4bbfa9501521",
   "object": "chat.completion",
-  "created": 1771986671,
+  "created": 1772071685,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "\"Lorem ipsum dolor sit amet\" is a placeholder text commonly used in design, publishing, and web development to demonstrate the visual form of documents or showcase fonts without relying on meaningful content. It is derived from a scrambled section of Cicero's *De finibus bonorum et malorum* (On the Ends of Good and Evil), a Latin text written in 45 BCE.\n\n### Example Usage:\n```plaintext\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n```\n\n### Key Features:\n- **Non-meaningful**: The text is random and lacks coherent meaning.\n- **Filler Content**: Used to test layouts, fonts, or software without distracting from the design.\n- **Standardized**: The same text appears in many design tools and templates.\n\nWould you like variations or a specific use case for this placeholder text?"
+        "content": "Okay, I understand. You've provided the standard placeholder text: \"Lorem ipsum dolor sit amet.\" \n\nIt's a very common and often used placeholder text in the printing and design industries. It's designed to mimic the appearance of printed text without requiring actual content. \n\nIs there anything specific you'd like me to do with this text? For example, would you like me to:\n\n*   Analyze it?\n*   Generate similar text?\n*   Explain its purpose?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 8,
-    "completion_tokens": 184,
-    "total_tokens": 192
+    "prompt_tokens": 19,
+    "completion_tokens": 104,
+    "total_tokens": 123
   }
 }
 ```
@@ -1349,7 +1336,7 @@
 
 ```json
 {
-  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.Timeout: Timeout Error: MistralException - litellm.Timeout: Connection timed out after 0.123456789 seconds."
+  "detail": "Request timeout: The LLM provider did not respond within the specified timeout period. litellm.APIConnectionError: OllamaException - litellm.Timeout: Connection timed out after 0.123456789 seconds."
 }
 ```
 
@@ -1399,15 +1386,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-25T02:31:12.257925Z",
-  "response": "The capital of France is **Paris**.",
+  "created_at": "2026-02-26T02:08:06.791517Z",
+  "response": "The capital of France is **Paris**. \n\nDo you want to know more about Paris?",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
-  "prompt_eval_count": 10,
+  "prompt_eval_count": 21,
   "prompt_eval_duration": 0,
-  "eval_count": 9,
+  "eval_count": 20,
   "eval_duration": 0
 }
 ```
@@ -1977,11 +1964,11 @@
 
 ```json
 {
-  "result": "Please provide the user message you'd like me to clean up and summarize.",
+  "result": "Please provide the user message you are referring to. I need the text of the message to summarize it.",
   "usage": {
-    "prompt_tokens": 35,
-    "completion_tokens": 16,
-    "total_tokens": 51
+    "prompt_tokens": 50,
+    "completion_tokens": 22,
+    "total_tokens": 72
   }
 }
 ```

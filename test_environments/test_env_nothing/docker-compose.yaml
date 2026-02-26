@@ -17,7 +17,7 @@ services:
           "import json,urllib.request,sys; \
           r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); \
           d=json.load(r); \
-          sys.exit(0 if (not d.get('providers_loading') and d.get('available_providers',0)>0) else 1)"
+          sys.exit(0 if not d.get('providers_loading') else 1)"
         ]
       interval: 5s
       timeout: 3s

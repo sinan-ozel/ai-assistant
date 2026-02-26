@@ -301,9 +301,42 @@ async def handler(request: dict, providers_state: dict):
     # Get default provider and its context window
     default_provider = providers_state.get("default_provider")
     if not default_provider:
-        raise HTTPException(
-            status_code=503, detail="No default provider available"
+        # Build detailed error message
+        all_providers = providers_state.get("providers", [])
+        custom_providers = [
+            p["name"]
+            for p in all_providers
+            if not p.get("is_default", True) and p.get("is_enabled", True)
+        ]
+
+        error_detail = "No default provider available. "
+
+        if custom_providers:
+            # Custom providers exist but none is set as default
+            error_detail += (
+                f"Found custom provider(s): {', '.join(custom_providers)}. "
+                f"To use one as default, either: "
+                f"(1) Set DEFAULT_PROVIDER={custom_providers[0]} "
+                f"environment variable, or "
+                f"(2) Rename one to 'default.yaml' in cortex/providers/. "
+            )
+        else:
+            error_detail += (
+                "No custom providers found. "
+                "To add one, create a YAML file in cortex/providers/. "
+            )
+
+        error_detail += (
+            "The built-in fallback provider requires MISTRAL_API_KEY "
+            "to be set."
         )
+
+        logger.error(
+            f"Agent chat request failed: {error_detail} "
+            f"Available providers: {providers_state.get('available_providers', [])}"
+        )
+
+        raise HTTPException(status_code=503, detail=error_detail)
 
     max_context_window = get_provider_context_window(
         providers_state, default_provider
@@ -440,6 +473,13 @@ async def handler(request: dict, providers_state: dict):
                 max_tokens=max_tokens,
             )
         except litellm.Timeout as e:
+            logger.error(
+                f"Agent chat request timeout - LLM provider did not respond. "
+                f"User: {user_id}, Conversation: {conversation_id}, "
+                f"Message: {message[:100]}..., "
+                f"Max tokens: {max_tokens}, Timeout: {timeout}s, "
+                f"Error: {str(e)}"
+            )
             raise HTTPException(
                 status_code=408,
                 detail=(
@@ -451,6 +491,14 @@ async def handler(request: dict, providers_state: dict):
             # Check if this is a timeout error wrapped in APIConnectionError
             error_msg = str(e).lower()
             if "timeout" in error_msg or "timed out" in error_msg:
+                logger.error(
+                    f"Agent chat request timeout (APIConnectionError) - "
+                    f"LLM provider did not respond. "
+                    f"User: {user_id}, Conversation: {conversation_id}, "
+                    f"Message: {message[:100]}..., "
+                    f"Max tokens: {max_tokens}, Timeout: {timeout}s, "
+                    f"Error: {str(e)}"
+                )
                 raise HTTPException(
                     status_code=408,
                     detail=(
@@ -675,6 +723,12 @@ spec = {
             )
         },
         422: {"description": "Validation error"},
-        503: {"description": "Service unavailable - no provider available"},
+        503: {
+            "description": (
+                "Service unavailable - no default provider configured. "
+                "Set DEFAULT_PROVIDER environment variable to select a provider, "
+                "or ensure MISTRAL_API_KEY is set for the built-in default."
+            )
+        },
     },
 }

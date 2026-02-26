@@ -229,7 +229,7 @@
             ],
             "options": {
                 "env": {
-                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/son_of_anton/cortex/chat",
+                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/son_of_anton/cortex",
                     "TEST_FOLDER": "${workspaceFolder}/test_agents/son_of_anton/tests"
                 }
             },

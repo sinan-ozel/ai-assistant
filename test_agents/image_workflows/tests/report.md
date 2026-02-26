@@ -34,7 +34,7 @@
 {
   "status": "ok",
   "providers_loading": false,
-  "available_providers": 12
+  "available_providers": 10
 }
 ```
 
@@ -87,7 +87,7 @@
   ],
   "default": "pixtral",
   "total": 2,
-  "status": "multiple_providers_available"
+  "status": "ready"
 }
 ```
 
@@ -98,22 +98,20 @@
 ```json
 {
   "available": [
-    "codestral",
+    "vision",
+    "coding",
+    "default",
     "magistral-small",
     "ministral-14b",
     "ministral-3b",
-    "ministral-8b",
     "mistral-7b",
-    "mistral-large",
     "mistral-small",
-    "pixtral",
     "voxtral-mini",
-    "voxtral-small",
-    "vision"
+    "voxtral-small"
   ],
   "default": "vision",
-  "total": 12,
-  "status": "multiple_providers_available"
+  "total": 10,
+  "status": "ready"
 }
 ```
 
@@ -164,13 +162,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "I don\u2019t have real-time access to current weather data, but you can check the weather using a weather app, website like Weather.com, or your smartphone\u2019s built-in weather feature. For the latest updates, it\u2019s best to check a reliable source that provides live forecasts. Let me know if you\u2019d like help with anything else! \ud83d\ude0a",
+  "message": "",
   "role": "assistant",
-  "created": 1771982407,
+  "created": 1772072204,
   "usage": {
-    "prompt_tokens": 543,
-    "completion_tokens": 1355,
-    "total_tokens": 1898
+    "prompt_tokens": 1678,
+    "completion_tokens": 2418,
+    "total_tokens": 4096
   }
 }
 ```
@@ -721,24 +719,24 @@
 
 ```json
 {
-  "id": "chatcmpl-d5de537b99fa40489ee118e0",
+  "id": "chatcmpl-f25092b8f04b4d75b949bbc4",
   "object": "chat.completion",
-  "created": 1771982484,
+  "created": 1772072275,
   "model": "qwen3-vl:2b-q4km",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of **France** is **Paris**.  \n\nParis is not only the political center of France but also the heart of its culture, history, and economy. It hosts the French government, key institutions like the National Assembly and the Senate, and is home to iconic landmarks such as the Eiffel Tower, the Louvre Museum, and the Seine River.  \n\n**Why it matters**:  \n- Since 1871, Paris has been the undisputed capital of France (though the French government moved to the *Ch\u00e2teau de Vincennes* in 1871, it was Paris that became the capital in 1871).  \n- It is the country's most vibrant city, renowned for its art, history, and global influence.  \n\nIf you're curious about anything else\u2014like its history, culture, or why it's famous\u2014just ask! \ud83d\ude0a"
+        "content": "The capital of France is **Paris**.  \n\nHere are a few key details about Paris:  \n- \ud83c\udf06 It is the political, cultural, and economic heart of France.  \n- \ud83c\udf0a The Seine River flows through the city, and landmarks like the Eiffel Tower and Notre-Dame Cathedral are iconic.  \n- \ud83c\udfdb\ufe0f The French government\u2019s main institutions (including the \u00c9lys\u00e9e Palace, where the President resides) are located in Paris.  \n- \ud83c\uddeb\ud83c\uddf7 It has been the capital since the Middle Ages, making it one of Europe\u2019s oldest cities.  \n\nIf you're visiting or studying, Paris is a must-see destination! \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 17,
-    "completion_tokens": 401,
-    "total_tokens": 418
+    "completion_tokens": 524,
+    "total_tokens": 541
   }
 }
 ```
@@ -967,24 +965,24 @@
 
 ```json
 {
-  "id": "chatcmpl-2ab96851d5ec4e0481b56969",
+  "id": "chatcmpl-aadfa1fb943c4ca3a4e9d8d2",
   "object": "chat.completion",
-  "created": 1771982491,
+  "created": 1772072283,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Hello! \ud83d\ude0a I notice you've shared some placeholder text\u2014commonly used in design or publishing to create space. Is there something specific you'd like to discuss or help with? Whether it's about layout, content, or just a fun conversation, I'm here to assist!"
+        "content": "It seems like you've pasted some placeholder text (Lorem ipsum dolor sit amet) \u2014 a common pattern used in design and content creation. Could you clarify what you'd like help with? Whether it's a writing query, a design question, or something else, I'm here to assist! \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 15,
-    "completion_tokens": 190,
-    "total_tokens": 205
+    "completion_tokens": 192,
+    "total_tokens": 207
   }
 }
 ```
@@ -1048,24 +1046,24 @@
 
 ```json
 {
-  "id": "chatcmpl-7d70e8294b4f4d949ff4597b",
+  "id": "chatcmpl-3f04010e6a4f43bb96893130",
   "object": "chat.completion",
-  "created": 1771982493,
+  "created": 1772072286,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Ah, *Lorem ipsum*... a classic placeholder text often used in design and typography to fill space while waiting for actual content. \ud83d\ude04 I'm here to help with anything you might need\u2014whether it's clarifying questions, brainstorming ideas, or just having a chat! What would you like to explore today?"
+        "content": "Hello! It seems like you've provided some placeholder text (\"Lorem ipsum dolor sit amet...\"). This is a common pattern used in design and typography to represent content that hasn't been finalized yet. \n\nWould you like help with something specific? For example:\n- Clarifying the purpose of placeholder text\n- Suggesting how to use it in a design project\n- Helping with a specific task related to content creation\n\nLet me know how I can assist! \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 15,
-    "completion_tokens": 250,
-    "total_tokens": 265
+    "completion_tokens": 221,
+    "total_tokens": 236
   }
 }
 ```
@@ -1387,15 +1385,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-25T01:23:45.532920Z",
-  "response": "The capital of France is **Paris**.  \n\n### Key Details:\n- **Official Status**: Paris has been the capital of France since the Middle Ages (officially recognized as the capital in 1792 during the French Revolution).\n- **Significance**: It is the largest city in France and home to iconic landmarks like the Eiffel Tower, Louvre Museum, and Notre-Dame Cathedral.\n- **Geographic Context**: Located in the \u00cele-de-France region, it serves as the political, cultural, and economic heart of France.\n\n*Note: While Paris is the capital, it is also France's most populous city and a global hub for culture, fashion, and tourism.* \ud83c\uddeb\ud83c\uddf7",
+  "created_at": "2026-02-26T02:18:15.630237Z",
+  "response": "The capital of France is **Paris**.  \n\n### Key Details:\n- **Official Seat of Government**: Paris houses the French National Assembly (Chambre Nationale) and the French Senate (S\u00e9nat), along with the President of France's residence (the *H\u00f4tel de Ville*).\n- **Cultural & Historical Significance**: It's the historic center of France, home to iconic landmarks like the Eiffel Tower, Louvre Museum, Notre-Dame Cathedral, and the Seine River.\n- **Global Recognition**: Paris is one of the most visited cities in the world, known for its art, cuisine, and vibrant culture.\n\nIf you have more questions about Paris or French geography, feel free to ask! \ud83d\ude0a",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 17,
   "prompt_eval_duration": 0,
-  "eval_count": 765,
+  "eval_count": 430,
   "eval_duration": 0
 }
 ```
@@ -1980,17 +1978,17 @@
 ```json
 {
   "result": {
-    "title": "this",
-    "author": "is",
-    "subtitle": "an",
-    "publisher": "image",
-    "series_title": "this",
+    "title": "this is an image",
+    "author": "example",
+    "subtitle": "example",
+    "publisher": "example",
+    "series_title": "example",
     "series_number": 0
   },
   "usage": {
     "prompt_tokens": 163,
-    "completion_tokens": 49,
-    "total_tokens": 212
+    "completion_tokens": 50,
+    "total_tokens": 213
   }
 }
 ```
@@ -2535,11 +2533,11 @@
 
 ```json
 {
-  "result": "This Is An Image",
+  "result": "",
   "usage": {
     "prompt_tokens": 90,
-    "completion_tokens": 575,
-    "total_tokens": 665
+    "completion_tokens": 4006,
+    "total_tokens": 4096
   }
 }
 ```
@@ -3046,8 +3044,8 @@
   },
   "usage": {
     "prompt_tokens": 198,
-    "completion_tokens": 26,
-    "total_tokens": 224
+    "completion_tokens": 24,
+    "total_tokens": 222
   }
 }
 ```

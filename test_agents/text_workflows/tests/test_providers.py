@@ -19,10 +19,7 @@ def test_providers():
             if response.status_code == 200:
                 status = response.json().get("status", "")
                 # Wait until discovery completes (not initializing anymore)
-                if (
-                    status != "initializing"
-                    and status == "one_provider_available"
-                ):
+                if status != "initializing" and status == "ready":
                     break
         except requests.exceptions.RequestException:
             pass
@@ -39,5 +36,6 @@ def test_providers():
         "vision" in data["available"]
     ), f"Expected 'vision' to be in available providers but got {data['available']}"
     assert "default" in data
+    assert data["default"] == "default"
     assert "total" in data
     assert len(data["available"]) >= 2

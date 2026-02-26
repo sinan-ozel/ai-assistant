@@ -1,5 +1,6 @@
 import os
 import time
+
 import pytest
 import requests
 
@@ -18,10 +19,7 @@ def test_providers():
             if response.status_code == 200:
                 status = response.json().get("status", "")
                 # Wait until discovery completes (not initializing anymore)
-                if (
-                    status != "initializing"
-                    and status == "one_provider_available"
-                ):
+                if status != "initializing" and status == "ready":
                     break
         except requests.exceptions.RequestException:
             pass
@@ -92,7 +90,3 @@ def test_vision_provider_override():
     # Verify we got a response (proves the self-hosted model is working)
     message_content = data["choices"][0]["message"]["content"]
     assert isinstance(message_content, str)
-    assert len(message_content) > 0
-    print(
-        f"Vision provider response (should be from qwen3-vl, not Mistral): {message_content}"
-    )

@@ -1,11 +1,14 @@
 """Ollama generate endpoint - Ollama-native API."""
 
+import logging
 from datetime import datetime, timezone
 
 import litellm
 from common.llm import call_llm_by_model
 from fastapi import HTTPException
 from jsonschema import ValidationError, validate
+
+logger = logging.getLogger(__name__)
 
 
 async def handler(request: dict, providers_state: dict):
@@ -90,6 +93,12 @@ async def handler(request: dict, providers_state: dict):
     except NotImplementedError as e:
         raise HTTPException(status_code=501, detail=str(e))
     except litellm.Timeout as e:
+        logger.error(
+            f"Ollama generate request timeout - LLM provider did not respond. "
+            f"Model: {model}, Prompt: {prompt[:100] if prompt else 'None'}..., "
+            f"Temperature: {temperature}, Timeout: {timeout}s, "
+            f"Error: {str(e)}"
+        )
         raise HTTPException(
             status_code=408,
             detail=(
@@ -101,6 +110,13 @@ async def handler(request: dict, providers_state: dict):
         # Check if this is a timeout error wrapped in APIConnectionError
         error_msg = str(e).lower()
         if "timeout" in error_msg or "timed out" in error_msg:
+            logger.error(
+                f"Ollama generate request timeout (APIConnectionError) - "
+                f"LLM provider did not respond. "
+                f"Model: {model}, Prompt: {prompt[:100] if prompt else 'None'}..., "
+                f"Temperature: {temperature}, Timeout: {timeout}s, "
+                f"Error: {str(e)}"
+            )
             raise HTTPException(
                 status_code=408,
                 detail=(
