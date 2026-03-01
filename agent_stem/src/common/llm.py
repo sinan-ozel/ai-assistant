@@ -5,11 +5,27 @@ by all endpoints (chat completions, generate, agent chat, etc.).
 """
 
 import logging
-from typing import Any, AsyncGenerator, Dict, Optional
+from typing import Any, AsyncGenerator, Dict, Optional, List
 
 from litellm import acompletion, completion
 
 logger = logging.getLogger(__name__)
+
+
+def _truncate_value(value: Any, max_length: int = 100) -> Any:
+    """Truncate long string values for logging."""
+    if isinstance(value, str) and len(value) > max_length:
+        return value[:max_length] + f"... (truncated, total length: {len(value)})"
+    elif isinstance(value, dict):
+        return {k: _truncate_value(v, max_length) for k, v in value.items()}
+    elif isinstance(value, list):
+        return [_truncate_value(item, max_length) for item in value]
+    return value
+
+
+def _truncate_messages(messages: List[Dict[str, Any]], max_length: int = 100) -> List[Dict[str, Any]]:
+    """Truncate long content in messages (e.g., base64 images)."""
+    return [_truncate_value(msg, max_length) for msg in messages]
 
 
 def get_provider_config(
@@ -197,7 +213,20 @@ def call_llm_by_model(
     logger.debug("=" * 80)
 
     # Call LiteLLM
-    response = completion(**litellm_kwargs)
+    try:
+        response = completion(**litellm_kwargs)
+    except Exception as e:
+        # Log kwargs for debugging (mask api_key, truncate long values)
+        kwargs_for_log = litellm_kwargs.copy()
+        if 'api_key' in kwargs_for_log:
+            kwargs_for_log['api_key'] = '***masked***'
+
+        # Truncate long values in messages (e.g., base64 images)
+        if 'messages' in kwargs_for_log:
+            kwargs_for_log['messages'] = _truncate_messages(kwargs_for_log['messages'])
+        logger.error(f"LiteLLM completion failed with kwargs: {kwargs_for_log}")
+        logger.error(f"Error: {e}")
+        raise
 
     return response
 
@@ -282,7 +311,20 @@ async def call_llm_by_model_streaming(
     logger.debug("=" * 80)
 
     # Call LiteLLM with async streaming
-    response = await acompletion(**litellm_kwargs)
+    try:
+        response = await acompletion(**litellm_kwargs)
+    except Exception as e:
+        # Log kwargs for debugging (mask api_key, truncate long values)
+        kwargs_for_log = kwargs.copy()
+        if 'api_key' in kwargs_for_log:
+            kwargs_for_log['api_key'] = '***masked***'
+
+        # Truncate long values in messages (e.g., base64 images)
+        if 'messages' in kwargs_for_log:
+            kwargs_for_log['messages'] = _truncate_messages(kwargs_for_log['messages'])
+        logger.error(f"Calling completion with kwargs: {kwargs_for_log}")
+        logger.error(f"LiteLLM completion failed with kwargs: {kwargs_for_log}")
+        logger.error(f"Error: {e}")
 
     async for chunk in response:
         yield chunk

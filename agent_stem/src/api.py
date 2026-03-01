@@ -24,6 +24,11 @@ providers_state = {
 }
 provider_discovery_task = None
 
+# Global state for workflows
+workflows_state = {
+    "workflows": {},  # path -> workflow data
+}
+
 
 async def run_provider_discovery():
     """Background task to discover providers and context windows."""
@@ -114,11 +119,11 @@ async def startup_event():
         has_request = "request" in params and request_body_spec
 
         # Determine the appropriate route handler
-        if "providers_state" in params or has_request:
-            # Create a wrapper that properly removes providers_state
+        if "providers_state" in params or "workflows_state" in params or has_request:
+            # Create a wrapper that properly removes special state parameters
             # from the signature and adds proper Body parameter for
             # request body validation
-            async def create_wrapper(original_handler, request_spec):
+            async def create_wrapper(original_handler, request_spec, handler_params):
                 if has_request:
                     # Extract schema from requestBody
                     content = request_spec.get("content", {})
@@ -148,27 +153,41 @@ async def startup_event():
                                 if example
                                 else None
                             ),
-                        )
+                        ),
+                        **path_params
                     ):
-                        if "providers_state" in params:
-                            return await original_handler(
-                                request=request, providers_state=providers_state
-                            )
-                        else:
-                            return await original_handler(request=request)
+                        kwargs = {}
+                        if "request" in handler_params:
+                            kwargs["request"] = request
+                        if "providers_state" in handler_params:
+                            kwargs["providers_state"] = providers_state
+                        if "workflows_state" in handler_params:
+                            kwargs["workflows_state"] = workflows_state
+                        if "evaluation_state" in handler_params:
+                            kwargs["evaluation_state"] = evaluation_state
+                        # Add any path parameters
+                        kwargs.update(path_params)
+                        return await original_handler(**kwargs)
 
                 else:
 
-                    async def wrapper(**kwargs):
-                        return await original_handler(
-                            providers_state=providers_state, **kwargs
-                        )
+                    async def wrapper(**path_params):
+                        kwargs = {}
+                        if "providers_state" in handler_params:
+                            kwargs["providers_state"] = providers_state
+                        if "workflows_state" in handler_params:
+                            kwargs["workflows_state"] = workflows_state
+                        if "evaluation_state" in handler_params:
+                            kwargs["evaluation_state"] = evaluation_state
+                        # Add any path parameters
+                        kwargs.update(path_params)
+                        return await original_handler(**kwargs)
 
-                # Create new signature without providers_state parameter
+                # Create new signature without special state parameters
                 new_params = [
                     p
                     for p in sig.parameters.values()
-                    if p.name not in ["providers_state", "request"]
+                    if p.name not in ["providers_state", "workflows_state", "request"]
                 ]
                 if has_request:
                     # Add request parameter with Body annotation
@@ -184,7 +203,7 @@ async def startup_event():
                 wrapper.__doc__ = original_handler.__doc__
                 return wrapper
 
-            route_handler = await create_wrapper(handler, request_body_spec)
+            route_handler = await create_wrapper(handler, request_body_spec, params)
         else:
             route_handler = handler
 
@@ -195,6 +214,12 @@ async def startup_event():
             if request_body_spec:
                 openapi_extra["requestBody"] = request_body_spec
 
+            # Determine status code - use 201 if it's the only successful response
+            status_code = 200
+            if spec.get("responses"):
+                if 201 in spec["responses"] and 200 not in spec["responses"]:
+                    status_code = 201
+
             app.add_api_route(
                 spec["path"],
                 route_handler,
@@ -202,13 +227,24 @@ async def startup_event():
                 summary=spec.get("summary"),
                 description=spec.get("description"),
                 responses=spec.get("responses", {}),
+                status_code=status_code,
                 openapi_extra=openapi_extra,
             )
             logger.info(f"Registered {method} {spec['path']} from {name}")
 
     # Discover and register workflow endpoints
     logger.info("Discovering and registering workflow endpoints...")
-    async for name, handler, spec in discover_workflows():
+    async for name, handler, spec, workflow_data, workflow_file in discover_workflows():
+        # Store workflow in global state
+        workflow_path = workflow_data.get("path")
+        if workflow_path:
+            workflows_state["workflows"][workflow_path] = {
+                "name": name,
+                "data": workflow_data,
+                "file": workflow_file
+            }
+            logger.info(f"Stored workflow {name} with path {workflow_path}")
+
         # Workflow handlers always need providers_state and request body
         sig = inspect.signature(handler)
 

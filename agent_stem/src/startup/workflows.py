@@ -902,7 +902,7 @@ async def discover_workflows(workflows_dir: Path = DEFAULT_WORKFLOWS_DIR):
         workflows_dir: Directory containing workflow YAML files
 
     Yields:
-        Tuples of (workflow_name, handler, spec)
+        Tuples of (workflow_name, handler, spec, workflow_data, workflow_file)
     """
     if not workflows_dir.exists():
         logger.warning(f"Workflows directory not found: {workflows_dir}")
@@ -922,7 +922,7 @@ async def discover_workflows(workflows_dir: Path = DEFAULT_WORKFLOWS_DIR):
             handler = await create_workflow_handler(workflow)
             spec = create_workflow_spec(workflow)
 
-            yield workflow["name"], handler, spec
+            yield workflow["name"], handler, spec, workflow, str(workflow_file)
 
         except Exception as e:
             logger.error(f"Failed to load workflow {workflow_file.name}: {e}")

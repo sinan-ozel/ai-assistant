@@ -48,8 +48,8 @@ evaluation:
     - id: calories-label-180
       steps:
         - input:
-            image_path: "images/IMG_B768CE83-9FEC-461A-BE63-CDDF64EBEB58.jpeg"
-            max_tokens: 64
+            image_path: "evaluation/images/IMG_B768CE83-9FEC-461A-BE63-CDDF64EBEB58.jpeg"
+            max_tokens: 2048
           expectations:
           - type: oneOf
             values:
