@@ -45,17 +45,16 @@ def test_providers():
 
 @pytest.mark.depends(on=["test_providers"])
 def test_vision_provider_override():
-    """Test that the vision provider is using the overridden
-    configuration from cortex/providers/vision.yaml.
+    """Test that the vision provider is using the overridden configuration from
+    cortex/providers/vision.yaml.
 
-    The default vision.yaml points to Mistral API
-    (mistral/pixtral-12b-2409) which requires MISTRAL_API_KEY. The
-    overridden vision.yaml in cortex/providers points to a self-hosted
-    model (openai/qwen3-vl:2b-q4km).
+    The default vision.yaml points to Mistral API (mistral/pixtral-12b-2409)
+    which requires MISTRAL_API_KEY. The overridden vision.yaml in
+    cortex/providers points to a self-hosted model (openai/qwen3-vl:2b-q4km).
 
     If the override is working, this chat request should succeed without
-    MISTRAL_API_KEY. If the override is NOT working (using default),
-    this request would fail with authentication error.
+    MISTRAL_API_KEY. If the override is NOT working (using default), this
+    request would fail with authentication error.
     """
     url = f"{BASE_URL}/v1/chat/completions"
 

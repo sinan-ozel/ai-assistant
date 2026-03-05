@@ -159,8 +159,8 @@ async def handle_streaming(
 async def handler(request: dict, providers_state: dict):
     """Create a chat completion (OpenAI-compatible API).
 
-    This endpoint follows the OpenAI Chat Completion API format, making
-    it compatible with most LLM clients and tools.
+    This endpoint follows the OpenAI Chat Completion API format, making it
+    compatible with most LLM clients and tools.
     """
     # Validate request against schema
     try:

@@ -16,6 +16,15 @@ from jsonschema import ValidationError, validate
 from redis_memory import ConversationMemory
 from situational.awareness import get_provider_context_window
 
+# Override context window (tokens) regardless of what the model reports.
+# Useful when VRAM is the real constraint, not the model's theoretical max.
+_conversation_window_limit_raw = os.environ.get("CONVERSATION_WINDOW_LIMIT")
+CONVERSATION_WINDOW_LIMIT: int | None = (
+    int(_conversation_window_limit_raw)
+    if _conversation_window_limit_raw is not None
+    else None
+)
+
 # Default system message (can be overridden by env or DSL)
 DEFAULT_SYSTEM_MESSAGE = os.environ.get(
     "DEFAULT_SYSTEM_MESSAGE",
@@ -36,8 +45,8 @@ def get_conversation_key(user_id: str, conversation_id: str) -> str:
 
 
 def estimate_token_count(text: str) -> int:
-    """Estimate token count using tiktoken, with fallback to character-
-    based estimation."""
+    """Estimate token count using tiktoken, with fallback to character- based
+    estimation."""
     if _encoding is not None:
         try:
             return len(_encoding.encode(text))
@@ -50,8 +59,8 @@ def estimate_token_count(text: str) -> int:
 def strip_base64_content(content) -> str:
     """Strip base64-encoded images from message content.
 
-    Handles both string content and multi-part content with image_url.
-    Returns plain text content only.
+    Handles both string content and multi-part content with image_url. Returns
+    plain text content only.
     """
     # If content is a string, return as-is
     if isinstance(content, str):
@@ -338,13 +347,14 @@ async def handler(request: dict, providers_state: dict):
 
         raise HTTPException(status_code=503, detail=error_detail)
 
-    max_context_window = get_provider_context_window(
-        providers_state, default_provider
-    )
-
-    # Use default if context window not available
-    if max_context_window is None:
-        max_context_window = 4096
+    if CONVERSATION_WINDOW_LIMIT is not None:
+        max_context_window = CONVERSATION_WINDOW_LIMIT
+    else:
+        max_context_window = get_provider_context_window(
+            providers_state, default_provider
+        )
+        if max_context_window is None:
+            max_context_window = 4096
 
     # TODO: Refactor this to add user, make sure that there are some
     # reserved usernames, __admin and __default
@@ -434,6 +444,13 @@ async def handler(request: dict, providers_state: dict):
 
         logger.info(
             f"Agent chat: Prompt messages count: {len(prompt_messages)}"
+        )
+        logger.debug(
+            prompt_messages[:3]
+            + [{"role": "...", "content": "..."}]
+            + prompt_messages[-3:]
+            if len(prompt_messages) > 6
+            else prompt_messages
         )
         content_preview = (
             prompt_messages[0]["content"][:100] if prompt_messages else "N/A"

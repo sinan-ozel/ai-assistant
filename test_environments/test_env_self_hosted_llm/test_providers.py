@@ -7,7 +7,10 @@ import os
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 
-def test_providers(ollama_server_available):
+@pytest.mark.depends(on=['ollama_server_available',
+                         'healthy'],
+                     name='providers_loaded')
+def test_providers():
     """Test if the self-hosted LLM provider is being discovered correctly."""
     url = f"{BASE_URL}/private/v1/providers"
     start = time.time()
@@ -31,11 +34,11 @@ def test_providers(ollama_server_available):
     assert "total" in data
     assert len(data["available"]) == 1
     # Check for self-hosted provider name (adjust based on your provider config)
-    assert data["default"] == 'ollama_on_tailscale', f"Expected default provider to be 'ollama_on_tailscale' but got '{data['default']}'"
+    assert data["default"] == 'default', f"Expected default provider to be 'default' but got '{data['default']}'"
 
 
-@pytest.mark.depends(name='test_provider_context_window')
-def test_provider_context_window(ollama_server_available):
+@pytest.mark.depends(on=['ollama_server_available'], name='test_provider_context_window')
+def test_provider_context_window():
     """Test if the provider's context window endpoint works correctly."""
     # First get the list of providers
     providers_url = f"{BASE_URL}/private/v1/providers"
@@ -64,10 +67,14 @@ def test_provider_context_window(ollama_server_available):
         time.sleep(1)
 
     assert response is not None, f"No response received from {context_url}"
-    assert response.status_code == 200, (
-        f"Context window endpoint did not return 200 within {timeout} seconds. "
-        f"Status: {response.status_code}, Response: {response.text}"
-    )
+
+    # # Unfortunately, context window does not work with llama.cpp
+    # assert response.status_code in [200, 404], (
+    #     f"Context window endpoint did not return 200 or 404 within {timeout} seconds. "
+    #     f"Status: {response.status_code}, Response: {response.text}"
+    # )
+    # if response.status_code == 200:
+    assert response.status_code == 200
 
     context_data = response.json()
     assert "provider" in context_data

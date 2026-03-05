@@ -1,13 +1,14 @@
 """Workflow discovery and dynamic endpoint registration module.
 
-Discovers YAML workflow definitions and creates dynamic endpoints based
-on them. Workflows are LLM-focused tools with standardized input
-(messages) and typed outputs.
+Discovers YAML workflow definitions and creates dynamic endpoints based on
+them. Workflows are LLM-focused tools with standardized input (messages) and
+typed outputs.
 """
 
 import base64
 import json
 import logging
+import re
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict
@@ -124,6 +125,39 @@ def json_schema_to_prompt_format(schema: Dict[str, Any]) -> str:
 
 Return ONLY valid JSON matching this schema, with no additional text or \
 markdown formatting."""
+
+
+def extract_json_from_response(content: str):
+    """Extract JSON from an LLM response that may contain markdown fences.
+
+    Args:
+        content: Raw LLM response string
+
+    Returns:
+        Tuple of (json_string, error_message).
+        On success: (json_string, None) — exactly one block found or raw JSON.
+        On error: (None, error_message) — zero or multiple blocks found.
+    """
+    fenced_blocks = re.findall(r"```json\s*(.*?)\s*```", content, re.DOTALL)
+    if len(fenced_blocks) == 1:
+        return fenced_blocks[0].strip(), None
+    if len(fenced_blocks) > 1:
+        return None, (
+            f"LLM returned {len(fenced_blocks)} fenced JSON blocks; "
+            "expected exactly one"
+        )
+
+    plain_blocks = re.findall(r"```\s*(.*?)\s*```", content, re.DOTALL)
+    if len(plain_blocks) == 1:
+        return plain_blocks[0].strip(), None
+    if len(plain_blocks) > 1:
+        return None, (
+            f"LLM returned {len(plain_blocks)} code blocks; "
+            "expected exactly one"
+        )
+
+    # No fences — treat as raw JSON
+    return content.strip(), None
 
 
 def load_workflow_yaml(workflow_file: Path) -> Dict[str, Any]:
@@ -254,10 +288,15 @@ def handle_workflow_streaming(
                         "finish_reason": choice.finish_reason,
                     }
 
-                    # Add content if present
+                    # Add content if present.
+                    # For object schemas the full response must be collected
+                    # and post-processed to strip markdown fences before
+                    # emitting clean JSON, so raw delta content is suppressed
+                    # here and sent as a single clean chunk after streaming.
                     if hasattr(delta, "content") and delta.content:
-                        chunk_data["delta"]["content"] = delta.content
                         full_content.append(delta.content)
+                        if output_schema.get("type") != "object":
+                            chunk_data["delta"]["content"] = delta.content
 
                     yield format_chunk(chunk_data)
 
@@ -275,39 +314,44 @@ def handle_workflow_streaming(
                 }
             else:
                 # Try to parse JSON
-                try:
-                    content = complete_content
-                    if "```json" in content:
-                        json_start = content.find("```json") + 7
-                        json_end = content.find("```", json_start)
-                        if json_end > json_start:
-                            content = content[json_start:json_end].strip()
-                    elif "```" in content:
-                        json_start = content.find("```") + 3
-                        json_end = content.find("```", json_start)
-                        if json_end > json_start:
-                            content = content[json_start:json_end].strip()
-
-                    result = json.loads(content)
-                    validate(instance=result, schema=output_schema)
-                    final_chunk = {
-                        "workflow": workflow_name,
-                        "created": created,
-                        "result": result,
-                        "finish_reason": "stop",
-                    }
-                except (json.JSONDecodeError, ValidationError) as e:
+                json_str, extract_error = extract_json_from_response(
+                    complete_content
+                )
+                if extract_error:
                     logger.error(
-                        f"Failed to parse/validate streaming response for "
-                        f"{workflow_name}: {e}"
+                        f"JSON extraction failed for streaming workflow "
+                        f"{workflow_name}: {extract_error}"
                     )
                     final_chunk = {
                         "workflow": workflow_name,
                         "created": created,
-                        "result": complete_content,
                         "finish_reason": "stop",
-                        "parse_error": str(e),
+                        "error": extract_error,
+                        "llm_response": complete_content,
                     }
+                else:
+                    try:
+                        result = json.loads(json_str)
+                        validate(instance=result, schema=output_schema)
+                        final_chunk = {
+                            "workflow": workflow_name,
+                            "created": created,
+                            "delta": {"content": json.dumps(result)},
+                            "result": result,
+                            "finish_reason": "stop",
+                        }
+                    except (json.JSONDecodeError, ValidationError) as e:
+                        logger.error(
+                            f"Failed to parse/validate streaming response "
+                            f"for {workflow_name}: {e}"
+                        )
+                        final_chunk = {
+                            "workflow": workflow_name,
+                            "created": created,
+                            "finish_reason": "stop",
+                            "parse_error": str(e),
+                            "llm_response": complete_content,
+                        }
 
             yield format_chunk(final_chunk)
 
@@ -395,8 +439,8 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
     async def handler(request: dict, providers_state: dict):
         """Dynamic workflow handler.
 
-        Accepts standardized input (messages, model, etc.) and returns
-        typed output.
+        Accepts standardized input (messages, model, etc.) and returns typed
+        output.
         """
         # Extract request parameters (same as /v1/agent/chat input)
         messages = request.get("messages", [])
@@ -545,21 +589,23 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
             }
 
         # For object schemas, parse JSON and validate
-        try:
-            # Try to extract JSON from markdown code blocks if present
-            if "```json" in content:
-                json_start = content.find("```json") + 7
-                json_end = content.find("```", json_start)
-                if json_end > json_start:
-                    content = content[json_start:json_end].strip()
-            elif "```" in content:
-                # Handle plain code blocks
-                json_start = content.find("```") + 3
-                json_end = content.find("```", json_start)
-                if json_end > json_start:
-                    content = content[json_start:json_end].strip()
+        original_content = content
+        json_str, extract_error = extract_json_from_response(content)
+        if extract_error:
+            logger.error(
+                f"JSON extraction failed for workflow {workflow_name}: "
+                f"{extract_error}"
+            )
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": extract_error,
+                    "llm_response": original_content,
+                },
+            )
 
-            result = json.loads(content)
+        try:
+            result = json.loads(json_str)
 
             # Validate against schema
             validate(instance=result, schema=output_schema)
@@ -586,9 +632,13 @@ async def create_workflow_handler(workflow: Dict[str, Any]):
                 f"Failed to parse JSON response for workflow "
                 f"{workflow_name}: {e}"
             )
-            logger.error(f"Raw content: {content}")
+            logger.error(f"Raw content: {original_content}")
             raise HTTPException(
-                status_code=500, detail=f"LLM returned invalid JSON: {str(e)}"
+                status_code=400,
+                detail={
+                    "error": f"LLM returned invalid JSON: {str(e)}",
+                    "llm_response": original_content,
+                },
             )
         except ValidationError as e:
             logger.error(

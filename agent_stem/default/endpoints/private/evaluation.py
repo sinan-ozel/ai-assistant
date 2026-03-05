@@ -2,18 +2,12 @@
 
 import asyncio
 import logging
-from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
 
 
-async def handler(
-    path: str,
-    workflows_state: dict,
-    providers_state: dict
-):
-    """
-    Trigger evaluation for a workflow.
+async def handler(path: str, workflows_state: dict, providers_state: dict):
+    """Trigger evaluation for a workflow.
 
     Args:
         path: Workflow path (e.g., /v1/extract-nutrition-information)
@@ -38,21 +32,20 @@ async def handler(
     workflow = workflows_state.get("workflows", {}).get(path)
     if not workflow:
         raise HTTPException(
-            status_code=404,
-            detail=f"Workflow not found for path: {path}"
+            status_code=404, detail=f"Workflow not found for path: {path}"
         )
 
     # Check if evaluation is already running for this workflow
     with Memory() as memory:
         # Initialize workflow_evaluation_state if it doesn't exist
-        if not hasattr(memory, 'workflow_evaluation_state'):
+        if not hasattr(memory, "workflow_evaluation_state"):
             memory.workflow_evaluation_state = {}
 
         existing_state = memory.workflow_evaluation_state.get(path)
         if existing_state and existing_state.get("status") == "running":
             raise HTTPException(
                 status_code=409,
-                detail=f"Evaluation already in progress for: {path}"
+                detail=f"Evaluation already in progress for: {path}",
             )
 
     # Check if workflow has evaluation section
@@ -60,7 +53,7 @@ async def handler(
     if not workflow_data or "evaluation" not in workflow_data:
         raise HTTPException(
             status_code=422,
-            detail=f"Workflow does not have an evaluation section: {path}"
+            detail=f"Workflow does not have an evaluation section: {path}",
         )
 
     # Get the base directory for the workflow (to resolve relative paths)
@@ -72,11 +65,14 @@ async def handler(
 
     # Mark evaluation as in progress
     from datetime import datetime
+
     started_at_iso = datetime.now().isoformat()
-    logger.info(f"Marking evaluation as running with started_at: {started_at_iso}")
-    
+    logger.info(
+        f"Marking evaluation as running with started_at: {started_at_iso}"
+    )
+
     with Memory() as memory:
-        if not hasattr(memory, 'workflow_evaluation_state'):
+        if not hasattr(memory, "workflow_evaluation_state"):
             memory.workflow_evaluation_state = {}
 
         memory.workflow_evaluation_state[path] = {
@@ -85,7 +81,7 @@ async def handler(
             "results": None,
             "error": None,
             "started_at": started_at_iso,
-            "cancelled": False
+            "cancelled": False,
         }
 
     # Start evaluation in background
@@ -95,18 +91,20 @@ async def handler(
 
             # Check for cancellation before starting
             with Memory() as memory:
-                if not hasattr(memory, 'workflow_evaluation_state'):
+                if not hasattr(memory, "workflow_evaluation_state"):
                     memory.workflow_evaluation_state = {}
                 state = memory.workflow_evaluation_state.get(path, {})
                 if state.get("cancelled"):
-                    logger.info(f"Evaluation was cancelled before starting: {path}")
+                    logger.info(
+                        f"Evaluation was cancelled before starting: {path}"
+                    )
                     memory.workflow_evaluation_state[path] = {
                         "status": "cancelled",
                         "current_evaluation": None,
                         "results": None,
                         "error": "Evaluation was cancelled",
                         "started_at": state.get("started_at"),
-                        "cancelled": True
+                        "cancelled": True,
                     }
                     return
 
@@ -134,11 +132,24 @@ async def handler(
                             break
 
             if not provider:
+                if providers_state.get("loading", False):
+                    raise ValueError(
+                        "Provider discovery is still in progress. "
+                        "Check GET /private/v1/providers for status "
+                        "and retry once status is no longer 'initializing'."
+                    )
                 raise ValueError("No provider available for evaluation")
 
             # Log which provider is being used
-            provider_name_used = workflow_data.get("provider") or providers_state.get("default_provider") or "unknown"
-            logger.info(f"Using provider '{provider_name_used}' for evaluation of workflow: {path}")
+            provider_name_used = (
+                workflow_data.get("provider")
+                or providers_state.get("default_provider")
+                or "unknown"
+            )
+            logger.info(
+                f"Using provider '{provider_name_used}' for evaluation "
+                f"of workflow: {path}"
+            )
 
             # Ensure provider has a model key
             if "model" not in provider:
@@ -147,22 +158,24 @@ async def handler(
             # Build system message from workflow (same logic as workflow handler)
             # This includes the prompt template + output schema instructions
             from startup.workflows import json_schema_to_prompt_format
-            
+
             # Get prompt from execution section or legacy root-level field
             if "execution" in workflow_data:
                 exec_section = workflow_data["execution"]
                 exec_type = exec_section["type"]
-                
+
                 if exec_type == "prompt":
                     base_prompt = exec_section["prompt"]
                 elif exec_type == "python":
-                    raise ValueError(f"Python execution not yet supported for evaluations")
+                    raise ValueError(
+                        "Python execution not yet supported for evaluations"
+                    )
                 else:
                     raise ValueError(f"Unknown execution type: {exec_type}")
             else:
                 # Legacy format - prompt at root level
                 base_prompt = workflow_data.get("prompt", "")
-            
+
             # Build system message with prompt + output schema instructions
             output_schema = workflow_data.get("output_schema", {})
             schema_instructions = json_schema_to_prompt_format(output_schema)
@@ -177,14 +190,14 @@ async def handler(
                 provider,
                 providers_state,
                 path,
-                system_message
+                system_message,
             )
 
             # Store results
             with Memory() as memory:
-                if not hasattr(memory, 'workflow_evaluation_state'):
+                if not hasattr(memory, "workflow_evaluation_state"):
                     memory.workflow_evaluation_state = {}
-                
+
                 state = memory.workflow_evaluation_state.get(path, {})
                 memory.workflow_evaluation_state[path] = {
                     "status": "completed",
@@ -192,18 +205,20 @@ async def handler(
                     "results": results,
                     "error": None,
                     "started_at": state.get("started_at"),
-                    "cancelled": False
+                    "cancelled": False,
                 }
             logger.info(f"Evaluation completed for workflow: {path}")
 
         except Exception as e:
-            logger.error(f"Evaluation error for workflow {path}: {type(e).__name__}: {e}")
+            logger.error(
+                f"Evaluation error for workflow {path}: {type(e).__name__}: {e}"
+            )
             logger.error(f"Setting status to 'error' for workflow: {path}")
             try:
                 with Memory() as memory:
-                    if not hasattr(memory, 'workflow_evaluation_state'):
+                    if not hasattr(memory, "workflow_evaluation_state"):
                         memory.workflow_evaluation_state = {}
-                    
+
                     state = memory.workflow_evaluation_state.get(path, {})
                     # Check if it was cancelled
                     if state.get("cancelled"):
@@ -212,24 +227,29 @@ async def handler(
                     else:
                         status = "error"
                         error_msg = str(e)
-                    
+
                     memory.workflow_evaluation_state[path] = {
                         "status": status,
                         "current_evaluation": None,
                         "results": None,
                         "error": error_msg,
                         "started_at": state.get("started_at"),
-                        "cancelled": state.get("cancelled", False)
+                        "cancelled": state.get("cancelled", False),
                     }
-                logger.info(f"Error status successfully saved to Memory for workflow: {path}")
+                logger.info(
+                    f"Error status successfully saved to Memory for workflow: {path}"
+                )
             except Exception as mem_error:
-                logger.error(f"Failed to save error status to Memory: {mem_error}")
+                logger.error(
+                    f"Failed to save error status to Memory: {mem_error}"
+                )
+
     # Start background task
     asyncio.create_task(run_evaluation_async())
 
     return {
         "message": f"Evaluation started for workflow: {path}",
-        "workflow_path": path
+        "workflow_path": path,
     }
 
 
@@ -240,7 +260,8 @@ spec = {
     "description": (
         "Starts an asynchronous evaluation of a workflow. "
         "The workflow path should match a registered workflow endpoint path. "
-        "Returns 201 when evaluation is started successfully, or 409 if an evaluation is already in progress."
+        "Returns 201 when evaluation is started successfully, or 409 if "
+        "an evaluation is already in progress."
     ),
     "responses": {
         201: {
@@ -252,21 +273,24 @@ spec = {
                         "properties": {
                             "message": {
                                 "type": "string",
-                                "description": "Status message"
+                                "description": "Status message",
                             },
                             "workflow_path": {
                                 "type": "string",
-                                "description": "Path of the workflow being evaluated"
-                            }
+                                "description": "Path of the workflow being evaluated",
+                            },
                         },
-                        "required": ["message", "workflow_path"]
+                        "required": ["message", "workflow_path"],
                     },
                     "example": {
-                        "message": "Evaluation started for workflow: /v1/extract-nutrition-information",
-                        "workflow_path": "/v1/extract-nutrition-information"
-                    }
+                        "message": (
+                            "Evaluation started for workflow: "
+                            "/v1/extract-nutrition-information"
+                        ),
+                        "workflow_path": "/v1/extract-nutrition-information",
+                    },
                 }
-            }
+            },
         },
         404: {
             "description": "Workflow not found",
@@ -277,12 +301,12 @@ spec = {
                         "properties": {
                             "detail": {
                                 "type": "string",
-                                "description": "Error message"
+                                "description": "Error message",
                             }
-                        }
+                        },
                     }
                 }
-            }
+            },
         },
         409: {
             "description": "Evaluation already in progress",
@@ -293,12 +317,15 @@ spec = {
                         "properties": {
                             "detail": {
                                 "type": "string",
-                                "description": "Error message indicating evaluation in progress"
+                                "description": (
+                                    "Error message indicating evaluation"
+                                    " in progress"
+                                ),
                             }
-                        }
+                        },
                     }
                 }
-            }
+            },
         },
         422: {
             "description": "Workflow does not have evaluation section",
@@ -309,12 +336,12 @@ spec = {
                         "properties": {
                             "detail": {
                                 "type": "string",
-                                "description": "Error message"
+                                "description": "Error message",
                             }
-                        }
+                        },
                     }
                 }
-            }
-        }
-    }
+            },
+        },
+    },
 }

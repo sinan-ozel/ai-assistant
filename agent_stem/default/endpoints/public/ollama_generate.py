@@ -14,9 +14,8 @@ logger = logging.getLogger(__name__)
 async def handler(request: dict, providers_state: dict):
     """Generate completion using Ollama format.
 
-    This endpoint follows the Ollama Generate API format, making it
-    compatible with Ollama clients and LiteLLM when using ollama/
-    prefix.
+    This endpoint follows the Ollama Generate API format, making it compatible
+    with Ollama clients and LiteLLM when using ollama/ prefix.
     """
     # Validate request against schema
     try:

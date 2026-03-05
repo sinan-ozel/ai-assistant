@@ -34,7 +34,9 @@ def test_nutrition_workflow_evaluation(clear_evaluation_state):
     assert data["workflow_path"] == "/v1/extract-nutrition-information"
 
     # Step 2: Poll for results
-    results_url = f"{BASE_URL}/private/evaluate/v1/extract-nutrition-information/results"
+    results_url = (
+        f"{BASE_URL}/private/evaluate/v1/extract-nutrition-information/results"
+    )
 
     # First, confirm evaluation is running
     time.sleep(0.5)  # Brief delay to ensure evaluation has started
@@ -42,21 +44,26 @@ def test_nutrition_workflow_evaluation(clear_evaluation_state):
     assert response.status_code == 200
 
     data = response.json()
-    assert data["status"] == "running", (
-        f"Expected status to be 'running' shortly after triggering, got '{data['status']}'"
-    )
+    assert (
+        data["status"] == "running"
+    ), f"Expected status to be 'running' shortly after triggering, got '{data['status']}'"
     assert data["current_evaluation"] == "/v1/extract-nutrition-information"
     assert data["workflow_path"] == "/v1/extract-nutrition-information"
 
     # Validate that started_at is present
     assert "started_at" in data, "Expected 'started_at' timestamp in response"
-    assert isinstance(data["started_at"], str), "Expected 'started_at' to be a string (ISO format)"
+    assert isinstance(
+        data["started_at"], str
+    ), "Expected 'started_at' to be a string (ISO format)"
     # Try to parse it as ISO datetime
     from datetime import datetime
+
     try:
         datetime.fromisoformat(data["started_at"])
     except ValueError:
-        pytest.fail(f"'started_at' is not a valid ISO datetime: {data['started_at']}")
+        pytest.fail(
+            f"'started_at' is not a valid ISO datetime: {data['started_at']}"
+        )
 
     # Step 3: Wait for completion with timeout
     start = time.time()
@@ -116,9 +123,9 @@ def test_nutrition_workflow_evaluation(clear_evaluation_state):
         f"Expected all cases to pass, but {results['failed_cases']} failed. "
         f"Cases: {[{'id': c['id'], 'passed': c['passed'], 'pass_count': c['pass_count'], 'repeat': c['repeat']} for c in results['cases']]}"
     )
-    assert results["passed_cases"] == results["total_cases"], (
-        f"Expected {results['total_cases']} passed cases, got {results['passed_cases']}"
-    )
+    assert (
+        results["passed_cases"] == results["total_cases"]
+    ), f"Expected {results['total_cases']} passed cases, got {results['passed_cases']}"
 
     # Validate case structure
     for case in results["cases"]:
@@ -171,15 +178,18 @@ def test_nutrition_workflow_evaluation(clear_evaluation_state):
     # Check that current_evaluation is now null (evaluation finished)
     assert final_data["current_evaluation"] is None
 
-    print(f"\nEvaluation completed successfully!")
+    print("\nEvaluation completed successfully!")
     print(f"Total cases: {results['total_cases']}")
-    print(f"Passed: {results['passed_cases']}, Failed: {results['failed_cases']}")
+    print(
+        f"Passed: {results['passed_cases']}, Failed: {results['failed_cases']}"
+    )
     print(f"Duration: {results['duration']:.2f}s")
 
 
 @pytest.mark.depends(on=["test_nutrition_workflow_evaluation"])
 def test_evaluation_already_in_progress(clear_evaluation_state):
-    """Test that starting a second evaluation while one is running returns 409."""
+    """Test that starting a second evaluation while one is running returns
+    409."""
     # This test assumes the previous test completed, so no evaluation should be running
     # We'll trigger one and immediately try to trigger another
 
@@ -193,16 +203,18 @@ def test_evaluation_already_in_progress(clear_evaluation_state):
     response2 = requests.post(eval_url, timeout=10)
 
     # Should get 409 Conflict
-    assert response2.status_code == 409, (
-        f"Expected 409 Conflict when evaluation already in progress, got {response2.status_code}"
-    )
+    assert (
+        response2.status_code == 409
+    ), f"Expected 409 Conflict when evaluation already in progress, got {response2.status_code}"
 
     data = response2.json()
     assert "detail" in data
     assert "already in progress" in data["detail"].lower()
 
     # Wait for the evaluation to complete before moving on
-    results_url = f"{BASE_URL}/private/evaluate/v1/extract-nutrition-information/results"
+    results_url = (
+        f"{BASE_URL}/private/evaluate/v1/extract-nutrition-information/results"
+    )
     start = time.time()
     timeout = 300
 
@@ -210,7 +222,13 @@ def test_evaluation_already_in_progress(clear_evaluation_state):
         response = requests.get(results_url, timeout=10)
         data = response.json()
 
-        if data.get("status") in ["completed", "failed", "error", "cancelled", "idle"]:
+        if data.get("status") in [
+            "completed",
+            "failed",
+            "error",
+            "cancelled",
+            "idle",
+        ]:
             break
 
         if time.time() - start > timeout:
@@ -225,9 +243,9 @@ def test_evaluation_workflow_not_found():
 
     response = requests.post(eval_url, timeout=10)
 
-    assert response.status_code == 404, (
-        f"Expected 404 Not Found for non-existent workflow, got {response.status_code}"
-    )
+    assert (
+        response.status_code == 404
+    ), f"Expected 404 Not Found for non-existent workflow, got {response.status_code}"
 
     data = response.json()
     assert "detail" in data
@@ -240,9 +258,9 @@ def test_workflows_list():
 
     response = requests.get(url, timeout=10)
 
-    assert response.status_code == 200, (
-        f"Expected 200 OK for workflows list, got {response.status_code}"
-    )
+    assert (
+        response.status_code == 200
+    ), f"Expected 200 OK for workflows list, got {response.status_code}"
 
     data = response.json()
     assert "total" in data
@@ -270,8 +288,7 @@ def test_workflows_list():
 
     # Find the nutrition workflow
     nutrition_workflow = next(
-        (w for w in data["workflows"] if "nutrition" in w["name"].lower()),
-        None
+        (w for w in data["workflows"] if "nutrition" in w["name"].lower()), None
     )
     assert nutrition_workflow is not None, "Expected to find nutrition workflow"
     assert nutrition_workflow["has_evaluation"] is True
@@ -290,16 +307,20 @@ def test_evaluation_cancellation(clear_evaluation_state):
 
     # Start evaluation
     response = requests.post(eval_url, timeout=10)
-    assert response.status_code == 201, (
-        f"Expected 201 when starting evaluation, got {response.status_code}"
-    )
+    assert (
+        response.status_code == 201
+    ), f"Expected 201 when starting evaluation, got {response.status_code}"
 
     # Brief delay to ensure evaluation has started
     time.sleep(0.5)
 
     # Cancel the evaluation
-    cancel_url = f"{BASE_URL}/private/cancel-evaluation/v1/extract-nutrition-information"
-    cancel_response = requests.post(cancel_url, timeout=10)
+    cancel_url = f"{BASE_URL}/private/cancel-evaluation"
+    cancel_response = requests.post(
+        cancel_url,
+        json={"workflow_path": "/v1/extract-nutrition-information"},
+        timeout=10,
+    )
 
     assert cancel_response.status_code == 200, (
         f"Expected 200 when cancelling evaluation, got {cancel_response.status_code}. "
@@ -311,7 +332,9 @@ def test_evaluation_cancellation(clear_evaluation_state):
     assert "workflow_path" in cancel_data
 
     # Wait for status to update to cancelled
-    results_url = f"{BASE_URL}/private/evaluate/v1/extract-nutrition-information/results"
+    results_url = (
+        f"{BASE_URL}/private/evaluate/v1/extract-nutrition-information/results"
+    )
     start = time.time()
     timeout = 30  # Should be quick
     final_status = None
@@ -336,9 +359,9 @@ def test_evaluation_cancellation(clear_evaluation_state):
         time.sleep(0.5)
 
     # Verify it was cancelled
-    assert final_status == "cancelled", (
-        f"Expected status to be 'cancelled' after cancellation, got '{final_status}'"
-    )
+    assert (
+        final_status == "cancelled"
+    ), f"Expected status to be 'cancelled' after cancellation, got '{final_status}'"
 
     # Verify cancelled flag is set
     response = requests.get(results_url, timeout=10)
@@ -356,12 +379,16 @@ def test_cancel_non_running_evaluation():
     # Make sure no evaluation is running (previous test should have finished)
     time.sleep(1)
 
-    cancel_url = f"{BASE_URL}/private/cancel-evaluation/v1/extract-nutrition-information"
-    response = requests.post(cancel_url, timeout=10)
-
-    assert response.status_code == 404, (
-        f"Expected 404 when cancelling non-running evaluation, got {response.status_code}"
+    cancel_url = f"{BASE_URL}/private/cancel-evaluation"
+    response = requests.post(
+        cancel_url,
+        json={"workflow_path": "/v1/extract-nutrition-information"},
+        timeout=10,
     )
+
+    assert (
+        response.status_code == 404
+    ), f"Expected 404 when cancelling non-running evaluation, got {response.status_code}"
 
     data = response.json()
     assert "detail" in data

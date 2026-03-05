@@ -2,13 +2,45 @@
 
 ## Summary
 
-- **Total Tests:** 36
-- **Passed:** ✅ 36
+- **Total Tests:** 50
+- **Passed:** ✅ 50
 - **Failed:** ❌ 0
 
 ---
 
 ## Test #1 ✅
+
+📋 *Test case from OpenAPI example*
+
+**Endpoint:** `GET /private/evaluate{path}/results`
+
+### Expected Response
+
+**Status:** `200 or 422`
+
+```json
+{
+  "status": "idle",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+{
+  "status": "idle",
+  "workflow_path": "{path}",
+  "current_evaluation": null,
+  "results": null
+}
+```
+
+---
+
+## Test #2 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -40,7 +72,7 @@
 
 ---
 
-## Test #2 ✅
+## Test #3 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -69,7 +101,7 @@
 
 ---
 
-## Test #3 ✅
+## Test #4 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -108,7 +140,490 @@
 
 ---
 
-## Test #4 ✅
+## Test #5 ✅
+
+📋 *Test case from OpenAPI example*
+
+**Endpoint:** `GET /private/v1/workflows`
+
+### Expected Response
+
+**Status:** `200`
+
+```json
+{
+  "total": 1,
+  "workflows": [
+    {
+      "name": "nutrition_information_extraction",
+      "path": "/v1/extract-nutrition-information",
+      "description": "Takes an image of a packaged food product label and extracts the nutrition information as JSON.",
+      "provider": "vision",
+      "has_evaluation": true
+    }
+  ]
+}
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+{
+  "total": 0,
+  "workflows": []
+}
+```
+
+---
+
+## Test #6 ✅
+
+📋 *Test case from OpenAPI example*
+
+**Endpoint:** `POST /private/evaluate{path}`
+
+### Expected Response
+
+**Status:** `201 or 409 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation started for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "Workflow not found for path: 1"
+}
+```
+
+---
+
+## Test #7 ✅
+
+📋 *Test case from OpenAPI example*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: /v1/extract-nutrition-information"
+}
+```
+
+---
+
+## Test #8 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Lorem ipsum dolor sit amet"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Lorem ipsum dolor sit amet"
+}
+```
+
+---
+
+## Test #9 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test with 'single' quotes"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test with 'single' quotes"
+}
+```
+
+---
+
+## Test #10 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test with \"double\" quotes"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test with \"double\" quotes"
+}
+```
+
+---
+
+## Test #11 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test:with:colons"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test:with:colons"
+}
+```
+
+---
+
+## Test #12 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test\\with\\backslashes"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test\\with\\backslashes"
+}
+```
+
+---
+
+## Test #13 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test\nwith\nnewlines"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test\nwith\nnewlines"
+}
+```
+
+---
+
+## Test #14 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test\r\nwith\r\nCRLF"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test\r\nwith\r\nCRLF"
+}
+```
+
+---
+
+## Test #15 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test with UTF-8: caf\u00e9, na\u00efve, \u4e2d\u6587, \u65e5\u672c\u8a9e"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test with UTF-8: caf\u00e9, na\u00efve, \u4e2d\u6587, \u65e5\u672c\u8a9e"
+}
+```
+
+---
+
+## Test #16 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test!@#$%^&*()_+-=[]{}|;:<>?,./`~"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test!@#$%^&*()_+-=[]{}|;:<>?,./`~"
+}
+```
+
+---
+
+## Test #17 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": ""
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `422`
+
+```json
+{
+  "detail": [
+    {
+      "loc": [
+        "body",
+        "workflow_path"
+      ],
+      "msg": "field required",
+      "type": "value_error.missing"
+    }
+  ]
+}
+```
+
+---
+
+## Test #18 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -153,20 +668,20 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "The weather is currently sunny with a high of 78 degrees Fahrenheit.\n",
+  "message": "Okay, I'm ready to be your weather assistant! Tell me what you need information about.\n",
   "role": "assistant",
-  "created": 1772071023,
+  "created": 1772686581,
   "usage": {
-    "prompt_tokens": 317,
-    "completion_tokens": 17,
-    "total_tokens": 334
+    "prompt_tokens": 965,
+    "completion_tokens": 22,
+    "total_tokens": 987
   }
 }
 ```
 
 ---
 
-## Test #5 ✅
+## Test #19 ✅
 
 🔧 *Test case generated from schema*
 
@@ -215,7 +730,7 @@
 
 ---
 
-## Test #6 ✅
+## Test #20 ✅
 
 🔧 *Test case generated from schema*
 
@@ -264,7 +779,7 @@
 
 ---
 
-## Test #7 ✅
+## Test #21 ✅
 
 🔧 *Test case generated from schema*
 
@@ -313,7 +828,7 @@
 
 ---
 
-## Test #8 ✅
+## Test #22 ✅
 
 🔧 *Test case generated from schema*
 
@@ -362,7 +877,7 @@
 
 ---
 
-## Test #9 ✅
+## Test #23 ✅
 
 🔧 *Test case generated from schema*
 
@@ -411,7 +926,7 @@
 
 ---
 
-## Test #10 ✅
+## Test #24 ✅
 
 🔧 *Test case generated from schema*
 
@@ -460,7 +975,7 @@
 
 ---
 
-## Test #11 ✅
+## Test #25 ✅
 
 🔧 *Test case generated from schema*
 
@@ -509,7 +1024,7 @@
 
 ---
 
-## Test #12 ✅
+## Test #26 ✅
 
 🔧 *Test case generated from schema*
 
@@ -558,7 +1073,7 @@
 
 ---
 
-## Test #13 ✅
+## Test #27 ✅
 
 🔧 *Test case generated from schema*
 
@@ -607,7 +1122,7 @@
 
 ---
 
-## Test #14 ✅
+## Test #28 ✅
 
 🔧 *Test case generated from schema*
 
@@ -656,7 +1171,7 @@
 
 ---
 
-## Test #15 ✅
+## Test #29 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -710,9 +1225,9 @@
 
 ```json
 {
-  "id": "chatcmpl-fa55a2c33f9d426fb7820d65",
+  "id": "chatcmpl-f7ea45fbf21b4d6fb0a2314a",
   "object": "chat.completion",
-  "created": 1772071054,
+  "created": 1772686670,
   "model": "ollama/gemma3:270m",
   "choices": [
     {
@@ -734,7 +1249,7 @@
 
 ---
 
-## Test #16 ✅
+## Test #30 ✅
 
 🔧 *Test case generated from schema*
 
@@ -795,7 +1310,7 @@
 
 ---
 
-## Test #17 ✅
+## Test #31 ✅
 
 🔧 *Test case generated from schema*
 
@@ -856,7 +1371,7 @@
 
 ---
 
-## Test #18 ✅
+## Test #32 ✅
 
 🔧 *Test case generated from schema*
 
@@ -899,7 +1414,7 @@
 
 ---
 
-## Test #19 ✅
+## Test #33 ✅
 
 🔧 *Test case generated from schema*
 
@@ -956,9 +1471,9 @@
 
 ```json
 {
-  "id": "chatcmpl-8371014a9ac94ddeac1892f5",
+  "id": "chatcmpl-4d0f569b8f4b44539893994f",
   "object": "chat.completion",
-  "created": 1772071055,
+  "created": 1772686674,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -980,7 +1495,7 @@
 
 ---
 
-## Test #20 ✅
+## Test #34 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1037,9 +1552,9 @@
 
 ```json
 {
-  "id": "chatcmpl-16141e8f6e30448d8f36d7d6",
+  "id": "chatcmpl-f35d23e23d304ca5bff0a0c3",
   "object": "chat.completion",
-  "created": 1772071055,
+  "created": 1772686674,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
@@ -1061,7 +1576,7 @@
 
 ---
 
-## Test #21 ✅
+## Test #35 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1104,7 +1619,7 @@
 
 ---
 
-## Test #22 ✅
+## Test #36 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1165,7 +1680,7 @@
 
 ---
 
-## Test #23 ✅
+## Test #37 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1226,7 +1741,7 @@
 
 ---
 
-## Test #24 ✅
+## Test #38 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1269,7 +1784,7 @@
 
 ---
 
-## Test #25 ✅
+## Test #39 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1332,7 +1847,7 @@
 
 ---
 
-## Test #26 ✅
+## Test #40 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -1376,7 +1891,7 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-02-26T01:57:36.856830Z",
+  "created_at": "2026-03-05T04:57:57.267427Z",
   "response": "The capital of France is Paris.",
   "done": true,
   "context": [],
@@ -1391,7 +1906,7 @@
 
 ---
 
-## Test #27 ✅
+## Test #41 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1443,7 +1958,7 @@
 
 ---
 
-## Test #28 ✅
+## Test #42 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1495,7 +2010,7 @@
 
 ---
 
-## Test #29 ✅
+## Test #43 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1547,7 +2062,7 @@
 
 ---
 
-## Test #30 ✅
+## Test #44 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1599,7 +2114,7 @@
 
 ---
 
-## Test #31 ✅
+## Test #45 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1651,7 +2166,7 @@
 
 ---
 
-## Test #32 ✅
+## Test #46 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1703,7 +2218,7 @@
 
 ---
 
-## Test #33 ✅
+## Test #47 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1755,7 +2270,7 @@
 
 ---
 
-## Test #34 ✅
+## Test #48 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1807,7 +2322,7 @@
 
 ---
 
-## Test #35 ✅
+## Test #49 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1859,7 +2374,7 @@
 
 ---
 
-## Test #36 ✅
+## Test #50 ✅
 
 🔧 *Test case generated from schema*
 

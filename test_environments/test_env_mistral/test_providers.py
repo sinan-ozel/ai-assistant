@@ -43,8 +43,7 @@ def test_providers(mistral_api_key_available):
 
 @pytest.mark.depends(on=["test_providers"], name="test_provider_context_window")
 def test_provider_context_window():
-    """Test if the provider's context window endpoint works
-    correctly."""
+    """Test if the provider's context window endpoint works correctly."""
     # First get the list of providers
     providers_url = f"{BASE_URL}/private/v1/providers"
     response = requests.get(providers_url)

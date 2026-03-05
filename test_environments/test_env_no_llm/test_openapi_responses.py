@@ -36,8 +36,8 @@ def build_example_from_schema(schema, components):
 
 def get_openapi_endpoints():
     """Yield (method, path, request_example, response_example,
-    all_response_codes, required_request_fields,
-    required_response_fields) for each endpoint with a 200 response."""
+    all_response_codes, required_request_fields, required_response_fields) for
+    each endpoint with a 200 response."""
     resp = requests.get(OPENAPI_URL)
     resp.raise_for_status()
     openapi = resp.json()
@@ -46,7 +46,10 @@ def get_openapi_endpoints():
         for method, details in methods.items():
             responses = details.get("responses", {})
             if "200" in responses:
-                request_example = {}
+                # Skip POST/PUT with no requestBody — no request example to assert on
+                if method in ("post", "put") and "requestBody" not in details:
+                    continue
+                    request_example = {}
                 response_example = None
                 required_request_fields = []
                 required_response_fields = []
@@ -133,9 +136,8 @@ def test_openapi_request_examples(
     required_request_fields,
     required_response_fields,
 ):
-    """Automatically checks that all documented endpoints with a 200
-    response in the OpenAPI spec return one of their documented response
-    codes."""
+    """Automatically checks that all documented endpoints with a 200 response
+    in the OpenAPI spec return one of their documented response codes."""
     # Replace path parameters with values from the response example
     url = f"{BASE_URL}{path}"
     if response_example and "{" in path:

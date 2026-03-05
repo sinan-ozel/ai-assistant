@@ -1,4 +1,5 @@
 """Pytest configuration and fixtures for local LLM tests."""
+
 # No special fixtures needed for this environment
 # The Ollama server runs as a container in docker-compose
 
@@ -22,7 +23,9 @@ def clear_test_memory():
     redis_port = int(os.getenv("REDIS_PORT", 6379))
 
     # Connect to Redis (should be healthy due to depends_on)
-    client = redis.Redis(host=redis_host, port=redis_port, decode_responses=False)
+    client = redis.Redis(
+        host=redis_host, port=redis_port, decode_responses=False
+    )
 
     # Clear test-related keys before test
     test_keys = client.keys("memory:test-user-memory:test-memory-conv*")

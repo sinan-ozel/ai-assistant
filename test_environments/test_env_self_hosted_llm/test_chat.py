@@ -13,8 +13,10 @@ litellm.drop_params = True
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 
-@pytest.mark.depends(name='test_chat_completions_basic', on=['test_provider_context_window'])
-def test_chat_completions_basic(ollama_server_available):
+@pytest.mark.depends(name='test_chat_completions_basic',
+                     on=['test_provider_context_window',
+                         'providers_loaded'])
+def test_chat_completions_basic():
     """Test basic chat completion with a trivial question."""
     url = f"{BASE_URL}/v1/chat/completions"
 
@@ -66,7 +68,7 @@ def test_chat_completions_basic(ollama_server_available):
 
 
 @pytest.mark.depends(on=['test_chat_completions_basic'])
-def test_chat_completions_litellm(ollama_server_available):
+def test_chat_completions_litellm():
     """Test chat completion using LiteLLM client interface."""
     # Configure LiteLLM to use our custom OpenAI-compatible endpoint
     api_base = f"{BASE_URL}/v1"

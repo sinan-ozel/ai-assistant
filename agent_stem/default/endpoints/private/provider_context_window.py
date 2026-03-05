@@ -37,7 +37,11 @@ spec = {
     "summary": "Get provider's maximum context window",
     "description": (
         "Retrieve the maximum context window size in tokens "
-        "for a specific provider"
+        "for a specific provider. "
+        "Currently, this endpoint works only with Ollama servers. "
+        "Initial plan was to make the agent aware its models' capabilities, "
+        "but this looks infeasiable at the moment. "
+        "The agent designer needs to be aware and set them up accordingly. "
     ),
     "parameters": [
         {

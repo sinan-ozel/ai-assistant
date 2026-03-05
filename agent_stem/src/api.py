@@ -119,11 +119,17 @@ async def startup_event():
         has_request = "request" in params and request_body_spec
 
         # Determine the appropriate route handler
-        if "providers_state" in params or "workflows_state" in params or has_request:
+        if (
+            "providers_state" in params
+            or "workflows_state" in params
+            or has_request
+        ):
             # Create a wrapper that properly removes special state parameters
             # from the signature and adds proper Body parameter for
             # request body validation
-            async def create_wrapper(original_handler, request_spec, handler_params):
+            async def create_wrapper(
+                original_handler, request_spec, handler_params
+            ):
                 if has_request:
                     # Extract schema from requestBody
                     content = request_spec.get("content", {})
@@ -154,7 +160,7 @@ async def startup_event():
                                 else None
                             ),
                         ),
-                        **path_params
+                        **path_params,
                     ):
                         kwargs = {}
                         if "request" in handler_params:
@@ -163,8 +169,6 @@ async def startup_event():
                             kwargs["providers_state"] = providers_state
                         if "workflows_state" in handler_params:
                             kwargs["workflows_state"] = workflows_state
-                        if "evaluation_state" in handler_params:
-                            kwargs["evaluation_state"] = evaluation_state
                         # Add any path parameters
                         kwargs.update(path_params)
                         return await original_handler(**kwargs)
@@ -177,8 +181,6 @@ async def startup_event():
                             kwargs["providers_state"] = providers_state
                         if "workflows_state" in handler_params:
                             kwargs["workflows_state"] = workflows_state
-                        if "evaluation_state" in handler_params:
-                            kwargs["evaluation_state"] = evaluation_state
                         # Add any path parameters
                         kwargs.update(path_params)
                         return await original_handler(**kwargs)
@@ -187,7 +189,8 @@ async def startup_event():
                 new_params = [
                     p
                     for p in sig.parameters.values()
-                    if p.name not in ["providers_state", "workflows_state", "request"]
+                    if p.name
+                    not in ["providers_state", "workflows_state", "request"]
                 ]
                 if has_request:
                     # Add request parameter with Body annotation
@@ -203,7 +206,9 @@ async def startup_event():
                 wrapper.__doc__ = original_handler.__doc__
                 return wrapper
 
-            route_handler = await create_wrapper(handler, request_body_spec, params)
+            route_handler = await create_wrapper(
+                handler, request_body_spec, params
+            )
         else:
             route_handler = handler
 
@@ -234,14 +239,20 @@ async def startup_event():
 
     # Discover and register workflow endpoints
     logger.info("Discovering and registering workflow endpoints...")
-    async for name, handler, spec, workflow_data, workflow_file in discover_workflows():
+    async for (
+        name,
+        handler,
+        spec,
+        workflow_data,
+        workflow_file,
+    ) in discover_workflows():
         # Store workflow in global state
         workflow_path = workflow_data.get("path")
         if workflow_path:
             workflows_state["workflows"][workflow_path] = {
                 "name": name,
                 "data": workflow_data,
-                "file": workflow_file
+                "file": workflow_file,
             }
             logger.info(f"Stored workflow {name} with path {workflow_path}")
 

@@ -8,6 +8,7 @@ import requests
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 
+@pytest.mark.depends(on=['test_chat_completions_basic'], name='test_agent_chat_simple_message')
 def test_agent_chat_simple_message():
     """Test sending a simple message to the agent."""
     response = requests.post(
@@ -38,6 +39,7 @@ def test_agent_chat_simple_message():
     # return data["conversation_id"]
 
 
+@pytest.mark.depends(on=['test_agent_chat_simple_message'])
 def test_agent_chat_with_conversation_id(clear_test_memory):
     """Test sending messages in the same conversation."""
     conversation_id = "test-conv-123"
@@ -77,6 +79,7 @@ def test_agent_chat_with_conversation_id(clear_test_memory):
     assert isinstance(data2["message"], str)
 
 
+@pytest.mark.depends(on=['test_agent_chat_simple_message'])
 @pytest.mark.repeated(times=3, threshold=1)
 def test_agent_chat_memory_retention(clear_test_memory):
     """Test that agent remembers context from earlier in the conversation."""
@@ -134,6 +137,7 @@ def test_agent_chat_memory_retention(clear_test_memory):
     assert "3" in response_text3 or "three" in response_text3, f"Expected '3' or 'three' in response, got: {data3['message']}"
 
 
+@pytest.mark.depends(on=['test_agent_chat_simple_message'])
 def test_agent_chat_user_isolation(clear_test_memory):
     """Test that different users have isolated conversations."""
     conversation_id = "shared-conv-id"
@@ -171,6 +175,7 @@ def test_agent_chat_user_isolation(clear_test_memory):
     assert data2["user_id"] == "user-bob"
 
 
+@pytest.mark.depends(on=['test_agent_chat_simple_message'])
 def test_agent_chat_generated_conversation_id(clear_test_memory):
     """Test that conversation_id is generated when not provided."""
     response = requests.post(
@@ -190,6 +195,7 @@ def test_agent_chat_generated_conversation_id(clear_test_memory):
     assert len(data["conversation_id"]) > 0
 
 
+@pytest.mark.depends(on=['test_agent_chat_simple_message'])
 def test_agent_chat_missing_message(clear_test_memory):
     """Test that missing message returns error."""
     response = requests.post(
@@ -203,6 +209,7 @@ def test_agent_chat_missing_message(clear_test_memory):
     assert response.status_code == 422
 
 
+@pytest.mark.depends(on=['test_agent_chat_simple_message'])
 def test_agent_chat_usage_info(clear_test_memory):
     """Test that usage information is returned."""
     response = requests.post(
@@ -229,6 +236,7 @@ def test_agent_chat_usage_info(clear_test_memory):
     assert usage["total_tokens"] >= 0
 
 
+@pytest.mark.depends(on=['test_agent_chat_simple_message'])
 def test_agent_chat_timeout(clear_test_memory):
     """Test that timeout parameter triggers 408 when request times out."""
     # Request with very short timeout (1 second) that should timeout

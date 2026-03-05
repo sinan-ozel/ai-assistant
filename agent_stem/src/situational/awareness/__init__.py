@@ -1,7 +1,7 @@
 """Situational awareness utilities for the agent system.
 
-This module provides functions to access cached information about the
-system state, providers, and their capabilities.
+This module provides functions to access cached information about the system
+state, providers, and their capabilities.
 """
 
 from typing import Optional

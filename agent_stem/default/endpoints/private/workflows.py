@@ -2,32 +2,30 @@
 
 
 async def handler(workflows_state: dict):
-    """
-    Get list of all available workflows.
-    
+    """Get list of all available workflows.
+
     Args:
         workflows_state: Global workflows state
-    
+
     Returns:
         Dict with list of workflows
     """
     workflows = workflows_state.get("workflows", {})
-    
+
     workflow_list = []
     for path, workflow_info in workflows.items():
         workflow_data = workflow_info.get("data", {})
-        workflow_list.append({
-            "name": workflow_info.get("name"),
-            "path": path,
-            "description": workflow_data.get("description"),
-            "provider": workflow_data.get("provider"),
-            "has_evaluation": "evaluation" in workflow_data
-        })
-    
-    return {
-        "total": len(workflow_list),
-        "workflows": workflow_list
-    }
+        workflow_list.append(
+            {
+                "name": workflow_info.get("name"),
+                "path": path,
+                "description": workflow_data.get("description"),
+                "provider": workflow_data.get("provider"),
+                "has_evaluation": "evaluation" in workflow_data,
+            }
+        )
+
+    return {"total": len(workflow_list), "workflows": workflow_list}
 
 
 spec = {
@@ -47,7 +45,7 @@ spec = {
                         "properties": {
                             "total": {
                                 "type": "integer",
-                                "description": "Total number of workflows"
+                                "description": "Total number of workflows",
                             },
                             "workflows": {
                                 "type": "array",
@@ -57,31 +55,38 @@ spec = {
                                     "properties": {
                                         "name": {
                                             "type": "string",
-                                            "description": "Workflow name"
+                                            "description": "Workflow name",
                                         },
                                         "path": {
                                             "type": "string",
-                                            "description": "Workflow endpoint path"
+                                            "description": "Workflow endpoint path",
                                         },
                                         "description": {
                                             "type": "string",
-                                            "description": "Workflow description"
+                                            "description": "Workflow description",
                                         },
                                         "provider": {
                                             "type": "string",
                                             "nullable": True,
-                                            "description": "Provider name if specified"
+                                            "description": "Provider name if specified",
                                         },
                                         "has_evaluation": {
                                             "type": "boolean",
-                                            "description": "Whether workflow has evaluation section"
-                                        }
+                                            "description": (
+                                                "Whether workflow has"
+                                                " evaluation section"
+                                            ),
+                                        },
                                     },
-                                    "required": ["name", "path", "has_evaluation"]
-                                }
-                            }
+                                    "required": [
+                                        "name",
+                                        "path",
+                                        "has_evaluation",
+                                    ],
+                                },
+                            },
                         },
-                        "required": ["total", "workflows"]
+                        "required": ["total", "workflows"],
                     },
                     "example": {
                         "total": 1,
@@ -89,14 +94,18 @@ spec = {
                             {
                                 "name": "nutrition_information_extraction",
                                 "path": "/v1/extract-nutrition-information",
-                                "description": "Takes an image of a packaged food product label and extracts the nutrition information as JSON.",
+                                "description": (
+                                    "Takes an image of a packaged food"
+                                    " product label and extracts the"
+                                    " nutrition information as JSON."
+                                ),
                                 "provider": "vision",
-                                "has_evaluation": True
+                                "has_evaluation": True,
                             }
-                        ]
-                    }
+                        ],
+                    },
                 }
-            }
+            },
         }
-    }
+    },
 }

@@ -2,8 +2,7 @@
 
 
 async def handler(path: str):
-    """
-    Get evaluation results for a specific workflow.
+    """Get evaluation results for a specific workflow.
 
     Args:
         path: Workflow path (e.g., /v1/extract-nutrition-information)
@@ -15,7 +14,7 @@ async def handler(path: str):
 
     # Get evaluation state for this workflow
     with Memory() as memory:
-        if not hasattr(memory, 'workflow_evaluation_state'):
+        if not hasattr(memory, "workflow_evaluation_state"):
             memory.workflow_evaluation_state = {}
 
         state = memory.workflow_evaluation_state.get(path)
@@ -25,7 +24,7 @@ async def handler(path: str):
             "status": "idle",
             "workflow_path": path,
             "current_evaluation": None,
-            "results": None
+            "results": None,
         }
 
     response = {
@@ -36,7 +35,7 @@ async def handler(path: str):
 
     if state.get("started_at"):
         response["started_at"] = state["started_at"]
-    
+
     if state.get("cancelled") is not None:
         response["cancelled"] = state["cancelled"]
 
@@ -54,8 +53,8 @@ spec = {
     "methods": ["GET"],
     "summary": "Get evaluation results for workflow",
     "description": (
-        "Retrieve the results of the most recent evaluation run for a specific workflow, "
-        "or the status of a currently running evaluation."
+        "Retrieve the results of the most recent evaluation run for a "
+        "specific workflow, or the status of a currently running evaluation."
     ),
     "responses": {
         200: {
@@ -67,61 +66,81 @@ spec = {
                         "properties": {
                             "status": {
                                 "type": "string",
-                                "enum": ["idle", "running", "completed", "failed", "error", "cancelled"],
-                                "description": "Current evaluation status"
+                                "enum": [
+                                    "idle",
+                                    "running",
+                                    "completed",
+                                    "failed",
+                                    "error",
+                                    "cancelled",
+                                ],
+                                "description": "Current evaluation status",
                             },
                             "workflow_path": {
                                 "type": "string",
-                                "description": "Path of the workflow"
+                                "description": "Path of the workflow",
                             },
                             "current_evaluation": {
                                 "type": "string",
                                 "nullable": True,
-                                "description": "Path of currently running evaluation (null if none)"
+                                "description": (
+                                    "Path of currently running evaluation"
+                                    " (null if none)"
+                                ),
                             },
                             "results": {
                                 "type": "object",
                                 "nullable": True,
-                                "description": "Evaluation results (null if no evaluation completed)",
+                                "description": (
+                                    "Evaluation results (null if no"
+                                    " evaluation completed)"
+                                ),
                                 "properties": {
                                     "total_cases": {
                                         "type": "integer",
-                                        "description": "Total number of test cases"
+                                        "description": "Total number of test cases",
                                     },
                                     "passed_cases": {
                                         "type": "integer",
-                                        "description": "Number of passed test cases"
+                                        "description": "Number of passed test cases",
                                     },
                                     "failed_cases": {
                                         "type": "integer",
-                                        "description": "Number of failed test cases"
+                                        "description": "Number of failed test cases",
                                     },
                                     "duration": {
                                         "type": "number",
-                                        "description": "Total duration in seconds"
+                                        "description": "Total duration in seconds",
                                     },
                                     "cases": {
                                         "type": "array",
-                                        "description": "Detailed results for each test case"
-                                    }
-                                }
+                                        "description": (
+                                            "Detailed results for each"
+                                            " test case"
+                                        ),
+                                    },
+                                },
                             },
                             "error": {
                                 "type": "string",
                                 "nullable": True,
-                                "description": "Error message if evaluation failed"
-                            }
+                                "description": "Error message if evaluation failed",
+                            },
                         },
-                        "required": ["status", "workflow_path", "current_evaluation"]
+                        "required": [
+                            "status",
+                            "workflow_path",
+                            "current_evaluation",
+                        ],
                     },
                     "example": {
                         "status": "idle",
                         "workflow_path": "/v1/extract-nutrition-information",
                         "current_evaluation": None,
-                        "results": None
-                    }
+                        "results": None,
+                    },
                 }
-            }
+            },
         }
-    }
+    },
 }

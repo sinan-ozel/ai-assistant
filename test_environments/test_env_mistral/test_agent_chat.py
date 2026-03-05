@@ -79,8 +79,7 @@ def test_agent_chat_with_conversation_id():
 
 @pytest.mark.repeated(times=5, threshold=5)
 def test_agent_chat_memory_retention(clear_test_memory):
-    """Test that agent remembers context from earlier in the
-    conversation."""
+    """Test that agent remembers context from earlier in the conversation."""
     conversation_id = "test-memory-conv"
     user_id = "test-user-memory"
 
@@ -235,8 +234,7 @@ def test_agent_chat_usage_info():
 
 
 def test_agent_chat_timeout(mistral_api_key_available):
-    """Test that timeout parameter triggers 408 when request times
-    out."""
+    """Test that timeout parameter triggers 408 when request times out."""
     # Request with very short timeout (1 second) that should timeout
     response = requests.post(
         f"{BASE_URL}/v1/agent/chat",

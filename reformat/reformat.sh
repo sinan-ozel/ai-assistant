@@ -10,7 +10,7 @@ echo "Running formatters..."
 echo "=========================================="
 
 # directories to format under the repository subfolder
-targets=("$mfolder/src" "$mfolder/default" "test_agents/text_workflows/tests" "test_agents/image_workflows/tests" "test_environments/test_env_mistral" "test_environments/test_env_no_llm" "test_environments/test_env_nothing")
+targets=("$mfolder/src" "$mfolder/default" "test_agents/text_workflows/tests" "test_agents/image_workflows/tests" "test_environments/test_env_everything" "test_environments/test_env_local_llm" "test_environments/test_self_hosted_llm" "test_environments/test_env_mistral" "test_environments/test_env_no_llm" "test_environments/test_env_nothing")
 
 for d in "${targets[@]}"; do
   if [ -d "$d" ]; then
@@ -24,18 +24,13 @@ for d in "${targets[@]}"; do
     echo "=========================================="
     echo "Running docformatter on $d..."
     echo "=========================================="
-    docformatter \
-      --in-place \
-      --recursive \
-      --wrap-summaries 72 \
-      --wrap-descriptions 72 \
-      "$d"
+    docformatter "$d"
 
     echo ""
     echo "=========================================="
     echo "Running ruff --select I on $d..."
     echo "=========================================="
-    ruff check "$d" --fix --select I
+    ruff check "$d" --fix
   else
     echo "Skipping $d (directory not found)."
   fi

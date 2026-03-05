@@ -6,7 +6,6 @@ import os
 import pytest
 import requests
 
-
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 
@@ -17,7 +16,7 @@ def test_agent_chat_simple_message():
         json={
             "message": "Hello, who are you?",
             "user_id": "test-user-1",
-        }
+        },
     )
 
     assert response.status_code == 200
@@ -52,7 +51,7 @@ def test_agent_chat_with_conversation_id(clear_test_memory):
             "message": "My favorite color is blue.",
             "conversation_id": conversation_id,
             "user_id": user_id,
-        }
+        },
     )
 
     assert response1.status_code == 200
@@ -67,7 +66,7 @@ def test_agent_chat_with_conversation_id(clear_test_memory):
             "message": "What is my favorite color?",
             "conversation_id": conversation_id,
             "user_id": user_id,
-        }
+        },
     )
 
     assert response2.status_code == 200
@@ -93,7 +92,7 @@ def test_agent_chat_memory_retention(clear_test_memory):
             "message": "I have three pets: a dog named Max, a cat named Luna, and a parrot named Rio.",
             "conversation_id": conversation_id,
             "user_id": user_id,
-        }
+        },
     )
 
     assert response1.status_code == 200
@@ -108,7 +107,7 @@ def test_agent_chat_memory_retention(clear_test_memory):
             "message": "What is the name of my dog?",
             "conversation_id": conversation_id,
             "user_id": user_id,
-        }
+        },
     )
 
     assert response2.status_code == 200
@@ -117,7 +116,9 @@ def test_agent_chat_memory_retention(clear_test_memory):
 
     # The response should reference "Max" if memory is working
     response_text = data2["message"].lower()
-    assert "max" in response_text, f"Expected 'Max' in response, got: {data2['message']}"
+    assert (
+        "max" in response_text
+    ), f"Expected 'Max' in response, got: {data2['message']}"
 
     # Third message: ask about different information
     response3 = requests.post(
@@ -126,7 +127,7 @@ def test_agent_chat_memory_retention(clear_test_memory):
             "message": "How many pets do I have in total?",
             "conversation_id": conversation_id,
             "user_id": user_id,
-        }
+        },
     )
 
     assert response3.status_code == 200
@@ -134,7 +135,9 @@ def test_agent_chat_memory_retention(clear_test_memory):
 
     # The response should reference "three" or "3" if memory is working
     response_text3 = data3["message"].lower()
-    assert "3" in response_text3 or "three" in response_text3, f"Expected '3' or 'three' in response, got: {data3['message']}"
+    assert (
+        "3" in response_text3 or "three" in response_text3
+    ), f"Expected '3' or 'three' in response, got: {data3['message']}"
 
 
 def test_agent_chat_user_isolation(clear_test_memory):
@@ -148,7 +151,7 @@ def test_agent_chat_user_isolation(clear_test_memory):
             "message": "My name is Alice.",
             "conversation_id": conversation_id,
             "user_id": "user-alice",
-        }
+        },
     )
 
     assert response1.status_code == 200
@@ -160,7 +163,7 @@ def test_agent_chat_user_isolation(clear_test_memory):
             "message": "My name is Bob.",
             "conversation_id": conversation_id,
             "user_id": "user-bob",
-        }
+        },
     )
 
     assert response2.status_code == 200
@@ -181,7 +184,7 @@ def test_agent_chat_generated_conversation_id():
         json={
             "message": "Hello",
             "user_id": "test-user-4",
-        }
+        },
     )
 
     assert response.status_code == 200
@@ -199,7 +202,7 @@ def test_agent_chat_missing_message():
         f"{BASE_URL}/v1/agent/chat",
         json={
             "user_id": "test-user-5",
-        }
+        },
     )
 
     # Should return validation error
@@ -213,7 +216,7 @@ def test_agent_chat_usage_info():
         json={
             "message": "Hi",
             "user_id": "test-user-6",
-        }
+        },
     )
 
     assert response.status_code == 200
@@ -232,7 +235,9 @@ def test_agent_chat_usage_info():
     assert usage["total_tokens"] >= 0
 
 
-@pytest.mark.skip(reason="Fast local provider - skip timeout test in this environment")
+@pytest.mark.skip(
+    reason="Fast local provider - skip timeout test in this environment"
+)
 def test_agent_chat_timeout():
     """Test that timeout parameter triggers 408 when request times out."""
     # Request with very short timeout (1 second) that should timeout
@@ -242,15 +247,19 @@ def test_agent_chat_timeout():
             "message": "Write a very long and detailed story about the entire history of the universe from the big bang to today, including all major events.",
             "user_id": "test-user-timeout",
             "timeout": 1,  # 1 second timeout - should timeout for this prompt
-            "max_tokens": 1000
-        }
+            "max_tokens": 1000,
+        },
     )
 
-    assert response.status_code == 408, f"Expected 408 (timeout), got {response.status_code}: {response.text}"
+    assert (
+        response.status_code == 408
+    ), f"Expected 408 (timeout), got {response.status_code}: {response.text}"
 
     data = response.json()
     assert "detail" in data
-    assert "timeout" in data["detail"].lower(), f"Expected timeout message, got: {data['detail']}"
+    assert (
+        "timeout" in data["detail"].lower()
+    ), f"Expected timeout message, got: {data['detail']}"
 
 
 def test_agent_chat_streaming_sse():
@@ -262,13 +271,18 @@ def test_agent_chat_streaming_sse():
             "user_id": "test-user-stream-sse",
             "stream": True,
             "stream_format": "sse",
-            "max_tokens": 20
+            "max_tokens": 20,
         },
-        stream=True
+        stream=True,
     )
 
-    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
-    assert response.headers.get("content-type") == "text/event-stream; charset=utf-8"
+    assert (
+        response.status_code == 200
+    ), f"Expected 200, got {response.status_code}: {response.text}"
+    assert (
+        response.headers.get("content-type")
+        == "text/event-stream; charset=utf-8"
+    )
 
     chunks = []
     content_parts = []
@@ -314,12 +328,14 @@ def test_agent_chat_streaming_ndjson():
             "user_id": "test-user-stream-ndjson",
             "stream": True,
             "stream_format": "ndjson",
-            "max_tokens": 20
+            "max_tokens": 20,
         },
-        stream=True
+        stream=True,
     )
 
-    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    assert (
+        response.status_code == 200
+    ), f"Expected 200, got {response.status_code}: {response.text}"
     assert "application/x-ndjson" in response.headers.get("content-type", "")
 
     chunks = []
@@ -355,20 +371,27 @@ def test_agent_chat_streaming_ndjson():
 
 
 def test_agent_chat_streaming_invalid_format():
-    """Test that invalid stream_format returns 422 (schema validation error)."""
+    """Test that invalid stream_format returns 422 (schema validation
+    error)."""
     response = requests.post(
         f"{BASE_URL}/v1/agent/chat",
         json={
             "message": "Hello",
             "user_id": "test-user-invalid-format",
             "stream": True,
-            "stream_format": "invalid_format"
-        }
+            "stream_format": "invalid_format",
+        },
     )
 
-    assert response.status_code == 422, f"Expected 422, got {response.status_code}: {response.text}"
+    assert (
+        response.status_code == 422
+    ), f"Expected 422, got {response.status_code}: {response.text}"
 
     data = response.json()
     assert "detail" in data
     # Schema validation error will mention the enum or validation failure
-    assert "stream_format" in data["detail"].lower() or "enum" in data["detail"].lower() or "invalid" in data["detail"].lower()
+    assert (
+        "stream_format" in data["detail"].lower()
+        or "enum" in data["detail"].lower()
+        or "invalid" in data["detail"].lower()
+    )

@@ -11,8 +11,8 @@ BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 def clear_evaluation_state():
     """Clear Redis evaluation state before running evaluation tests.
 
-    This fixture runs before each test to ensure a clean state
-    for evaluation tests, preventing old state from interfering.
+    This fixture runs before each test to ensure a clean state for evaluation
+    tests, preventing old state from interfering.
     """
     try:
         # Import redis_memory to clear the evaluation state

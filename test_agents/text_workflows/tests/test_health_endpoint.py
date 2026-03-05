@@ -1,11 +1,13 @@
 import os
 import time
 
+import pytest
 import requests
 
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 
+@pytest.mark.depends(name="healthy")
 def test_health_endpoint():
     """Test the /health endpoint with retries and timeout."""
     url = f"{BASE_URL}/health"

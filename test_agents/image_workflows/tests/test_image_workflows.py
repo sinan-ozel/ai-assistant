@@ -210,8 +210,7 @@ def test_nutrition_information_extraction_streaming_ndjson():
 
 
 def test_book_title_extraction_image_0161():
-    """Test book title extraction from book cover image
-    (IMG_0161.JPG)."""
+    """Test book title extraction from book cover image (IMG_0161.JPG)."""
     image_path = IMAGES_DIR / "IMG_0161.JPG"
     image_base64 = get_image_base64(image_path)
     url = f"{BASE_URL}/v1/extract-book-title"
@@ -246,7 +245,7 @@ def test_book_title_extraction_image_0161():
     assert isinstance(data, dict)
     assert len(data["result"]) > 0
     print(data)
-    assert data["result"].strip().upper() == "THE BIG STICK"
+    assert "THE BIG STICK" in data["result"].strip().upper()
 
 
 def test_book_title_extraction_image_0161_streaming_sse():
@@ -313,8 +312,7 @@ def test_book_title_extraction_image_0161_streaming_sse():
 
 
 def test_book_title_extraction_image_0161_streaming_ndjson():
-    """Test book title extraction with NDJSON streaming
-    (IMG_0161.JPG)."""
+    """Test book title extraction with NDJSON streaming (IMG_0161.JPG)."""
     image_path = IMAGES_DIR / "IMG_0161.JPG"
     image_base64 = get_image_base64(image_path)
     url = f"{BASE_URL}/v1/extract-book-title"

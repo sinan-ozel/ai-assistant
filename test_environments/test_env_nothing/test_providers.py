@@ -7,7 +7,7 @@ import requests
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 
-@pytest.mark.depends(on=["test_health_endpoint.py::test_health_endpoint"])
+@pytest.mark.depends(on=["healthy"])
 def test_providers():
     """Test if the default providers are being discovered correctly."""
     url = f"{BASE_URL}/private/v1/providers"

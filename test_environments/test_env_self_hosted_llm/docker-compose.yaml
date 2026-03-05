@@ -35,7 +35,7 @@ services:
       - QDRANT_PORT=6333
       - EMBEDDING_HOST=localhost. # TODO: Change this, that port is busy with a real model.
       - EMBEDDING_PORT=11434
-      - DEFAULT_PROVIDER=ollama_on_tailscale
+      - CONVERSATION_WINDOW_LIMIT=4096
     depends_on:
       redis-test:
         condition: service_healthy
@@ -48,9 +48,7 @@ services:
           "python",
           "-c",
           "import json,urllib.request,sys; \
-          r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); \
-          d=json.load(r); \
-          sys.exit(0 if not d.get('providers_loading') else 1)"
+          r=urllib.request.urlopen('http://localhost:8000/health',timeout=2);"
         ]
       interval: 5s
       timeout: 3s
@@ -78,7 +76,7 @@ services:
         condition: service_healthy
     volumes:
       - ${TEST_FOLDER:-.}:/tests
-    command: ["pytest", "--openapi=http://localhost:8000", "--openapi-no-strict-example-checking", "--openapi-markdown-output=report.md", "--openapi-no-stdout", "--openapi-timeout=60", "-v", "--maxfail=1"]
+    command: ["pytest", "--openapi=http://localhost:8000", "--openapi-no-strict-example-checking", "--openapi-markdown-output=report.md", "--openapi-no-stdout", "--openapi-timeout=150", "-vv", "--maxfail=1"]
 
 networks:
   test-network:

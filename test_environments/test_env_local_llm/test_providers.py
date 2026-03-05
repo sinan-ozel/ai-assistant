@@ -1,8 +1,8 @@
+import os
+import time
+
 import pytest
 import requests
-import time
-import os
-
 
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
@@ -25,16 +25,24 @@ def test_providers():
         if time.time() - start > timeout:
             break
         time.sleep(1)
-    assert response.status_code == 200, f"/private/v1/providers endpoint did not return expected response within {timeout} seconds"
+    assert (
+        response.status_code == 200
+    ), f"/private/v1/providers endpoint did not return expected response within {timeout} seconds"
     data = response.json()
     print(data)
-    assert data["status"] == "ready", f"Expected status 'ready' but got '{data['status']}'"
+    assert (
+        data["status"] == "ready"
+    ), f"Expected status 'ready' but got '{data['status']}'"
     assert "available" in data
-    assert 'local_gemma3_270m' in data['available'], f"Expected 'local_gemma3_270m' to be in available providers but got {data['available']}"
+    assert (
+        "local_gemma3_270m" in data["available"]
+    ), f"Expected 'local_gemma3_270m' to be in available providers but got {data['available']}"
     assert "default" in data
     assert "total" in data
     assert len(data["available"]) >= 1
-    assert data["default"] == 'local_gemma3_270m', f"Expected default provider to be 'local_gemma3_270m' but got '{data['default']}'"
+    assert (
+        data["default"] == "local_gemma3_270m"
+    ), f"Expected default provider to be 'local_gemma3_270m' but got '{data['default']}'"
 
 
 @pytest.mark.depends(on=["test_providers"], name="test_provider_context_window")
@@ -52,7 +60,9 @@ def test_provider_context_window():
     assert provider_name is not None
 
     # Query the context window endpoint with retries
-    context_url = f"{BASE_URL}/private/v1/providers/{provider_name}/max-context-window"
+    context_url = (
+        f"{BASE_URL}/private/v1/providers/{provider_name}/max-context-window"
+    )
     start = time.time()
     timeout = 30  # seconds - context window query can take time
     response = None

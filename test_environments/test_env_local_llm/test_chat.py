@@ -15,7 +15,9 @@ litellm.drop_params = True
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 
-@pytest.mark.depends(name='test_chat_completions_basic', on=['test_provider_context_window'])
+@pytest.mark.depends(
+    name="test_chat_completions_basic", on=["test_provider_context_window"]
+)
 def test_chat_completions_basic():
     """Test basic chat completion with a trivial question."""
     url = f"{BASE_URL}/v1/chat/completions"
@@ -24,14 +26,19 @@ def test_chat_completions_basic():
     payload = {
         "model": "ollama/gemma3:4b",
         "messages": [
-            {"role": "user", "content": "What is 2+2? Answer with only the number."}
+            {
+                "role": "user",
+                "content": "What is 2+2? Answer with only the number.",
+            }
         ],
         "temperature": 0.1,
-        "max_tokens": 10
+        "max_tokens": 10,
     }
 
     response = requests.post(url, json=payload)
-    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    assert (
+        response.status_code == 200
+    ), f"Expected 200, got {response.status_code}: {response.text}"
 
     data = response.json()
 
@@ -67,7 +74,7 @@ def test_chat_completions_basic():
     print(f"Response content: {content}")
 
 
-@pytest.mark.depends(on=['test_chat_completions_basic'])
+@pytest.mark.depends(on=["test_chat_completions_basic"])
 def test_chat_completions_litellm():
     """Test chat completion using LiteLLM client interface."""
     # Configure LiteLLM to use our custom OpenAI-compatible endpoint
@@ -78,11 +85,14 @@ def test_chat_completions_litellm():
     response = litellm.completion(
         model="ollama/gemma3:4b",
         messages=[
-            {"role": "user", "content": "What is the capital of France? Answer with only the city name."}
+            {
+                "role": "user",
+                "content": "What is the capital of France? Answer with only the city name.",
+            }
         ],
         api_base=api_base,
         temperature=0.1,
-        max_tokens=10
+        max_tokens=10,
     )
 
     # Verify response structure (litellm returns a ModelResponse object)
@@ -110,7 +120,7 @@ def test_chat_completions_litellm():
     assert hasattr(response.usage, "total_tokens")
 
 
-@pytest.mark.depends(on=['test_chat_completions_basic'])
+@pytest.mark.depends(on=["test_chat_completions_basic"])
 def test_chat_completions_streaming_sse():
     """Test streaming with SSE format (default)."""
     url = f"{BASE_URL}/v1/chat/completions"
@@ -122,12 +132,17 @@ def test_chat_completions_streaming_sse():
         ],
         "stream": True,
         "stream_format": "sse",
-        "max_tokens": 20
+        "max_tokens": 20,
     }
 
     response = requests.post(url, json=payload, stream=True)
-    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
-    assert response.headers.get("content-type") == "text/event-stream; charset=utf-8"
+    assert (
+        response.status_code == 200
+    ), f"Expected 200, got {response.status_code}: {response.text}"
+    assert (
+        response.headers.get("content-type")
+        == "text/event-stream; charset=utf-8"
+    )
 
     chunks = []
     content_parts = []
@@ -165,7 +180,7 @@ def test_chat_completions_streaming_sse():
     print(f"SSE streaming content: {full_content}")
 
 
-@pytest.mark.depends(on=['test_chat_completions_basic'])
+@pytest.mark.depends(on=["test_chat_completions_basic"])
 def test_chat_completions_streaming_ndjson():
     """Test streaming with NDJSON format."""
     url = f"{BASE_URL}/v1/chat/completions"
@@ -177,11 +192,13 @@ def test_chat_completions_streaming_ndjson():
         ],
         "stream": True,
         "stream_format": "ndjson",
-        "max_tokens": 20
+        "max_tokens": 20,
     }
 
     response = requests.post(url, json=payload, stream=True)
-    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    assert (
+        response.status_code == 200
+    ), f"Expected 200, got {response.status_code}: {response.text}"
     assert "application/x-ndjson" in response.headers.get("content-type", "")
 
     chunks = []
@@ -216,30 +233,35 @@ def test_chat_completions_streaming_ndjson():
     print(f"NDJSON streaming content: {full_content}")
 
 
-@pytest.mark.depends(on=['test_chat_completions_basic'])
+@pytest.mark.depends(on=["test_chat_completions_basic"])
 def test_chat_completions_streaming_invalid_format():
-    """Test that invalid stream_format returns 422 (schema validation error)."""
+    """Test that invalid stream_format returns 422 (schema validation
+    error)."""
     url = f"{BASE_URL}/v1/chat/completions"
 
     payload = {
         "model": "ollama/gemma3:4b",
-        "messages": [
-            {"role": "user", "content": "Hello"}
-        ],
+        "messages": [{"role": "user", "content": "Hello"}],
         "stream": True,
-        "stream_format": "invalid_format"
+        "stream_format": "invalid_format",
     }
 
     response = requests.post(url, json=payload)
-    assert response.status_code == 422, f"Expected 422, got {response.status_code}: {response.text}"
+    assert (
+        response.status_code == 422
+    ), f"Expected 422, got {response.status_code}: {response.text}"
 
     data = response.json()
     assert "detail" in data
     # Schema validation error will mention the enum or validation failure
-    assert "stream_format" in data["detail"].lower() or "enum" in data["detail"].lower() or "invalid" in data["detail"].lower()
+    assert (
+        "stream_format" in data["detail"].lower()
+        or "enum" in data["detail"].lower()
+        or "invalid" in data["detail"].lower()
+    )
 
 
-@pytest.mark.depends(on=['test_chat_completions_basic'])
+@pytest.mark.depends(on=["test_chat_completions_basic"])
 def test_chat_completions_invalid_parameters():
     """Test that invalid parameters are handled with appropriate error."""
     url = f"{BASE_URL}/v1/chat/completions"
@@ -247,20 +269,21 @@ def test_chat_completions_invalid_parameters():
     # Test with invalid temperature (out of range)
     payload = {
         "model": "ollama/gemma3:4b",
-        "messages": [
-            {"role": "user", "content": "Hello"}
-        ],
-        "temperature": 10.0  # Way out of valid range
+        "messages": [{"role": "user", "content": "Hello"}],
+        "temperature": 10.0,  # Way out of valid range
     }
 
     response = requests.post(url, json=payload)
     # Should either accept it (LiteLLM handles) or return error
     # Accept 400 (bad request), or 422 (validation error)
     if response.status_code >= 400:
-        assert response.status_code in [400, 422], f"Expected 400 or 422, got {response.status_code}"
+        assert response.status_code in [
+            400,
+            422,
+        ], f"Expected 400 or 422, got {response.status_code}"
 
 
-@pytest.mark.depends(on=['test_chat_completions_basic'])
+@pytest.mark.depends(on=["test_chat_completions_basic"])
 def test_chat_completions_timeout():
     """Test that timeout parameter triggers 408 when request times out."""
     url = f"{BASE_URL}/v1/chat/completions"
@@ -269,21 +292,28 @@ def test_chat_completions_timeout():
     payload = {
         "model": "ollama/gemma3:4b",
         "messages": [
-            {"role": "user", "content": "Write a very long story about the history of the universe from the big bang to today."}
+            {
+                "role": "user",
+                "content": "Write a very long story about the history of the universe from the big bang to today.",
+            }
         ],
         "timeout": 1,  # 1 second timeout - should timeout for this prompt
-        "max_tokens": 1000
+        "max_tokens": 1000,
     }
 
     response = requests.post(url, json=payload)
-    assert response.status_code == 408, f"Expected 408 (timeout), got {response.status_code}: {response.text}"
+    assert (
+        response.status_code == 408
+    ), f"Expected 408 (timeout), got {response.status_code}: {response.text}"
 
     data = response.json()
     assert "detail" in data
-    assert "timeout" in data["detail"].lower(), f"Expected timeout message, got: {data['detail']}"
+    assert (
+        "timeout" in data["detail"].lower()
+    ), f"Expected timeout message, got: {data['detail']}"
 
 
-@pytest.mark.depends(on=['test_chat_completions_basic'])
+@pytest.mark.depends(on=["test_chat_completions_basic"])
 def test_chat_completions_missing_required_fields():
     """Test that missing required fields returns 422 Unprocessable Entity."""
     url = f"{BASE_URL}/v1/chat/completions"
@@ -295,7 +325,9 @@ def test_chat_completions_missing_required_fields():
     }
 
     response = requests.post(url, json=payload)
-    assert response.status_code == 422, f"Expected 422, got {response.status_code}: {response.text}"
+    assert (
+        response.status_code == 422
+    ), f"Expected 422, got {response.status_code}: {response.text}"
 
     data = response.json()
     assert "detail" in data

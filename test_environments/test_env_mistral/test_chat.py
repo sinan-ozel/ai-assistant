@@ -122,8 +122,7 @@ def test_chat_completions_litellm(mistral_api_key_available):
 
 @pytest.mark.depends(on=["test_chat_completions_basic"])
 def test_chat_completions_timeout(mistral_api_key_available):
-    """Test that timeout parameter triggers 408 when request times
-    out."""
+    """Test that timeout parameter triggers 408 when request times out."""
     url = f"{BASE_URL}/v1/chat/completions"
 
     # Request with very short timeout (1 second) that should timeout

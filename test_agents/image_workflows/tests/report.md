@@ -2,8 +2,8 @@
 
 ## Summary
 
-- **Total Tests:** 71
-- **Passed:** ✅ 71
+- **Total Tests:** 83
+- **Passed:** ✅ 83
 - **Failed:** ❌ 0
 
 ---
@@ -66,7 +66,7 @@
 {
   "status": "ok",
   "providers_loading": false,
-  "available_providers": 10
+  "available_providers": 1
 }
 ```
 
@@ -130,16 +130,7 @@
 ```json
 {
   "available": [
-    "vision",
-    "coding",
-    "default",
-    "magistral-small",
-    "ministral-14b",
-    "ministral-3b",
-    "mistral-7b",
-    "mistral-small",
-    "voxtral-mini",
-    "voxtral-small"
+    "vision"
   ],
   "default": "vision",
   "total": 10,
@@ -213,6 +204,451 @@
 
 📋 *Test case from OpenAPI example*
 
+**Endpoint:** `POST /private/evaluate{path}`
+
+### Expected Response
+
+**Status:** `201 or 409 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation started for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "Workflow not found for path: 1"
+}
+```
+
+---
+
+## Test #7 ✅
+
+📋 *Test case from OpenAPI example*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: /v1/extract-nutrition-information"
+}
+```
+
+---
+
+## Test #8 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Lorem ipsum dolor sit amet"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Lorem ipsum dolor sit amet"
+}
+```
+
+---
+
+## Test #9 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test with 'single' quotes"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test with 'single' quotes"
+}
+```
+
+---
+
+## Test #10 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test with \"double\" quotes"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test with \"double\" quotes"
+}
+```
+
+---
+
+## Test #11 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test:with:colons"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test:with:colons"
+}
+```
+
+---
+
+## Test #12 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test\\with\\backslashes"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test\\with\\backslashes"
+}
+```
+
+---
+
+## Test #13 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test\nwith\nnewlines"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test\nwith\nnewlines"
+}
+```
+
+---
+
+## Test #14 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test\r\nwith\r\nCRLF"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test\r\nwith\r\nCRLF"
+}
+```
+
+---
+
+## Test #15 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test with UTF-8: caf\u00e9, na\u00efve, \u4e2d\u6587, \u65e5\u672c\u8a9e"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test with UTF-8: caf\u00e9, na\u00efve, \u4e2d\u6587, \u65e5\u672c\u8a9e"
+}
+```
+
+---
+
+## Test #16 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": "Test!@#$%^&*()_+-=[]{}|;:<>?,./`~"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `404`
+
+```json
+{
+  "detail": "No running evaluation found for: Test!@#$%^&*()_+-=[]{}|;:<>?,./`~"
+}
+```
+
+---
+
+## Test #17 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /private/cancel-evaluation`
+
+### Request Body
+
+```json
+{
+  "workflow_path": ""
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 404 or 422`
+
+```json
+{
+  "message": "Evaluation cancelled for workflow: /v1/extract-nutrition-information",
+  "workflow_path": "/v1/extract-nutrition-information"
+}
+```
+
+### Actual Response
+
+**Status:** `422`
+
+```json
+{
+  "detail": [
+    {
+      "loc": [
+        "body",
+        "workflow_path"
+      ],
+      "msg": "field required",
+      "type": "value_error.missing"
+    }
+  ]
+}
+```
+
+---
+
+## Test #18 ✅
+
+📋 *Test case from OpenAPI example*
+
 **Endpoint:** `POST /v1/agent/chat`
 
 ### Request Body
@@ -254,20 +690,20 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "Could you please tell me where you are? (e.g., \"New York City\", \"Los Angeles\", or \"my house\")  \nI\u2019ll give you the latest forecast based on your location! \ud83c\udf0d",
+  "message": "",
   "role": "assistant",
-  "created": 1772324598,
+  "created": 1772687681,
   "usage": {
-    "prompt_tokens": 2711,
-    "completion_tokens": 882,
-    "total_tokens": 3593
+    "prompt_tokens": 3599,
+    "completion_tokens": 497,
+    "total_tokens": 4096
   }
 }
 ```
 
 ---
 
-## Test #7 ✅
+## Test #19 ✅
 
 🔧 *Test case generated from schema*
 
@@ -316,7 +752,7 @@
 
 ---
 
-## Test #8 ✅
+## Test #20 ✅
 
 🔧 *Test case generated from schema*
 
@@ -365,7 +801,7 @@
 
 ---
 
-## Test #9 ✅
+## Test #21 ✅
 
 🔧 *Test case generated from schema*
 
@@ -414,7 +850,7 @@
 
 ---
 
-## Test #10 ✅
+## Test #22 ✅
 
 🔧 *Test case generated from schema*
 
@@ -463,7 +899,7 @@
 
 ---
 
-## Test #11 ✅
+## Test #23 ✅
 
 🔧 *Test case generated from schema*
 
@@ -512,7 +948,7 @@
 
 ---
 
-## Test #12 ✅
+## Test #24 ✅
 
 🔧 *Test case generated from schema*
 
@@ -561,7 +997,7 @@
 
 ---
 
-## Test #13 ✅
+## Test #25 ✅
 
 🔧 *Test case generated from schema*
 
@@ -610,7 +1046,7 @@
 
 ---
 
-## Test #14 ✅
+## Test #26 ✅
 
 🔧 *Test case generated from schema*
 
@@ -659,7 +1095,7 @@
 
 ---
 
-## Test #15 ✅
+## Test #27 ✅
 
 🔧 *Test case generated from schema*
 
@@ -708,7 +1144,7 @@
 
 ---
 
-## Test #16 ✅
+## Test #28 ✅
 
 🔧 *Test case generated from schema*
 
@@ -757,7 +1193,7 @@
 
 ---
 
-## Test #17 ✅
+## Test #29 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -811,31 +1247,31 @@
 
 ```json
 {
-  "id": "chatcmpl-f5929e8153bb4f8d91eafed4",
+  "id": "chatcmpl-15ee75a9095b40cb94ece7e0",
   "object": "chat.completion",
-  "created": 1772324629,
+  "created": 1772687756,
   "model": "qwen3-vl:2b-q4km",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is **Paris**.  \n\nIt's a vibrant city known for its iconic landmarks (like the Eiffel Tower, Louvre Museum, and Notre-Dame Cathedral), rich history, and cultural significance. Paris serves as the political, economic, and cultural heart of France, hosting the government, major institutions, and the majority of France's population. \ud83c\uddeb\ud83c\uddf7"
+        "content": "The capital of France is **Paris**.  \n\nIt's the historic, cultural, and political heart of France, home to iconic landmarks like the Eiffel Tower, Louvre Museum, and Notre-Dame Cathedral. Paris has been the capital since the Middle Ages and remains a global symbol of French heritage and modernity. \ud83c\uddeb\ud83c\uddf7"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 17,
-    "completion_tokens": 330,
-    "total_tokens": 347
+    "completion_tokens": 334,
+    "total_tokens": 351
   }
 }
 ```
 
 ---
 
-## Test #18 ✅
+## Test #30 ✅
 
 🔧 *Test case generated from schema*
 
@@ -896,7 +1332,7 @@
 
 ---
 
-## Test #19 ✅
+## Test #31 ✅
 
 🔧 *Test case generated from schema*
 
@@ -957,7 +1393,7 @@
 
 ---
 
-## Test #20 ✅
+## Test #32 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1000,7 +1436,7 @@
 
 ---
 
-## Test #21 ✅
+## Test #33 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1057,31 +1493,31 @@
 
 ```json
 {
-  "id": "chatcmpl-cf4d10dfce694590ae839a36",
+  "id": "chatcmpl-2c38a302b9934372beae4d78",
   "object": "chat.completion",
-  "created": 1772324636,
+  "created": 1772687767,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "It seems like your message might have been a placeholder text (\"Lorem ipsum dolor sit amet...\") commonly used in design and publishing. If you'd like help with something specific, feel free to ask! \ud83d\ude0a"
+        "content": "It seems like you've pasted a placeholder text (Lorem ipsum dolor sit amet). How can I assist you today? Whether you need help with writing, design, or just a casual conversation\u2014please let me know! \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 15,
-    "completion_tokens": 158,
-    "total_tokens": 173
+    "completion_tokens": 271,
+    "total_tokens": 286
   }
 }
 ```
 
 ---
 
-## Test #22 ✅
+## Test #34 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1138,31 +1574,31 @@
 
 ```json
 {
-  "id": "chatcmpl-abced5c0ad774d17a08249c0",
+  "id": "chatcmpl-1a7d1f00fbcd4a1388991bb4",
   "object": "chat.completion",
-  "created": 1772324645,
+  "created": 1772687770,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Ah, \"Lorem ipsum dolor sit amet\" \u2013 that's a classic placeholder text often used in design and typography to represent content that isn't yet finalized. It's meant to be a generic template for layout, but it's not actually meaningful. \ud83d\ude0a  \n\nIf you're working on a project, maybe you'd like help with something specific? Like adjusting text spacing, creating a mockup, or just brainstorming ideas? I'm here to assist!"
+        "content": "Hello! It looks like you've pasted some placeholder text (Lorem ipsum dolor sit amet). This is commonly used in design and publishing for mockups or layouts. Would you like help with something specific? Whether it's designing a layout, writing content, or just discussing ideas, I'm here to assist! \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 15,
-    "completion_tokens": 239,
-    "total_tokens": 254
+    "completion_tokens": 289,
+    "total_tokens": 304
   }
 }
 ```
 
 ---
 
-## Test #23 ✅
+## Test #35 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1205,7 +1641,7 @@
 
 ---
 
-## Test #24 ✅
+## Test #36 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1266,7 +1702,7 @@
 
 ---
 
-## Test #25 ✅
+## Test #37 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1327,7 +1763,7 @@
 
 ---
 
-## Test #26 ✅
+## Test #38 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1370,7 +1806,7 @@
 
 ---
 
-## Test #27 ✅
+## Test #39 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1433,7 +1869,7 @@
 
 ---
 
-## Test #28 ✅
+## Test #40 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -1477,22 +1913,22 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-03-01T00:24:18.335848Z",
-  "response": "The capital of France is **Paris**.  \n\nIt is the political, cultural, and economic heart of France, home to iconic landmarks like the Eiffel Tower, the Louvre Museum, and the Seine River. \ud83c\uddeb\ud83c\uddf7",
+  "created_at": "2026-03-05T05:16:22.393630Z",
+  "response": "The capital of France is **Paris**.  \n\n### Key Details:\n- **Official Status**: Paris is the constitutional capital of France, housing the **Chancellery of the President**, **National Assembly**, and the **Chamber of Deputies**.\n- **History**: Founded in 62 BC, it has been the political and cultural heart of France for over 2,000 years. It's the birthplace of the French Revolution (1789) and the modern state.\n- **Symbolism**: The city's iconic landmarks include the **Eiffel Tower**, **Louvre Museum**, and **Seine River**, which are globally recognized symbols of France.\n\nParis is not just a city\u2014it's the **national capital** and the de facto center of French governance. \ud83c\uddeb\ud83c\uddf7",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 17,
   "prompt_eval_duration": 0,
-  "eval_count": 358,
+  "eval_count": 466,
   "eval_duration": 0
 }
 ```
 
 ---
 
-## Test #29 ✅
+## Test #41 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1544,7 +1980,7 @@
 
 ---
 
-## Test #30 ✅
+## Test #42 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1596,7 +2032,7 @@
 
 ---
 
-## Test #31 ✅
+## Test #43 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1648,7 +2084,7 @@
 
 ---
 
-## Test #32 ✅
+## Test #44 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1700,7 +2136,7 @@
 
 ---
 
-## Test #33 ✅
+## Test #45 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1752,7 +2188,7 @@
 
 ---
 
-## Test #34 ✅
+## Test #46 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1804,7 +2240,7 @@
 
 ---
 
-## Test #35 ✅
+## Test #47 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1856,7 +2292,7 @@
 
 ---
 
-## Test #36 ✅
+## Test #48 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1908,7 +2344,7 @@
 
 ---
 
-## Test #37 ✅
+## Test #49 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1960,7 +2396,7 @@
 
 ---
 
-## Test #38 ✅
+## Test #50 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2012,7 +2448,7 @@
 
 ---
 
-## Test #39 ✅
+## Test #51 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -2071,23 +2507,23 @@
 {
   "result": {
     "title": "this is an image",
-    "author": "this is an image",
-    "subtitle": "this is an image",
-    "publisher": "this is an image",
-    "series_title": "this is an image",
+    "author": "example",
+    "subtitle": "example",
+    "publisher": "example",
+    "series_title": "example",
     "series_number": 0
   },
   "usage": {
     "prompt_tokens": 163,
-    "completion_tokens": 64,
-    "total_tokens": 227
+    "completion_tokens": 52,
+    "total_tokens": 215
   }
 }
 ```
 
 ---
 
-## Test #40 ✅
+## Test #52 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2140,7 +2576,7 @@
 
 ---
 
-## Test #41 ✅
+## Test #53 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2193,7 +2629,7 @@
 
 ---
 
-## Test #42 ✅
+## Test #54 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2232,7 +2668,7 @@
 
 ---
 
-## Test #43 ✅
+## Test #55 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2285,7 +2721,7 @@
 
 ---
 
-## Test #44 ✅
+## Test #56 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2338,7 +2774,7 @@
 
 ---
 
-## Test #45 ✅
+## Test #57 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2377,7 +2813,7 @@
 
 ---
 
-## Test #46 ✅
+## Test #58 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2430,7 +2866,7 @@
 
 ---
 
-## Test #47 ✅
+## Test #59 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2483,7 +2919,7 @@
 
 ---
 
-## Test #48 ✅
+## Test #60 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2522,7 +2958,7 @@
 
 ---
 
-## Test #49 ✅
+## Test #61 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2575,7 +3011,7 @@
 
 ---
 
-## Test #50 ✅
+## Test #62 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -2628,15 +3064,15 @@
   "result": "This Is An Image",
   "usage": {
     "prompt_tokens": 90,
-    "completion_tokens": 778,
-    "total_tokens": 868
+    "completion_tokens": 676,
+    "total_tokens": 766
   }
 }
 ```
 
 ---
 
-## Test #51 ✅
+## Test #63 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2682,7 +3118,7 @@
 
 ---
 
-## Test #52 ✅
+## Test #64 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2728,7 +3164,7 @@
 
 ---
 
-## Test #53 ✅
+## Test #65 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2767,7 +3203,7 @@
 
 ---
 
-## Test #54 ✅
+## Test #66 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2813,7 +3249,7 @@
 
 ---
 
-## Test #55 ✅
+## Test #67 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2859,7 +3295,7 @@
 
 ---
 
-## Test #56 ✅
+## Test #68 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2898,7 +3334,7 @@
 
 ---
 
-## Test #57 ✅
+## Test #69 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2944,7 +3380,7 @@
 
 ---
 
-## Test #58 ✅
+## Test #70 ✅
 
 🔧 *Test case generated from schema*
 
@@ -2990,7 +3426,7 @@
 
 ---
 
-## Test #59 ✅
+## Test #71 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3029,7 +3465,7 @@
 
 ---
 
-## Test #60 ✅
+## Test #72 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3075,7 +3511,7 @@
 
 ---
 
-## Test #61 ✅
+## Test #73 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -3136,15 +3572,15 @@
   },
   "usage": {
     "prompt_tokens": 198,
-    "completion_tokens": 25,
-    "total_tokens": 223
+    "completion_tokens": 24,
+    "total_tokens": 222
   }
 }
 ```
 
 ---
 
-## Test #62 ✅
+## Test #74 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3194,7 +3630,7 @@
 
 ---
 
-## Test #63 ✅
+## Test #75 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3244,7 +3680,7 @@
 
 ---
 
-## Test #64 ✅
+## Test #76 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3283,7 +3719,7 @@
 
 ---
 
-## Test #65 ✅
+## Test #77 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3333,7 +3769,7 @@
 
 ---
 
-## Test #66 ✅
+## Test #78 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3383,7 +3819,7 @@
 
 ---
 
-## Test #67 ✅
+## Test #79 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3422,7 +3858,7 @@
 
 ---
 
-## Test #68 ✅
+## Test #80 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3472,7 +3908,7 @@
 
 ---
 
-## Test #69 ✅
+## Test #81 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3522,7 +3958,7 @@
 
 ---
 
-## Test #70 ✅
+## Test #82 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3561,7 +3997,7 @@
 
 ---
 
-## Test #71 ✅
+## Test #83 ✅
 
 🔧 *Test case generated from schema*
 
