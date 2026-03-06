@@ -76,6 +76,7 @@ services:
         condition: service_healthy
     volumes:
       - ${TEST_FOLDER:-.}:/tests
+      - ${CORTEX_FOLDER:-./cortex}:/app/cortex
     command: ["pytest", "--openapi=http://localhost:8000", "--openapi-no-strict-example-checking", "--openapi-markdown-output=report.md", "--openapi-no-stdout", "--openapi-timeout=150", "-vv", "--maxfail=1"]
 
 networks:

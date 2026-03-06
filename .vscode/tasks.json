@@ -170,21 +170,12 @@
             "problemMatcher": []
         },
         {
-            "label": "Local Checks",
-            "dependsOn": [
-                "Lint",
-                "Run Tests (Local LLM)"
-            ],
-            "dependsOrder": "sequence",
-            "problemMatcher": []
-        },
-        {
             "label": "Run Tests on Agent: image_workflows",
             "type": "shell",
             "command": "docker",
             "args": [
                 "compose",
-                "-f", "${workspaceFolder}/test_environments/test_env_everything/docker-compose.yaml",
+                "-f", "${workspaceFolder}/test_environments/test_env_self_hosted_llm/docker-compose.yaml",
                 "up",
                 "--build",
                 "--exit-code-from", "tests"
@@ -203,7 +194,7 @@
             "command": "docker",
             "args": [
                 "compose",
-                "-f", "${workspaceFolder}/test_environments/test_env_everything/docker-compose.yaml",
+                "-f", "${workspaceFolder}/test_environments/test_env_self_hosted_llm/docker-compose.yaml",
                 "up",
                 "--build",
                 "--exit-code-from", "tests"
@@ -222,7 +213,7 @@
             "command": "docker",
             "args": [
                 "compose",
-                "-f", "${workspaceFolder}/test_environments/test_env_everything/docker-compose.yaml",
+                "-f", "${workspaceFolder}/test_environments/test_env_self_hosted_llm/docker-compose.yaml",
                 "up",
                 "--build",
                 "--exit-code-from", "tests"
@@ -236,15 +227,62 @@
             "problemMatcher": []
         },
         {
-            "label": "Local Checks With Self-Hosted",
+            "label": "Run Tests on Agent: talk_to_your_documents",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/test_environments/test_env_self_hosted_llm/docker-compose.yaml",
+                "up",
+                "--build",
+                "--exit-code-from", "tests"
+            ],
+            "options": {
+                "env": {
+                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/talk_to_your_documents/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/talk_to_your_documents/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "(!) Run Self-Hosted Tests",
             "dependsOn": [
-                "Local Checks",
+                "Lint",
+                "Run Tests (Local LLM)",
                 "Run Tests (Self-Hosted LLM)",
+                "Run All Agent Tests"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "Run All Agent Tests",
+            "dependsOn": [
+                "Run Tests on Agent: talk_to_your_documents",
                 "Run Tests on Agent: son_of_anton",
                 "Run Tests on Agent: text_workflows",
                 "Run Tests on Agent: image_workflows"
             ],
             "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "Curl Ollama Models (Tailscale)",
+            "type": "shell",
+            "command": "curl",
+            "args": [
+                "http://localhost:11434/api/tags"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Curl llama.cpp Models (Tailscale)",
+            "type": "shell",
+            "command": "curl",
+            "args": [
+                "http://localhost:8080/v1/models"
+            ],
             "problemMatcher": []
         },
         {
@@ -266,7 +304,8 @@
             "options": [
                 "text_workflows",
                 "image_workflows",
-                "son_of_anton"
+                "son_of_anton",
+                "talk_to_your_documents"
             ],
             "default": "text_workflows"
         },

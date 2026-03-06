@@ -5,9 +5,9 @@
 GOALS
 - [x] (0.1.0) YAML Workflows 0.1.0
 - [ ] (0.1.0) Python-as-DSL Hackable Chat
-- [ ] (0.2.0) RAG
+- [ ] (0.1.0) RAG
 - [ ] (0.2.0) Tools
-- [ ] (0.1.1) Document Ingestion Pipeline
+- [ ] (0.1.0) Document Ingestion Pipeline
 
 - [ ] (0.1.0) Helm Charts
 - [ ] (0.1.0) Testing for Helm Charts
@@ -21,7 +21,9 @@ GOALS
 - [ ] Add some sort of agent_id and use as a prefix. agent:short-term-memory:<user_id>:<convo_id>
 - [ ] Think about how loops work
 - [ ] (0.1.0) Put in an evaluation scheme for the agent chat
-- [ ] (0.1.1) Put in the markdown ingestion
+- [ ] (0.1.0) Put in the markdown ingestion
+- [ ] (0.1.0) Markdown ingestion: has an issue, it will rewrite the same file in deployments with multiple pods.
+- [ ] (0.1.0) Markdown ingestion: Markdown to chunking.
 - [x] (0.1.0) Add `evaluation` to workflows.
 - [ ] (0.1.0) Add an endpoint GET /private/v1/agent/system-prompt
 - [ ] (0.1.0) Add an endpoint POST /private/v1/agent/conversation/{}/summary (Streaming Response)
@@ -47,3 +49,5 @@ GOALS
 - [ ] I am still seeing a message like this? tests-runner-self-hosted-llm  | .::test_openapi[POST /v1/api/generate [generated-10]] <- ../usr/local/lib/python3.12/site-packages/pytest_openapi/plugin.py PASSED [ 66%]  Request: {"model": "Lorem ipsum dolor sit amet", "prompt": ...
 tests-runner-self-hosted-llm  |   Expected [200]: {"model": "gemma3:4b", "created_at": "2024-12-20T0...
 tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet implemented"}
+
+- [ ] Grafana integration

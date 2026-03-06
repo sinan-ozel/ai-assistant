@@ -5,6 +5,7 @@ from typing import Any, Dict
 
 from fastapi import Body, FastAPI
 from startup.endpoints import discover_endpoints
+from startup.pdf_pipeline import run_pdf_pipeline
 from startup.providers import discover_context_windows, discover_providers
 from startup.workflows import discover_workflows
 
@@ -106,6 +107,9 @@ async def startup_event():
 
     # Start provider discovery in background
     provider_discovery_task = asyncio.create_task(run_provider_discovery())
+
+    # Start PDF-to-Markdown pipeline in background
+    asyncio.create_task(run_pdf_pipeline())
 
     # Discover and register endpoints immediately
     logger.info("Discovering and registering endpoints...")
