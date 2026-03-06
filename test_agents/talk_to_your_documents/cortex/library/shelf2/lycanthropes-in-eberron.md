@@ -1,3 +1,11 @@
+---
+filename: lycanthropes-in-eberron
+tags:
+- shelf2
+title: ''
+author: ''
+---
+
 # **LYCANTHROPES IN EBERRON**
 
 

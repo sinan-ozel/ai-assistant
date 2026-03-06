@@ -1,3 +1,11 @@
+---
+filename: simple-psionics
+tags:
+- shelf1
+title: ''
+author: ''
+---
+
 # **SIMPLE PSIONICS**
 
 This is a psionics system designed to be very

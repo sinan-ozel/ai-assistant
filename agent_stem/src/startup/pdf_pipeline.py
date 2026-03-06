@@ -20,7 +20,9 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+import pymupdf
 import pymupdf4llm
+import yaml
 from common import CUSTOMIZATION_FOLDER
 from redis_memory import Memory
 
@@ -55,9 +57,24 @@ def _get_state(memory: Memory) -> dict:
     return memory.pdf_pipeline_state
 
 
+def _front_matter(pdf_path: Path) -> str:
+    """Build YAML front matter from PDF metadata and path (blocking)."""
+    doc = pymupdf.open(str(pdf_path))
+    meta = doc.metadata
+    doc.close()
+
+    data = {
+        "filename": pdf_path.stem,
+        "tags": list(pdf_path.relative_to(LIBRARY_DIR).parent.parts),
+        "title": meta.get("title") or "",
+        "author": meta.get("author") or "",
+    }
+    return "---\n" + yaml.dump(data, allow_unicode=True, default_flow_style=False, sort_keys=False) + "---\n\n"
+
+
 def _convert(pdf_path: Path) -> str:
-    """Convert a PDF to Markdown text (blocking)."""
-    return pymupdf4llm.to_markdown(str(pdf_path))
+    """Convert a PDF to Markdown with YAML front matter prepended (blocking)."""
+    return _front_matter(pdf_path) + pymupdf4llm.to_markdown(str(pdf_path))
 
 
 async def run_pdf_pipeline() -> None:

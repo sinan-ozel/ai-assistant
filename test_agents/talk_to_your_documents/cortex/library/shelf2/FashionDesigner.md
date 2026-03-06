@@ -1,3 +1,11 @@
+---
+filename: FashionDesigner
+tags:
+- shelf2
+title: ''
+author: ''
+---
+
 # FASHION DESIGNER: A SPECIALIZATION FOR ARTIFICERS
 
 The fashion designer is able to use fabrics,

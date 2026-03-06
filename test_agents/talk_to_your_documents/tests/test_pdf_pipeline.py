@@ -35,3 +35,18 @@ def test_pdf_converted_to_markdown(pdf_conversion_reset):
 
     for md_path in md_paths:
         assert md_path.stat().st_size > 0, f"{md_path.name} exists but is empty."
+
+    shelf1_md = next(
+        (p for p in md_paths if "shelf1" in p.parts and p.name == "simple-psionics.md"),
+        None,
+    )
+    assert shelf1_md is not None, "shelf1/simple-psionics.md not found among converted files."
+
+    content = shelf1_md.read_text(encoding="utf-8")
+    assert "_Carrie_" in content, "_Carrie_ not found in shelf1/simple-psionics.md."
+
+    for line in content.splitlines():
+        if "_Carrie_" in line:
+            break
+    else:
+        pytest.fail("_Carrie_ not found in any line of shelf1/simple-psionics.md.")
