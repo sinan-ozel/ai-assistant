@@ -677,13 +677,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "Okay! The weather in Reykjavik, Iceland is cold and cloudy with a temperature of 5\u00b0C (41\u00b0F) and a wind of 15 km/h.",
+  "message": "Okay! The weather in Reykjavik, Iceland is cold and cloudy with a temperature of 5\u00b0C (41\u00b0F) and a wind of 15 km/h. \ud83d\ude0a",
   "role": "assistant",
-  "created": 1772687425,
+  "created": 1772888053,
   "usage": {
-    "prompt_tokens": 3828,
-    "completion_tokens": 38,
-    "total_tokens": 3866
+    "prompt_tokens": 1908,
+    "completion_tokens": 39,
+    "total_tokens": 1947
   }
 }
 ```
@@ -1234,24 +1234,24 @@
 
 ```json
 {
-  "id": "chatcmpl-2db5ee766a5149549e734c84",
+  "id": "chatcmpl-b5a65c4ffb5f4e578042c4c6",
   "object": "chat.completion",
-  "created": 1772687560,
+  "created": 1772888159,
   "model": "ollama/gemma3:1b",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "###The capital of France is Paris. \ud83d\ude0a \n\nWould you like to know more about Paris or perhaps something else?"
+        "content": "###The capital of France is **Paris**. \n\nIt\u2019s a very popular and complex question, but it\u2019s definitely Paris! \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 21,
-    "completion_tokens": 24,
-    "total_tokens": 45
+    "completion_tokens": 29,
+    "total_tokens": 50
   }
 }
 ```
@@ -1480,24 +1480,24 @@
 
 ```json
 {
-  "id": "chatcmpl-3599239ac63347489f135e3e",
+  "id": "chatcmpl-570ae158f883405a98140164",
   "object": "chat.completion",
-  "created": 1772687573,
+  "created": 1772888172,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the standard \"Lorem ipsum\" placeholder text. \n\nIs there anything I can do with this text? For example, would you like me to:\n\n*   **Analyze it?** (e.g., count words, identify patterns?)\n*   **Generate variations?** (e.g., rewrite it, change the font?)\n*   **Translate it?**\n*   **Do something else related to it?**"
+        "content": "Okay, I understand. You've provided the classic \"Lorem Ipsum\" placeholder text. \n\nIs there anything I can help you with regarding it? For example, are you:\n\n*   **Looking for information about it?** (e.g., its history, purpose, or usage)\n*   **Trying to generate something similar?** (e.g., a text that fits the placeholder style)\n*   **Wanting to discuss its use in typesetting?** \n*   **Something else entirely?**"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 99,
-    "total_tokens": 118
+    "completion_tokens": 110,
+    "total_tokens": 129
   }
 }
 ```
@@ -1561,24 +1561,24 @@
 
 ```json
 {
-  "id": "chatcmpl-c2d758b869f541308a718783",
+  "id": "chatcmpl-0aa84a8c60874ddbaced632d",
   "object": "chat.completion",
-  "created": 1772687577,
+  "created": 1772888175,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything I can help you with regarding it? For example, would you like me to:\n\n*   **Explain what it is?** (It's a placeholder text used in printing and design to simulate the appearance of text without needing actual content.)\n*   **Provide examples of its usage?**\n*   **Generate variations or alternative text?**\n*   **Or something else entirely?**"
+        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything I can help you with regarding it? For example, would you like me to:\n\n*   Explain its purpose?\n*   Provide examples of how it's used?\n*   Generate text based on the placeholder?\n*   Something else entirely?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 106,
-    "total_tokens": 125
+    "completion_tokens": 77,
+    "total_tokens": 96
   }
 }
 ```
@@ -1900,15 +1900,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-03-05T05:12:59.586262Z",
-  "response": "The capital of France is **Paris**. \n\nIt\u2019s a great city! \ud83d\ude0a \n\nDo you want to know more about Paris?",
+  "created_at": "2026-03-07T12:56:17.993446Z",
+  "response": "The capital of France is **Paris**. \n\nIt\u2019s a good one to remember! \ud83d\ude0a \n\nWould you like to know anything else about Paris or France?",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 21,
   "prompt_eval_duration": 0,
-  "eval_count": 30,
+  "eval_count": 35,
   "eval_duration": 0
 }
 ```
@@ -2478,11 +2478,11 @@
 
 ```json
 {
-  "result": "Please provide the user message you\u2019d like me to clean up and summarize.",
+  "result": "Please provide the user message you are referring to. I need the text of the message to summarize it.",
   "usage": {
     "prompt_tokens": 50,
-    "completion_tokens": 17,
-    "total_tokens": 67
+    "completion_tokens": 22,
+    "total_tokens": 72
   }
 }
 ```

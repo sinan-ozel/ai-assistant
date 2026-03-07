@@ -690,13 +690,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "",
+  "message": "Okay! The weather in Reykjavik, Iceland is cold and cloudy with a temperature of 5\u00b0C (41\u00b0F) and a wind of 15 km/h. \ud83d\ude0a",
   "role": "assistant",
-  "created": 1772687681,
+  "created": 1772888259,
   "usage": {
-    "prompt_tokens": 3599,
-    "completion_tokens": 497,
-    "total_tokens": 4096
+    "prompt_tokens": 1946,
+    "completion_tokens": 658,
+    "total_tokens": 2604
   }
 }
 ```
@@ -1247,24 +1247,24 @@
 
 ```json
 {
-  "id": "chatcmpl-15ee75a9095b40cb94ece7e0",
+  "id": "chatcmpl-5f81deecca8547d69f2d9008",
   "object": "chat.completion",
-  "created": 1772687756,
+  "created": 1772888316,
   "model": "qwen3-vl:2b-q4km",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is **Paris**.  \n\nIt's the historic, cultural, and political heart of France, home to iconic landmarks like the Eiffel Tower, Louvre Museum, and Notre-Dame Cathedral. Paris has been the capital since the Middle Ages and remains a global symbol of French heritage and modernity. \ud83c\uddeb\ud83c\uddf7"
+        "content": "The capital of **France** is **Paris**.  \n\nIt is not only the political capital but also the cultural, historical, and economic heart of France. Paris is renowned for landmarks like the Eiffel Tower, the Louvre Museum, and its vibrant arts scene. It is the largest city in France and a global symbol of French identity.  \n\n*Why this matters*: Paris has been the capital since the Middle Ages and remains a global hub for tourism, culture, and diplomacy."
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 17,
-    "completion_tokens": 334,
-    "total_tokens": 351
+    "completion_tokens": 325,
+    "total_tokens": 342
   }
 }
 ```
@@ -1493,24 +1493,24 @@
 
 ```json
 {
-  "id": "chatcmpl-2c38a302b9934372beae4d78",
+  "id": "chatcmpl-06c252bcda5a4e618218693c",
   "object": "chat.completion",
-  "created": 1772687767,
+  "created": 1772888324,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "It seems like you've pasted a placeholder text (Lorem ipsum dolor sit amet). How can I assist you today? Whether you need help with writing, design, or just a casual conversation\u2014please let me know! \ud83d\ude0a"
+        "content": "Ah, I see you've used some placeholder text! *Lorem ipsum* is commonly used in design and publishing to create space without specific content. It's a standard filler text often seen in mockups or layouts. Would you like help with anything specific? \ud83d\ude0a"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 15,
-    "completion_tokens": 271,
-    "total_tokens": 286
+    "completion_tokens": 292,
+    "total_tokens": 307
   }
 }
 ```
@@ -1574,24 +1574,24 @@
 
 ```json
 {
-  "id": "chatcmpl-1a7d1f00fbcd4a1388991bb4",
+  "id": "chatcmpl-ea61001b69b949dbb042a3ca",
   "object": "chat.completion",
-  "created": 1772687770,
+  "created": 1772888327,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Hello! It looks like you've pasted some placeholder text (Lorem ipsum dolor sit amet). This is commonly used in design and publishing for mockups or layouts. Would you like help with something specific? Whether it's designing a layout, writing content, or just discussing ideas, I'm here to assist! \ud83d\ude0a"
+        "content": "Ah, I see you've used \"Lorem ipsum dolor sit amet\" \u2014 that's a common placeholder text used in design and typography to fill space until actual content is added. It's often seen in documents, websites, or print materials to indicate where content should go. \ud83d\ude0a\n\nIf you're asking about something specific (like a design project, a question, or a problem), feel free to let me know! I'm here to help."
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 15,
-    "completion_tokens": 289,
-    "total_tokens": 304
+    "completion_tokens": 350,
+    "total_tokens": 365
   }
 }
 ```
@@ -1913,15 +1913,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-03-05T05:16:22.393630Z",
-  "response": "The capital of France is **Paris**.  \n\n### Key Details:\n- **Official Status**: Paris is the constitutional capital of France, housing the **Chancellery of the President**, **National Assembly**, and the **Chamber of Deputies**.\n- **History**: Founded in 62 BC, it has been the political and cultural heart of France for over 2,000 years. It's the birthplace of the French Revolution (1789) and the modern state.\n- **Symbolism**: The city's iconic landmarks include the **Eiffel Tower**, **Louvre Museum**, and **Seine River**, which are globally recognized symbols of France.\n\nParis is not just a city\u2014it's the **national capital** and the de facto center of French governance. \ud83c\uddeb\ud83c\uddf7",
+  "created_at": "2026-03-07T12:58:58.932423Z",
+  "response": "The capital of France is **Paris**.  \n\nHere's why it's important:  \n- **Political Center**: Paris houses the French government, including the National Assembly and the President of France.  \n- **Cultural Hub**: It's renowned for iconic landmarks like the Eiffel Tower, the Louvre Museum, and the Seine River.  \n- **Historical Significance**: Founded in 1180, it has been the capital for over 800 years, making it one of the oldest cities in Europe.  \n\nParis is also the most visited city in France, attracting millions of tourists each year! \ud83c\uddeb\ud83c\uddf7",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 17,
   "prompt_eval_duration": 0,
-  "eval_count": 466,
+  "eval_count": 463,
   "eval_duration": 0
 }
 ```
@@ -2515,8 +2515,8 @@
   },
   "usage": {
     "prompt_tokens": 163,
-    "completion_tokens": 52,
-    "total_tokens": 215
+    "completion_tokens": 51,
+    "total_tokens": 214
   }
 }
 ```
@@ -3064,8 +3064,8 @@
   "result": "This Is An Image",
   "usage": {
     "prompt_tokens": 90,
-    "completion_tokens": 676,
-    "total_tokens": 766
+    "completion_tokens": 1211,
+    "total_tokens": 1301
   }
 }
 ```
@@ -3572,8 +3572,8 @@
   },
   "usage": {
     "prompt_tokens": 198,
-    "completion_tokens": 24,
-    "total_tokens": 222
+    "completion_tokens": 29,
+    "total_tokens": 227
   }
 }
 ```

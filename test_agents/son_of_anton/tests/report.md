@@ -668,13 +668,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "Okay! The weather in Reykjavik, Iceland is cold and cloudy with a temperature of 5\u00b0C (41\u00b0F) and a wind of 15 km/h.",
+  "message": "Okay! The weather in Reykjavik, Iceland is cold and cloudy with a temperature of 5\u00b0C (41\u00b0F) and a wind of 15 km/h. \ud83d\ude0a",
   "role": "assistant",
-  "created": 1772687199,
+  "created": 1772887853,
   "usage": {
-    "prompt_tokens": 3819,
-    "completion_tokens": 38,
-    "total_tokens": 3857
+    "prompt_tokens": 1898,
+    "completion_tokens": 39,
+    "total_tokens": 1937
   }
 }
 ```
@@ -1225,9 +1225,9 @@
 
 ```json
 {
-  "id": "chatcmpl-1df06fb9e09449f6b2a1ccb6",
+  "id": "chatcmpl-79c1d9356ded4d128f45a846",
   "object": "chat.completion",
-  "created": 1772687333,
+  "created": 1772887975,
   "model": "ollama/gemma3:1b",
   "choices": [
     {
@@ -1471,24 +1471,24 @@
 
 ```json
 {
-  "id": "chatcmpl-9b34b8aefc714ab2bf3b763c",
+  "id": "chatcmpl-a47c1e63542344a3a089c13e",
   "object": "chat.completion",
-  "created": 1772687347,
+  "created": 1772887988,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything I can help you with regarding this text? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify its purpose, common uses, or potential changes?)\n*   **Generate text based on it?** (e.g., create a short story or paragraph using it as a base?)\n*   **Explain its historical context?**\n*   **Something else?**"
+        "content": "Okay, I understand. You've provided the standard placeholder text \u2013 \u201cLorem ipsum dolor sit amet.\u201d \n\nIs there anything you'd like me to do with this text? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify the font, spacing, etc.)\n*   **Translate it?** (though it's not a translation, it's a placeholder)\n*   **Generate similar text?** (e.g., a paragraph with similar style)\n*   **Something else?**\n\nJust let me know what you have in mind."
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 112,
-    "total_tokens": 131
+    "completion_tokens": 130,
+    "total_tokens": 149
   }
 }
 ```
@@ -1552,24 +1552,24 @@
 
 ```json
 {
-  "id": "chatcmpl-12b7cad54d2f49d7ad4a8379",
+  "id": "chatcmpl-9bbf9c33906241289dfda5a2",
   "object": "chat.completion",
-  "created": 1772687352,
+  "created": 1772887993,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic placeholder text: \"Lorem ipsum dolor sit amet\". \n\nIt's a ubiquitous placeholder text used in printing and design to simulate the appearance of text without requiring actual content. \n\nIs there anything you'd like me to do with this text? For example, would you like me to:\n\n*   **Explain it?** (It's a remnant of ancient Latin text, essentially a meaningless sample.)\n*   **Analyze it?** (It's a classic example of how designers used text to provide a visual framework.)\n*   **Generate a different example?** (Perhaps a more complex or interesting placeholder?)\n*   **Something else entirely?**"
+        "content": "Okay, I understand. You've provided the standard placeholder text, \"Lorem ipsum dolor sit amet.\" \n\nIt's a very common placeholder text used in printing and design. \n\nIs there anything you'd like me to do with this text? For example, would you like me to:\n\n*   **Translate it?** (It's Latin)\n*   **Explain its purpose?** (It's used to show what the final text *looks* like without meaning)\n*   **Generate text *around* it?** (e.g., a short paragraph)\n*   **Something else entirely?**"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 150,
-    "total_tokens": 169
+    "completion_tokens": 134,
+    "total_tokens": 153
   }
 }
 ```
@@ -1891,15 +1891,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-03-05T05:09:15.024413Z",
-  "response": "The capital of France is **Paris**. \n\nIt\u2019s a great city! \ud83d\ude0a \n\nWould you like to know more about Paris?",
+  "created_at": "2026-03-07T12:53:15.298893Z",
+  "response": "The capital of France is **Paris**. \n\nDo you want to know more about Paris, like its history or famous landmarks?",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 21,
   "prompt_eval_duration": 0,
-  "eval_count": 30,
+  "eval_count": 27,
   "eval_duration": 0
 }
 ```

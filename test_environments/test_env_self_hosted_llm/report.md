@@ -668,13 +668,13 @@
 {
   "conversation_id": "conv-123",
   "user_id": "user-456",
-  "message": "Okay! The weather in Reykjavik, Iceland is cold and cloudy with a temperature of 5\u00b0C (41\u00b0F) and a wind of 15 km/h.",
+  "message": "Okay! The weather in Reykjavik, Iceland is cold and cloudy with a temperature of 5\u00b0C (41\u00b0F) and a wind of 15 km/h. \ud83d\ude0a",
   "role": "assistant",
-  "created": 1772686758,
+  "created": 1772886930,
   "usage": {
-    "prompt_tokens": 3876,
-    "completion_tokens": 38,
-    "total_tokens": 3914
+    "prompt_tokens": 3809,
+    "completion_tokens": 39,
+    "total_tokens": 3848
   }
 }
 ```
@@ -1225,24 +1225,24 @@
 
 ```json
 {
-  "id": "chatcmpl-7d12f6fd40a9486e918cde38",
+  "id": "chatcmpl-2f72098f0ada473ab088abb1",
   "object": "chat.completion",
-  "created": 1772686889,
+  "created": 1772886983,
   "model": "ollama/gemma3:1b",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "###The capital of France is **Paris**. \ud83c\uddeb\ud83c\uddf7 \n\nDo you want to know more about Paris or perhaps something else?"
+        "content": "OkayThe capital of France is **Paris**. \ud83c\uddeb\ud83c\uddf7\n"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 21,
-    "completion_tokens": 27,
-    "total_tokens": 48
+    "completion_tokens": 13,
+    "total_tokens": 34
   }
 }
 ```
@@ -1471,24 +1471,24 @@
 
 ```json
 {
-  "id": "chatcmpl-f8acdbea2e374fdead56cc07",
+  "id": "chatcmpl-f6c2db5fd38f4830988cfe23",
   "object": "chat.completion",
-  "created": 1772686902,
+  "created": 1772886996,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the standard placeholder text. \n\nIs there anything specific you'd like me to do with this text? For example, are you:\n\n*   **Looking for a translation?** (I can't do that without context.)\n*   **Wanting me to generate something based on this text?** (Like a paragraph or sentence?)\n*   **Just confirming I've received the text?**"
+        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything you'd like me to do with it? For example, would you like me to:\n\n*   **Translate it?** (It's Latin, so it's a bit tricky, but it's a placeholder.)\n*   **Generate some text based on it?** (I could create a short paragraph, for instance.)\n*   **Explain its purpose?** (It's a placeholder \u2013 it doesn't contain any actual content.)\n*   **Something else?**"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 95,
-    "total_tokens": 114
+    "completion_tokens": 128,
+    "total_tokens": 147
   }
 }
 ```
@@ -1552,24 +1552,24 @@
 
 ```json
 {
-  "id": "chatcmpl-24a0eb9e1e8641f4b5d8cb52",
+  "id": "chatcmpl-80d46e5ed7a04fecadf04653",
   "object": "chat.completion",
-  "created": 1772686906,
+  "created": 1772887003,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything I can do with this text? Do you want me to:\n\n*   **Analyze it?** (e.g., show you its basic structure, or how it's used in a particular context?)\n*   **Generate something related to it?** (e.g., a story, a poem, a table of contents?)\n*   **Answer a question about it?** (e.g., \u201cWhat does it usually represent?\u201d)"
+        "content": "This is a classic placeholder text \u2013 a placeholder text used in design and typesetting to simulate the visual appearance of printed pages without the actual content. It's a very common practice in graphic design and printing. \n\nIt\u2019s often used in:\n\n* **Print design:** To fill up a page while the final design is being finalized.\n* **Web design:**  When you need a placeholder to see how a page will look on a website before the content is added.\n* **Digital Publishing:** For creating mockups and previews.\n\nIt's essentially a blank space that looks like text, but doesn't have any words or meaning. \n\n---\n\nDo you want me to:\n\n*   Explain more about the purpose of Lorem Ipsum?\n*   Give you some examples of how it\u2019s used?\n*   Or perhaps offer a different placeholder text?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 118,
-    "total_tokens": 137
+    "completion_tokens": 181,
+    "total_tokens": 200
   }
 }
 ```
@@ -1891,15 +1891,15 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-03-05T05:01:48.800377Z",
-  "response": "The capital of France is **Paris**. \n\nIt\u2019s a great city! \ud83d\ude0a \n\nDo you want to know more about Paris?",
+  "created_at": "2026-03-07T12:36:45.262564Z",
+  "response": "The capital of France is **Paris**. \n\nWould you like to know more about Paris? For example, I could tell you about its history, landmarks, or culture?",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 21,
   "prompt_eval_duration": 0,
-  "eval_count": 30,
+  "eval_count": 36,
   "eval_duration": 0
 }
 ```
