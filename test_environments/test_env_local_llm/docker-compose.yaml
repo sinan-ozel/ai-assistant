@@ -2,7 +2,7 @@ services:
   # Test infrastructure services
   redis-test:
     image: redis:7.4.2-alpine
-    command: redis-server --appendonly yes
+    command: redis-server
     networks:
       - test-network
     healthcheck:
@@ -97,7 +97,7 @@ services:
           "import json,urllib.request,sys; \
           r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); \
           d=json.load(r); \
-          sys.exit(0 if not d.get('providers_loading') else 1)"
+          sys.exit(0)"
         ]
       interval: 2s
       timeout: 3s

@@ -24,7 +24,7 @@ services:
       - "6379:6379"
     volumes:
       - ./dev-data/redis:/data
-    command: redis-server --appendonly yes
+    command: redis-server
     networks:
       - agent-dev-network
 

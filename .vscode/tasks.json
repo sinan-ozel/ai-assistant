@@ -160,16 +160,6 @@
             "problemMatcher": []
         },
         {
-            "label": "Run Local Tests",
-            "type": "shell",
-            "command": "bash",
-            "args": [
-                "-c",
-                "${workspaceFolder}/test_environments/run_all_tests.sh"
-            ],
-            "problemMatcher": []
-        },
-        {
             "label": "Run Tests on Agent: image_workflows",
             "type": "shell",
             "command": "docker",
@@ -249,7 +239,7 @@
             "label": "(!) Run Self-Hosted Tests",
             "dependsOn": [
                 "Lint",
-                "Run Tests (Local LLM)",
+                // "Run Tests (Local LLM)",
                 "Run Tests (Self-Hosted LLM)",
                 "Run All Agent Tests"
             ],

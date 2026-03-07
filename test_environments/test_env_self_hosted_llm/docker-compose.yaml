@@ -3,7 +3,7 @@ services:
   redis-test:
     image: redis:7.4.2-alpine
     container_name: redis-test-self-hosted-llm
-    command: redis-server --appendonly yes
+    command: redis-server
     network_mode: "host"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -48,7 +48,9 @@ services:
           "python",
           "-c",
           "import json,urllib.request,sys; \
-          r=urllib.request.urlopen('http://localhost:8000/health',timeout=2);"
+          r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); \
+          d=json.load(r); \
+          sys.exit(0)"
         ]
       interval: 5s
       timeout: 3s

@@ -69,11 +69,18 @@ def _front_matter(pdf_path: Path) -> str:
         "title": meta.get("title") or "",
         "author": meta.get("author") or "",
     }
-    return "---\n" + yaml.dump(data, allow_unicode=True, default_flow_style=False, sort_keys=False) + "---\n\n"
+    return (
+        "---\n"
+        + yaml.dump(
+            data, allow_unicode=True, default_flow_style=False, sort_keys=False
+        )
+        + "---\n\n"
+    )
 
 
 def _convert(pdf_path: Path) -> str:
-    """Convert a PDF to Markdown with YAML front matter prepended (blocking)."""
+    """Convert a PDF to Markdown with YAML front matter prepended
+    (blocking)."""
     return _front_matter(pdf_path) + pymupdf4llm.to_markdown(str(pdf_path))
 
 
@@ -89,9 +96,7 @@ async def run_pdf_pipeline() -> None:
 
     while True:
         if not LIBRARY_DIR.exists():
-            logger.debug(
-                "PDF pipeline: library dir not found, skipping check."
-            )
+            logger.debug("PDF pipeline: library dir not found, skipping check.")
             await asyncio.sleep(PDF_CHECK_INTERVAL_SECONDS)
             continue
 

@@ -1,4 +1,4 @@
 api_base: http://localhost:8080/v1
-model: openai/qwen3-vl:2b-q4km
+model: openai/qwen3.5-2b-q4km
 api_key: dummy
 timeout: 150
