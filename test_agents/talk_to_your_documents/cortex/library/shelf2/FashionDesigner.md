@@ -2,8 +2,9 @@
 filename: FashionDesigner
 tags:
 - shelf2
-title: ''
-author: ''
+pdf_title: ''
+pdf_author: ''
+body_title: 'FASHION DESIGNER: A SPECIALIZATION FOR ARTIFICERS'
 ---
 
 # FASHION DESIGNER: A SPECIALIZATION FOR ARTIFICERS

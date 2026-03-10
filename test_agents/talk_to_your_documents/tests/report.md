@@ -670,11 +670,11 @@
   "user_id": "user-456",
   "message": "Okay! The weather in Reykjavik, Iceland is cold and cloudy with a temperature of 5\u00b0C (41\u00b0F) and a wind of 15 km/h. \ud83d\ude0a",
   "role": "assistant",
-  "created": 1772887342,
+  "created": 1772984282,
   "usage": {
-    "prompt_tokens": 3844,
+    "prompt_tokens": 2070,
     "completion_tokens": 39,
-    "total_tokens": 3883
+    "total_tokens": 2109
   }
 }
 ```
@@ -1225,24 +1225,24 @@
 
 ```json
 {
-  "id": "chatcmpl-3809ed2897434c57ae9b2719",
+  "id": "chatcmpl-2e25b1d4936e4f24827bddad",
   "object": "chat.completion",
-  "created": 1772887447,
+  "created": 1772984514,
   "model": "ollama/gemma3:1b",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "OkayThe capital of France is **Paris**. \ud83c\uddeb\ud83c\uddf7\n"
+        "content": "###The capital of France is **Paris**. \n\nDo you want to know more about Paris?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 21,
-    "completion_tokens": 13,
-    "total_tokens": 34
+    "completion_tokens": 20,
+    "total_tokens": 41
   }
 }
 ```
@@ -1471,24 +1471,24 @@
 
 ```json
 {
-  "id": "chatcmpl-a4a4fa5680454941988e467c",
+  "id": "chatcmpl-5eabd458c3944008a7c495fd",
   "object": "chat.completion",
-  "created": 1772887470,
+  "created": 1772984528,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything I can help you with regarding it? For example, are you:\n\n*   **Trying to understand its purpose?** (It's a placeholder text used in design and printing to simulate text without requiring real content.)\n*   **Looking for a way to use it in a specific context?** (Perhaps you're trying to generate text or write a story.)\n*   **Wanting to know more about its history or origin?**\n*   **Just testing me?**"
+        "content": "This is a classic placeholder text! It's designed to be displayed in a design or document while the final content is being created. \n\nIt's a very simple and unassuming phrase, used to give the impression of a finished document without needing actual text. \n\nIs there anything you'd like to know or discuss about placeholder text or its use in design?  Do you want to:\n\n*   Learn more about its history?\n*   Understand its purpose?\n*   Discuss its variations?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 125,
-    "total_tokens": 144
+    "completion_tokens": 105,
+    "total_tokens": 124
   }
 }
 ```
@@ -1552,24 +1552,24 @@
 
 ```json
 {
-  "id": "chatcmpl-b11815f5817f4e26b3eac9bf",
+  "id": "chatcmpl-224197760984466eab2aa5a9",
   "object": "chat.completion",
-  "created": 1772887474,
+  "created": 1772984531,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything I can do with it? For example, would you like me to:\n\n*   **Generate more Lorem Ipsum text?** (e.g., a longer paragraph)\n*   **Analyze it?** (e.g., check if it's a placeholder, or analyze its structure?)\n*   **Convert it to another format?** (e.g., Markdown, HTML, etc.)?\n*   **Something else?**\n\nLet me know what you'd like me to do!"
+        "content": "Okay, I understand. You've provided the classic \"Lorem Ipsum\" placeholder text. \n\nIs there anything I can help you with regarding it?  For example, would you like me to:\n\n*   Explain what it is?\n*   Generate some related text?\n*   Suggest how it's used in design?"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 129,
-    "total_tokens": 148
+    "completion_tokens": 70,
+    "total_tokens": 89
   }
 }
 ```
@@ -1891,7 +1891,7 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-03-07T12:44:42.456163Z",
+  "created_at": "2026-03-08T15:42:14.518598Z",
   "response": "The capital of France is **Paris**. \n\nIt\u2019s a great question! \ud83d\ude0a",
   "done": true,
   "context": [],

@@ -51,3 +51,7 @@ tests-runner-self-hosted-llm  |   Expected [200]: {"model": "gemma3:4b", "create
 tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet implemented"}
 
 - [ ] Grafana integration
+- [ ] Use a language model to get a PDF language rather than OCR_LANGUAGE environmenyal variable
+- [ ] Make chunking hackable (?)
+- [ ] Compare the chunk sizes, warn about largest chunks, suggest model and VRAM size.
+- [ ] Do the same for

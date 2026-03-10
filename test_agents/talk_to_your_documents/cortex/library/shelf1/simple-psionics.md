@@ -2,8 +2,9 @@
 filename: simple-psionics
 tags:
 - shelf1
-title: ''
-author: ''
+pdf_title: ''
+pdf_author: ''
+body_title: '**SIMPLE PSIONICS**'
 ---
 
 # **SIMPLE PSIONICS**

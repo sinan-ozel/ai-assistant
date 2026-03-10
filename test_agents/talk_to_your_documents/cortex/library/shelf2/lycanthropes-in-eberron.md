@@ -2,8 +2,9 @@
 filename: lycanthropes-in-eberron
 tags:
 - shelf2
-title: ''
-author: ''
+pdf_title: ''
+pdf_author: ''
+body_title: '**LYCANTHROPES IN EBERRON**'
 ---
 
 # **LYCANTHROPES IN EBERRON**

@@ -2,7 +2,9 @@ FROM python:3.12-slim
 
 # Install system dependencies
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential ca-certificates fonts-dejavu \
+    && apt-get install -y --no-install-recommends \
+        build-essential ca-certificates fonts-dejavu \
+        tesseract-ocr tesseract-ocr-eng \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
