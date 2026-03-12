@@ -80,7 +80,12 @@ def _unique_top_level_header(md_text: str) -> str | None:
     return top_headers[0] if len(top_headers) == 1 else None
 
 
-def _front_matter(pdf_path: Path, md_text: str, ocr_used: bool = False) -> str:
+def _front_matter(
+    pdf_path: Path,
+    md_text: str,
+    page_count: int = 0,
+    ocr_used: bool = False,
+) -> str:
     """Build YAML front matter from PDF metadata, path, and body (blocking)."""
     doc = pymupdf.open(str(pdf_path))
     meta = doc.metadata
@@ -91,6 +96,7 @@ def _front_matter(pdf_path: Path, md_text: str, ocr_used: bool = False) -> str:
         "tags": list(pdf_path.relative_to(LIBRARY_DIR).parent.parts),
         "pdf_title": meta.get("title") or "",
         "pdf_author": meta.get("author") or "",
+        "pages": page_count,
     }
 
     if ocr_used:
@@ -201,7 +207,7 @@ def _convert(pdf_path: Path) -> str:
             )
             ocr_used = True
 
-    return _front_matter(pdf_path, md_text, ocr_used=ocr_used) + md_text
+    return _front_matter(pdf_path, md_text, page_count=page_count, ocr_used=ocr_used) + md_text
 
 
 async def run_pdf_pipeline() -> None:
