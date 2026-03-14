@@ -50,6 +50,9 @@ def chunk_reset():
     Clears the Redis chunking state so every Markdown file is treated as new,
     then deletes the Qdrant collection so there are no leftover vectors.
     Yields a connected QdrantClient for the test to use when polling.
+
+    On teardown, restores any Markdown files that were modified during the test
+    so the on-disk cortex folder is left in its original state.
     """
     from qdrant_client import QdrantClient
 
@@ -62,4 +65,21 @@ def chunk_reset():
     except Exception:
         pass  # collection may not exist yet
 
+    # Snapshot all visible Markdown files before the test runs
+    snapshots: dict[Path, str] = {}
+    for md in LIBRARY_DIR.rglob("*.md"):
+        if not _is_hidden(md):
+            try:
+                snapshots[md] = md.read_text(encoding="utf-8")
+            except OSError:
+                pass
+
     yield client
+
+    # Restore any files that were modified or created during the test
+    for md, original in snapshots.items():
+        try:
+            if md.read_text(encoding="utf-8") != original:
+                md.write_text(original, encoding="utf-8")
+        except OSError:
+            pass

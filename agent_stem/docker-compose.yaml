@@ -23,7 +23,7 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - ./dev-data/redis:/data
+      - ${DEV_DATA_FOLDER:-./dev-data}/redis:/data
     command: redis-server
     networks:
       - agent-dev-network
@@ -35,7 +35,7 @@ services:
       - "6333:6333"
       - "6334:6334"
     volumes:
-      - ./dev-data/qdrant:/qdrant/storage
+      - ${DEV_DATA_FOLDER:-./dev-data}/qdrant:/qdrant/storage
     networks:
       - agent-dev-network
 

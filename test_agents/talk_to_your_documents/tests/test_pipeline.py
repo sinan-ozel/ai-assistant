@@ -92,3 +92,86 @@ def test_chunks_stored_in_qdrant(pdf_conversion_reset, chunk_reset):
 
     # TODO: add more specific checks — e.g. verify metadata fields,
     # spot-check a known chunk from simple-psionics, run a semantic search.
+
+
+@pytest.mark.depends(on=["test_chunks_stored_in_qdrant"])
+def test_qdrant_updates_after_frontmatter_edit(pdf_conversion_reset, chunk_reset):
+    """Editing a Markdown frontmatter should trigger a re-chunk in Qdrant.
+
+    Steps:
+    1. Wait for shelf1/simple-psionics.md to be converted from its PDF.
+    2. Wait for its chunks to appear in Qdrant; record chunking_completed_at.
+    3. Add a field to the frontmatter YAML (touches mtime → triggers re-chunk).
+    4. Wait for Qdrant to show a newer chunking_completed_at for that file.
+    """
+    from qdrant_client.http import models as qmodels
+
+    qdrant = chunk_reset
+    md_path = LIBRARY_DIR / "shelf1" / "simple-psionics.md"
+    source_key = str(md_path)
+    point_filter = qmodels.Filter(
+        must=[
+            qmodels.FieldCondition(
+                key="source_file",
+                match=qmodels.MatchValue(value=source_key),
+            )
+        ]
+    )
+
+    # Step 1: wait for the markdown file to appear
+    start = time.time()
+    while not md_path.exists():
+        if time.time() - start > TIMEOUT:
+            raise TimeoutError(f"{md_path.name} did not appear within {TIMEOUT}s")
+        time.sleep(1)
+
+    # Step 2: wait for its chunks to land in Qdrant; record the timestamp
+    original_completed_at = None
+    start = time.time()
+    while original_completed_at is None:
+        try:
+            results, _ = qdrant.scroll(
+                collection_name=QDRANT_COLLECTION,
+                scroll_filter=point_filter,
+                limit=1,
+                with_payload=True,
+            )
+            if results:
+                original_completed_at = results[0].payload.get("chunking_completed_at")
+        except Exception:
+            pass
+        if original_completed_at is None:
+            if time.time() - start > CHUNK_TIMEOUT:
+                raise TimeoutError(
+                    f"No Qdrant points for {md_path.name} after {CHUNK_TIMEOUT}s"
+                )
+            time.sleep(5)
+
+    # Step 3: add a field to the frontmatter — this touches mtime
+    content = md_path.read_text(encoding="utf-8")
+    _, fm, body = content.split("---", 2)
+    md_path.write_text(f"---{fm}test_note: added_by_test\n---{body}", encoding="utf-8")
+
+    # Step 4: wait for Qdrant to show a newer chunking_completed_at
+    start = time.time()
+    while True:
+        try:
+            results, _ = qdrant.scroll(
+                collection_name=QDRANT_COLLECTION,
+                scroll_filter=point_filter,
+                limit=1,
+                with_payload=True,
+            )
+            if results:
+                new_completed_at = results[0].payload.get("chunking_completed_at")
+                if new_completed_at and new_completed_at != original_completed_at:
+                    break
+        except Exception:
+            pass
+        if time.time() - start > CHUNK_TIMEOUT:
+            raise TimeoutError(
+                f"Qdrant was not updated after frontmatter edit within {CHUNK_TIMEOUT}s"
+            )
+        time.sleep(5)
+
+    # TODO: verify results[0].payload["book"] contains test_note: added_by_test
