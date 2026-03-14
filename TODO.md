@@ -35,6 +35,8 @@ GOALS
 - [ ] Add thinking in the agent chat view
 - [ ] (0.1.0) Add a test for LanceDB chunking.
 - [ ] (0.1.0) Add a test for conversation memory in non-redis environments.
+- [ ] (0.1.0) Add a test for Antropic.
+- [ ] (0.1.0) Simplify the Mistral environment and add it to the local tests.
 
 - [ ] Refactor: Think about the test harness. Maybe you start an environment, and test different agents on it?
 - [ ] Test Harness: Do not use the everything environment for agents, just use the no_llm environment
@@ -43,9 +45,10 @@ GOALS
 
 - [ ] (0.1.0) Show the system prompt in streamlit
 - [ ] (0.1.0) Show evaluation button & results in streamlit.
-- [ ] (0.1.0) Show documentation in streamlit /private/v1/book/{} (Lists chunk count, book metadata)
-- [ ] (0.1.1) Show documentation in streamlit /private/v1/book/{}/search (Lists chunk count, book metadata)
+- [ ] (0.1.0) Show documentation in streamlit /private/v1/books/{} (Lists chunk count, book metadata)
+- [ ] (0.1.1) Show documentation in streamlit /private/v1/books/{}/search (Lists chunk count, book metadata)
 - [ ] (0.1.0) Show all workflows in streamlit - Maybe a link to the OpenAPI ?
+
 - [ ] (0.1.0) Make sure that the evaluation function is using redis-memory for storage.
 - [ ] (0.1.0) Remove the "Agent Chat Interface" title on the main screen on streamlit.
 
