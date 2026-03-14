@@ -13,8 +13,11 @@ WORKDIR /app
 # Copy pyproject.toml for dependency installation
 COPY pyproject.toml /app/pyproject.toml
 
-# Install Python dependencies from pyproject.toml
-RUN pip install --no-cache-dir .
+# Install only the declared dependencies (not the package itself) so that
+# this layer is invalidated only when pyproject.toml changes, not on every
+# source file edit.
+RUN pip install --no-cache-dir $(python -c \
+    "import tomllib; d=tomllib.load(open('/app/pyproject.toml','rb')); print(' '.join(d['project']['dependencies']))")
 
 # Pre-download the embedding model so it is baked into the image and the
 # container does not need outbound internet access at runtime.
