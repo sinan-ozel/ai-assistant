@@ -9,24 +9,57 @@ import redis
 REDIS_HOST = os.getenv("REDIS_HOST", "redis-test")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 
+QDRANT_HOST = os.getenv("QDRANT_HOST", "qdrant-test")
+QDRANT_PORT = int(os.getenv("QDRANT_PORT", "6333"))
+QDRANT_COLLECTION = os.getenv("QDRANT_COLLECTION", "library")
+
 # Path is the same in both the app and test containers because
 # both mount CORTEX_FOLDER at /app/cortex.
 LIBRARY_DIR = Path("/app/cortex/library")
 
 
+def _is_hidden(path: Path) -> bool:
+    """Return True if any component of *path* relative to LIBRARY_DIR starts with '.'."""
+    return any(part.startswith(".") for part in path.parts[len(LIBRARY_DIR.parts):])
+
+
 @pytest.fixture
 def pdf_conversion_reset():
-    """Reset the PDF pipeline state and remove all existing Markdown outputs.
+    """Reset the PDF pipeline state and remove Markdown files for visible PDFs.
 
-    Clears the Redis pipeline state so every PDF is treated as new,
-    then deletes all .md files that sit alongside PDFs in the library.
-    Yields the list of expected Markdown paths for the test to poll.
+    Clears the Redis pipeline state so every PDF is treated as new, then
+    deletes the .md file next to each visible (non-hidden) PDF so the pipeline
+    is forced to reconvert them. Hidden files and files inside hidden folders
+    are left untouched.
     """
     r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
     r.delete("memory:pdf_pipeline_state")
 
-    md_files = [p.with_suffix(".md") for p in sorted(LIBRARY_DIR.rglob("*.pdf"))]
-    for md in md_files:
-        md.unlink(missing_ok=True)
+    for pdf in LIBRARY_DIR.rglob("*.pdf"):
+        if _is_hidden(pdf):
+            continue
+        pdf.with_suffix(".md").unlink(missing_ok=True)
 
-    yield md_files
+    yield
+
+
+@pytest.fixture
+def chunk_reset():
+    """Reset the chunking pipeline state and drop the Qdrant collection.
+
+    Clears the Redis chunking state so every Markdown file is treated as new,
+    then deletes the Qdrant collection so there are no leftover vectors.
+    Yields a connected QdrantClient for the test to use when polling.
+    """
+    from qdrant_client import QdrantClient
+
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+    r.delete("memory:chunking_pipeline_state")
+
+    client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+    try:
+        client.delete_collection(QDRANT_COLLECTION)
+    except Exception:
+        pass  # collection may not exist yet
+
+    yield client

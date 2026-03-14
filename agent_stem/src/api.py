@@ -4,6 +4,7 @@ import logging
 from typing import Any, Dict
 
 from fastapi import Body, FastAPI
+from startup.chunking_pipeline import run_chunking_pipeline
 from startup.endpoints import discover_endpoints
 from startup.pdf_pipeline import run_pdf_pipeline
 from startup.providers import discover_context_windows, discover_providers
@@ -110,6 +111,9 @@ async def startup_event():
 
     # Start PDF-to-Markdown pipeline in background
     asyncio.create_task(run_pdf_pipeline())
+
+    # Start Markdown-to-chunks pipeline in background
+    asyncio.create_task(run_chunking_pipeline())
 
     # Discover and register endpoints immediately
     logger.info("Discovering and registering endpoints...")

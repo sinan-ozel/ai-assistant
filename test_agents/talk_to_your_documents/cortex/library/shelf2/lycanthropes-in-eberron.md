@@ -4,6 +4,7 @@ tags:
 - shelf2
 pdf_title: ''
 pdf_author: ''
+pages: 4
 body_title: '**LYCANTHROPES IN EBERRON**'
 ---
 

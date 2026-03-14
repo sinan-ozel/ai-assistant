@@ -16,6 +16,12 @@ COPY pyproject.toml /app/pyproject.toml
 # Install Python dependencies from pyproject.toml
 RUN pip install --no-cache-dir .
 
+# Pre-download the embedding model so it is baked into the image and the
+# container does not need outbound internet access at runtime.
+# BAAI/bge-small-en-v1.5: 133 MB, 384-dimensional cosine embeddings.
+ENV EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-small-en-v1.5')"
+
 # Copy all agent_stem contents
 COPY agent_stem/src/ /app/src/
 COPY agent_stem/default/ /app/default/

@@ -21,9 +21,9 @@ GOALS
 - [ ] Add some sort of agent_id and use as a prefix. agent:short-term-memory:<user_id>:<convo_id>
 - [ ] Think about how loops work
 - [ ] (0.1.0) Put in an evaluation scheme for the agent chat
-- [ ] (0.1.0) Put in the markdown ingestion
+- [x] (0.1.0) Put in the markdown ingestion
 - [ ] (0.1.0) Markdown ingestion: has an issue, it will rewrite the same file in deployments with multiple pods.
-- [ ] (0.1.0) Markdown ingestion: Markdown to chunking.
+- [x] (0.1.0) Markdown ingestion: Markdown to chunking.
 - [x] (0.1.0) Add `evaluation` to workflows.
 - [ ] (0.1.0) Add an endpoint GET /private/v1/agent/system-prompt
 - [ ] (0.1.0) Add an endpoint POST /private/v1/agent/conversation/{}/summary (Streaming Response)
@@ -33,6 +33,8 @@ GOALS
 - [ ] (0.1.0) Starting documentation: quickstart
 - [ ] (0.1.0) Starting documentation: examples
 - [ ] Add thinking in the agent chat view
+- [ ] (0.1.0) Add a test for LanceDB chunking.
+- [ ] (0.1.0) Add a test for conversation memory in non-redis environments.
 
 - [ ] Refactor: Think about the test harness. Maybe you start an environment, and test different agents on it?
 - [ ] Test Harness: Do not use the everything environment for agents, just use the no_llm environment
@@ -41,7 +43,8 @@ GOALS
 
 - [ ] (0.1.0) Show the system prompt in streamlit
 - [ ] (0.1.0) Show evaluation button & results in streamlit.
-- [ ] (0.1.0) Show documentation in streamlit
+- [ ] (0.1.0) Show documentation in streamlit /private/v1/book/{} (Lists chunk count, book metadata)
+- [ ] (0.1.1) Show documentation in streamlit /private/v1/book/{}/search (Lists chunk count, book metadata)
 - [ ] (0.1.0) Show all workflows in streamlit - Maybe a link to the OpenAPI ?
 - [ ] (0.1.0) Make sure that the evaluation function is using redis-memory for storage.
 - [ ] (0.1.0) Remove the "Agent Chat Interface" title on the main screen on streamlit.
@@ -54,4 +57,4 @@ tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet im
 - [ ] Use a language model to get a PDF language rather than OCR_LANGUAGE environmenyal variable
 - [ ] Make chunking hackable (?)
 - [ ] Compare the chunk sizes, warn about largest chunks, suggest model and VRAM size.
-- [ ] Do the same for
+- [ ] Improve chunking: detect tables, refactor the chunking library, place tests.

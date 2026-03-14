@@ -4,6 +4,7 @@ tags:
 - shelf2
 pdf_title: ''
 pdf_author: ''
+pages: 2
 body_title: 'FASHION DESIGNER: A SPECIALIZATION FOR ARTIFICERS'
 ---
 

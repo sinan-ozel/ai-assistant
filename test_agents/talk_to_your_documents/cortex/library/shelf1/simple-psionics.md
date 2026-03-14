@@ -4,6 +4,7 @@ tags:
 - shelf1
 pdf_title: ''
 pdf_author: ''
+pages: 9
 body_title: '**SIMPLE PSIONICS**'
 ---
 

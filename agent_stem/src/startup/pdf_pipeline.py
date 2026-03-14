@@ -226,7 +226,10 @@ async def run_pdf_pipeline() -> None:
             await asyncio.sleep(PDF_CHECK_INTERVAL_SECONDS)
             continue
 
-        pdf_files = sorted(LIBRARY_DIR.rglob("*.pdf"))
+        pdf_files = sorted(
+            p for p in LIBRARY_DIR.rglob("*.pdf")
+            if not any(part.startswith(".") for part in p.parts[len(LIBRARY_DIR.parts):])
+        )
         logger.debug(
             "PDF pipeline: check running, %d PDF(s) found.", len(pdf_files)
         )
