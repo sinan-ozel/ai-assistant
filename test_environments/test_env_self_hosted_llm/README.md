@@ -41,5 +41,5 @@ docker compose -f test_environments/test_env_self_hosted_llm/docker-compose.yaml
   up --build --abort-on-container-exit --exit-code-from tests
 ```
 
-Set up `CORTEX_FOLDER` to the agent you want to test, and `TEST_FOLDER` to the pytest folder.
+Set up `AGENT_FOLDER` to the agent you want to test, and `TEST_FOLDER` to the pytest folder.
 See .vscode/tasks.json for examples.

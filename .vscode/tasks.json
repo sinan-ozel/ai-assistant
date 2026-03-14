@@ -27,7 +27,7 @@
             "problemMatcher": [],
             "options": {
                 "env": {
-                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/cortex",
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/cortex",
                     "DEV_DATA_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/dev-data"
                 }
             },
@@ -107,7 +107,7 @@
             ],
             "options": {
                 "env": {
-                    "CORTEX_FOLDER": "${workspaceFolder}/test_environments/test_env_local_llm/cortex"
+                    "AGENT_FOLDER": "${workspaceFolder}/test_environments/test_env_local_llm/cortex"
                 }
             },
             "problemMatcher": []
@@ -125,7 +125,7 @@
             ],
             "options": {
                 "env": {
-                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/cortex",
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/cortex",
                     "TEST_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/tests"
                 }
             },
@@ -173,7 +173,7 @@
             ],
             "options": {
                 "env": {
-                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/image_workflows/cortex",
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/image_workflows/cortex",
                     "TEST_FOLDER": "${workspaceFolder}/test_agents/image_workflows/tests"
                 }
             },
@@ -192,7 +192,7 @@
             ],
             "options": {
                 "env": {
-                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/text_workflows/cortex",
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/text_workflows/cortex",
                     "TEST_FOLDER": "${workspaceFolder}/test_agents/text_workflows/tests"
                 }
             },
@@ -211,7 +211,7 @@
             ],
             "options": {
                 "env": {
-                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/son_of_anton/cortex",
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/son_of_anton/cortex",
                     "TEST_FOLDER": "${workspaceFolder}/test_agents/son_of_anton/tests"
                 }
             },
@@ -230,31 +230,50 @@
             ],
             "options": {
                 "env": {
-                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/talk_to_your_documents/cortex",
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/talk_to_your_documents/cortex",
                     "TEST_FOLDER": "${workspaceFolder}/test_agents/talk_to_your_documents/tests"
                 }
             },
             "problemMatcher": []
         },
         {
-            "label": "(!) Run Self-Hosted Tests",
+            "label": "Run Integration Tests: talk_to_your_documents @ no_qdrant",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/test_environments/test_env_no_qdrant/docker-compose.yaml",
+                "up",
+                "--build",
+                "--exit-code-from", "tests"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/talk_to_your_documents/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/talk_to_your_documents/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run All Agent Integration Tests",
             "dependsOn": [
-                "Lint",
-                // "Run Tests (Local LLM)",
-                "Run Tests (Self-Hosted LLM)",
-                "Run All Agent Tests"
+                "Run Integration Tests: text_workflows @ self_hosted_llm",
+                "Run Integration Tests: image_workflows @ self_hosted_llm",
+                "Run Integration Tests: son_of_anton @ self_hosted_llm",
+                "Run Integration Tests: talk_to_your_documents @ self_hosted_llm",
+                // "Run Integration Tests: talk_to_your_documents @ no_qdrant",
             ],
             "dependsOrder": "sequence",
             "problemMatcher": []
         },
         {
-            "label": "Run All Agent Tests",
+            "label": "(!) Run All Tests",
             "dependsOn": [
-                "Run Integration Tests: talk_to_your_documents @ self_hosted_llm",
-                "Run Integration Tests: talk_to_your_documents @ no_qdrant",
-                "Run Integration Tests: son_of_anton @ self_hosted_llm",
-                "Run Integration Tests: text_workflows @ self_hosted_llm",
-                "Run Integration Tests: image_workflows @ self_hosted_llm"
+                "Lint",
+                // "Run Tests (Local LLM)",
+                "Run Tests (Self-Hosted LLM)",
+                "Run All Agent Integration Tests"
             ],
             "dependsOrder": "sequence",
             "problemMatcher": []

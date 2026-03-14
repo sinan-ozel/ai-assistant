@@ -7,7 +7,7 @@ GOALS
 - [ ] (0.1.0) Python-as-DSL Hackable Chat
 - [ ] (0.1.0) RAG
 - [ ] (0.2.0) Tools
-- [ ] (0.1.0) Document Ingestion Pipeline
+- [x] (0.1.0) Document Ingestion Pipeline
 
 - [ ] (0.1.0) Helm Charts
 - [ ] (0.1.0) Testing for Helm Charts
@@ -31,7 +31,8 @@ GOALS
 - [ ] (0.1.0) Starting documentation: workflows
 - [ ] (0.1.0) Starting documentation: agent chat
 - [ ] (0.1.0) Starting documentation: quickstart
-- [ ] (0.1.0) Starting documentation: examples
+- [ ] (0.1.0) Starting documentation: examples: Talk to your documents, Son of Anton
+- [ ] (0.1.0) Starting documentation:
 - [ ] Add thinking in the agent chat view
 - [ ] (0.1.0) Add a test for LanceDB chunking.
 - [ ] (0.1.0) Add a test for conversation memory in non-redis environments.
@@ -61,3 +62,4 @@ tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet im
 - [ ] Make chunking hackable (?)
 - [ ] Compare the chunk sizes, warn about largest chunks, suggest model and VRAM size.
 - [ ] Improve chunking: detect tables, refactor the chunking library, place tests.
+- [ ] (0.3.0) Add custom ebedding provider. Remove EMBEDDING_HOST from env in the test environments, and remove the servers.
