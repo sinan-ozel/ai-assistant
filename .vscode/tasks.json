@@ -27,7 +27,8 @@
             "problemMatcher": [],
             "options": {
                 "env": {
-                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/cortex"
+                    "CORTEX_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/cortex",
+                    "DEV_DATA_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/dev-data"
                 }
             },
         },
@@ -112,7 +113,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Run Tests on Agent",
+            "label": "Run Tests",
             "type": "shell",
             "command": "docker",
             "args": [
@@ -160,7 +161,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Run Tests on Agent: image_workflows",
+            "label": "Run Integration Tests: image_workflows @ self_hosted_llm",
             "type": "shell",
             "command": "docker",
             "args": [
@@ -179,7 +180,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Run Tests on Agent: text_workflows",
+            "label": "Run Integration Tests: text_workflows @ self_hosted_llm",
             "type": "shell",
             "command": "docker",
             "args": [
@@ -198,7 +199,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Run Tests on Agent: son_of_anton",
+            "label": "Run Integration Tests: son_of_anton @ self_hosted_llm",
             "type": "shell",
             "command": "docker",
             "args": [
@@ -217,7 +218,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Run Tests on Agent: talk_to_your_documents",
+            "label": "Run Integration Tests: talk_to_your_documents @ self_hosted_llm",
             "type": "shell",
             "command": "docker",
             "args": [
@@ -249,10 +250,11 @@
         {
             "label": "Run All Agent Tests",
             "dependsOn": [
-                "Run Tests on Agent: talk_to_your_documents",
-                "Run Tests on Agent: son_of_anton",
-                "Run Tests on Agent: text_workflows",
-                "Run Tests on Agent: image_workflows"
+                "Run Integration Tests: talk_to_your_documents @ self_hosted_llm",
+                "Run Integration Tests: talk_to_your_documents @ no_qdrant",
+                "Run Integration Tests: son_of_anton @ self_hosted_llm",
+                "Run Integration Tests: text_workflows @ self_hosted_llm",
+                "Run Integration Tests: image_workflows @ self_hosted_llm"
             ],
             "dependsOrder": "sequence",
             "problemMatcher": []
@@ -304,11 +306,13 @@
             "type": "pickString",
             "description": "Choose the test environment",
             "options": [
-                "everything",
+                "default",
+                "mistral",
+                "no_qdrant",
                 "no_llm",
                 "nothing"
             ],
-            "default": "everything"
+            "default": "default"
         }
     ]
 }
