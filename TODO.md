@@ -63,3 +63,4 @@ tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet im
 - [ ] Compare the chunk sizes, warn about largest chunks, suggest model and VRAM size.
 - [ ] Improve chunking: detect tables, refactor the chunking library, place tests.
 - [ ] (0.3.0) Add custom ebedding provider. Remove EMBEDDING_HOST from env in the test environments, and remove the servers.
+- [ ] (0.1.0) Change the test in no_qdrant environment to use the endpoints.

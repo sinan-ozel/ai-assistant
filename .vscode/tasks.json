@@ -161,6 +161,25 @@
             "problemMatcher": []
         },
         {
+            "label": "Run Unit Tests: self_hosted_llm",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/test_environments/test_env_self_hosted_llm/docker-compose.yaml",
+                "up",
+                "--build",
+                "--exit-code-from", "tests"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/no_agent/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/no_agent/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Run Integration Tests: image_workflows @ self_hosted_llm",
             "type": "shell",
             "command": "docker",
@@ -272,7 +291,7 @@
             "dependsOn": [
                 "Lint",
                 // "Run Tests (Local LLM)",
-                "Run Tests (Self-Hosted LLM)",
+                "Run Unit Tests: self_hosted_llm",
                 "Run All Agent Integration Tests"
             ],
             "dependsOrder": "sequence",

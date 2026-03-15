@@ -6,7 +6,6 @@ pdf_title: ''
 pdf_author: ''
 pages: 9
 body_title: '**SIMPLE PSIONICS**'
-test_note: added_by_test
 ---
 
 # **SIMPLE PSIONICS**
