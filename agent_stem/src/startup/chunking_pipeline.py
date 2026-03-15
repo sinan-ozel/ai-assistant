@@ -132,6 +132,20 @@ def _deterministic_uuid(source_key: str, idx: int) -> str:
     return str(uuid.UUID(digest))
 
 
+def _to_file_path(source_key: str) -> str:
+    """Return a user-facing file path for *source_key*.
+
+    Strips the ``LIBRARY_DIR`` prefix so the path is relative to the library
+    root, then replaces the ``.md`` suffix with ``.pdf``.
+    """
+    p = Path(source_key)
+    try:
+        p = p.relative_to(LIBRARY_DIR)
+    except ValueError:
+        pass
+    return str(p.with_suffix(".pdf"))
+
+
 def _safe_json(obj) -> str:
     """JSON-serialise *obj* to a string for flat storage columns.
 
@@ -542,16 +556,24 @@ class MarkdownChunker:
             chunk_index = len(chunks)
 
             metadata = {
-                "title": cur_title,
-                "toc_title": toc_title,
-                "chapter": chapter,
-                "tags": tags,
-                "page": cur_page,
-                "tokens": _count_tokens(body),
+                "section_title": cur_title,
+                "section_title_in_toc": toc_title,
+                "chapter_label_in_toc": chapter,
+                "page_number": cur_page,
+                "token_count": _count_tokens(body),
                 "parent_index": _parent_index(),
-                "hierarchy": _hierarchy_titles(),
-                # All book-level fields except tags (tags already at top level)
-                "book": {k: v for k, v in book_meta.items() if k != "tags"},
+                "section_hierarchy": _hierarchy_titles(),
+                "book": {
+                    "title": book_meta.get("body_title"),
+                    "title_from_pdf": book_meta.get("pdf_title"),
+                    "author_from_pdf": book_meta.get("pdf_author"),
+                    "page_count_from_pdf": book_meta.get("pages"),
+                    "tags": tags,
+                    **{
+                        k: v for k, v in book_meta.items()
+                        if k not in {"body_title", "pdf_title", "pdf_author", "pages", "tags"}
+                    },
+                },
                 # Timing fields are stamped by process_markdown_file after
                 # the full chunk list for this book is ready
                 "chunking_started_at": None,
@@ -991,6 +1013,8 @@ def _write_to_qdrant(
             QDRANT_COLLECTION,
         )
 
+    file_path = _to_file_path(source_key)
+
     # Delete all existing points for this source file so we start clean
     client.delete(
         collection_name=QDRANT_COLLECTION,
@@ -998,8 +1022,8 @@ def _write_to_qdrant(
             filter=qmodels.Filter(
                 must=[
                     qmodels.FieldCondition(
-                        key="source_file",
-                        match=qmodels.MatchValue(value=source_key),
+                        key="file_path",
+                        match=qmodels.MatchValue(value=file_path),
                     )
                 ]
             )
@@ -1007,13 +1031,13 @@ def _write_to_qdrant(
     )
     logger.info(
         "Chunking pipeline: deleted existing Qdrant points for '%s'.",
-        source_key,
+        file_path,
     )
 
     # Build PointStruct objects — each point carries the full metadata as payload
     points = []
     for idx, (chunk, vector) in enumerate(zip(chunks, vectors)):
-        payload = {"source_file": source_key, **chunk["metadata"]}
+        payload = {"file_path": file_path, **chunk["metadata"]}
         points.append(
             qmodels.PointStruct(
                 id=_deterministic_uuid(source_key, idx),
@@ -1045,6 +1069,8 @@ def _write_to_lancedb(
 
     db = lancedb.connect(LANCEDB_PATH)
 
+    file_path = _to_file_path(source_key)
+
     # Build flat row dicts compatible with LanceDB's Arrow-backed storage
     rows = []
     for idx, (chunk, vector) in enumerate(zip(chunks, vectors)):
@@ -1052,18 +1078,16 @@ def _write_to_lancedb(
         rows.append(
             {
                 "id": _deterministic_uuid(source_key, idx),
-                "source_file": source_key,
+                "file_path": file_path,
                 "text": chunk.get("text", ""),
                 "vector": vector,
-                "title": meta.get("title"),
-                "toc_title": meta.get("toc_title"),
-                "chapter": meta.get("chapter"),
-                # Nested objects serialised to JSON strings
-                "tags": _safe_json(meta.get("tags", [])),
-                "page": meta.get("page"),
-                "tokens": meta.get("tokens", 0),
+                "section_title": meta.get("section_title"),
+                "section_title_in_toc": meta.get("section_title_in_toc"),
+                "chapter_label_in_toc": meta.get("chapter_label_in_toc"),
+                "page_number": meta.get("page_number"),
+                "token_count": meta.get("token_count", 0),
                 "parent_index": meta.get("parent_index"),
-                "hierarchy": _safe_json(meta.get("hierarchy", [])),
+                "section_hierarchy": _safe_json(meta.get("section_hierarchy", [])),
                 "book": _safe_json(meta.get("book", {})),
                 "chunking_started_at": meta.get("chunking_started_at"),
                 "chunking_completed_at": meta.get("chunking_completed_at"),
@@ -1072,12 +1096,12 @@ def _write_to_lancedb(
 
     if LANCEDB_TABLE in db.table_names():
         tbl = db.open_table(LANCEDB_TABLE)
-        # Escape single quotes in the source key for the SQL predicate
-        escaped = source_key.replace("'", "''")
-        tbl.delete(f"source_file = '{escaped}'")
+        # Escape single quotes in the file path for the SQL predicate
+        escaped = file_path.replace("'", "''")
+        tbl.delete(f"file_path = '{escaped}'")
         logger.info(
             "Chunking pipeline: deleted existing LanceDB rows for '%s'.",
-            source_key,
+            file_path,
         )
         tbl.add(rows)
     else:

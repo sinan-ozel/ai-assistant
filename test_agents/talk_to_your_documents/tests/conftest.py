@@ -83,3 +83,17 @@ def chunk_reset():
                 md.write_text(original, encoding="utf-8")
         except OSError:
             pass
+
+
+@pytest.fixture(scope="session", autouse=True)
+def cleanup_markdown_files():
+    """Delete all visible Markdown files in the library after the test session.
+
+    Runs automatically at the end of every session so the on-disk cortex folder
+    is left with only the original PDFs, regardless of which tests ran.
+    """
+    yield
+
+    for md in LIBRARY_DIR.rglob("*.md"):
+        if not _is_hidden(md):
+            md.unlink(missing_ok=True)

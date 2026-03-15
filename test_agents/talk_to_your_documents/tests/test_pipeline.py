@@ -108,12 +108,12 @@ def test_qdrant_updates_after_frontmatter_edit(pdf_conversion_reset, chunk_reset
 
     qdrant = chunk_reset
     md_path = LIBRARY_DIR / "shelf1" / "simple-psionics.md"
-    source_key = str(md_path)
+    file_path = str(md_path.relative_to(LIBRARY_DIR).with_suffix(".pdf"))
     point_filter = qmodels.Filter(
         must=[
             qmodels.FieldCondition(
-                key="source_file",
-                match=qmodels.MatchValue(value=source_key),
+                key="file_path",
+                match=qmodels.MatchValue(value=file_path),
             )
         ]
     )
