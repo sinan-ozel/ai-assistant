@@ -39,28 +39,48 @@ GOALS
 - [ ] (0.1.0) Add a test for Antropic.
 - [ ] (0.1.0) Simplify the Mistral environment and add it to the local tests.
 
-- [ ] Refactor: Think about the test harness. Maybe you start an environment, and test different agents on it?
-- [ ] Test Harness: Do not use the everything environment for agents, just use the no_llm environment
+- [x] Refactor: Think about the test harness. Maybe you start an environment, and test different agents on it?
+- [x] Test Harness: Do not use the everything environment for agents, just use the no_llm environment
 - [ ] Test Harness: Add some "bad" agents to see that they crash.
-- [ ] Test Harness: Add the Mistral environment back in - also to test no providers set case.
 
 - [ ] (0.1.0) Show the system prompt in streamlit
 - [ ] (0.1.0) Show evaluation button & results in streamlit.
-- [ ] (0.1.0) Show documentation in streamlit /private/v1/books/{} (Lists chunk count, book metadata)
-- [ ] (0.1.1) Show documentation in streamlit /private/v1/books/{}/search (Lists chunk count, book metadata)
 - [ ] (0.1.0) Show all workflows in streamlit - Maybe a link to the OpenAPI ?
 
 - [ ] (0.1.0) Make sure that the evaluation function is using redis-memory for storage.
 - [ ] (0.1.0) Remove the "Agent Chat Interface" title on the main screen on streamlit.
 
-- [ ] I am still seeing a message like this? tests-runner-self-hosted-llm  | .::test_openapi[POST /v1/api/generate [generated-10]] <- ../usr/local/lib/python3.12/site-packages/pytest_openapi/plugin.py PASSED [ 66%]  Request: {"model": "Lorem ipsum dolor sit amet", "prompt": ...
+- [ ] Implement streaming in the generation API. I am still seeing a message like this? tests-runner-self-hosted-llm  | .::test_openapi[POST /v1/api/generate [generated-10]] <- ../usr/local/lib/python3.12/site-packages/pytest_openapi/plugin.py PASSED [ 66%]  Request: {"model": "Lorem ipsum dolor sit amet", "prompt": ...
 tests-runner-self-hosted-llm  |   Expected [200]: {"model": "gemma3:4b", "created_at": "2024-12-20T0...
 tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet implemented"}
 
 - [ ] Grafana integration
-- [ ] Use a language model to get a PDF language rather than OCR_LANGUAGE environmenyal variable
+- [ ] Use a language model to get a PDF language rather than OCR_LANGUAGE environmental variable
 - [ ] Make chunking hackable (?)
 - [ ] Compare the chunk sizes, warn about largest chunks, suggest model and VRAM size.
 - [ ] Improve chunking: detect tables, refactor the chunking library, place tests.
-- [ ] (0.3.0) Add custom ebedding provider. Remove EMBEDDING_HOST from env in the test environments, and remove the servers.
+- [ ] (0.3.0) Add custom embedding provider. Remove EMBEDDING_HOST from env in the test environments, and remove the servers.
 - [ ] (0.1.0) Change the test in no_qdrant environment to use the endpoints.
+- [ ] Remove the generalize try ... except Exception blocks from multiple places.
+- [ ] (0.1.0) Add open labels labels to the Dockerfile. Include documentation, code.
+
+
+
+
+# Documentation Notes:
+
+## Workflows
+
+## Chat
+
+## Retrieval
+
+How to add books or documents i.e. "corpus". (Under the `library/` folder.) Use further folders as collections.
+
+Library: Either use PDFs with correct textual content, or there may be an OCR fallback. If the OCR fallback takes place, it has to be English.
+
+## Hobby Usage
+
+## Development Usage
+
+## Production Usage

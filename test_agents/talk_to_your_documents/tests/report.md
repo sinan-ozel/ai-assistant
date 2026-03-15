@@ -2,13 +2,74 @@
 
 ## Summary
 
-- **Total Tests:** 50
-- **Passed:** ✅ 50
+- **Total Tests:** 51
+- **Passed:** ✅ 51
 - **Failed:** ❌ 0
 
 ---
 
 ## Test #1 ✅
+
+📋 *Test case from OpenAPI example*
+
+**Endpoint:** `GET /private/v1/books`
+
+### Expected Response
+
+**Status:** `200`
+
+```json
+[
+  {
+    "file_path": "shelf1/simple-psionics.pdf",
+    "tags": [
+      "shelf1"
+    ],
+    "chunk_count": 51
+  },
+  {
+    "file_path": "shelf2/FashionDesigner.pdf",
+    "tags": [
+      "shelf2"
+    ],
+    "chunk_count": 5
+  }
+]
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+[
+  {
+    "file_path": "shelf1/simple-psionics.pdf",
+    "tags": [
+      "shelf1"
+    ],
+    "chunk_count": 51
+  },
+  {
+    "file_path": "shelf2/FashionDesigner.pdf",
+    "tags": [
+      "shelf2"
+    ],
+    "chunk_count": 5
+  },
+  {
+    "file_path": "shelf2/lycanthropes-in-eberron.pdf",
+    "tags": [
+      "shelf2"
+    ],
+    "chunk_count": 10
+  }
+]
+```
+
+---
+
+## Test #2 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -40,7 +101,7 @@
 
 ---
 
-## Test #2 ✅
+## Test #3 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -72,7 +133,7 @@
 
 ---
 
-## Test #3 ✅
+## Test #4 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -101,7 +162,7 @@
 
 ---
 
-## Test #4 ✅
+## Test #5 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -140,7 +201,7 @@
 
 ---
 
-## Test #5 ✅
+## Test #6 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -178,7 +239,7 @@
 
 ---
 
-## Test #6 ✅
+## Test #7 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -207,7 +268,7 @@
 
 ---
 
-## Test #7 ✅
+## Test #8 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -244,7 +305,7 @@
 
 ---
 
-## Test #8 ✅
+## Test #9 ✅
 
 🔧 *Test case generated from schema*
 
@@ -281,7 +342,7 @@
 
 ---
 
-## Test #9 ✅
+## Test #10 ✅
 
 🔧 *Test case generated from schema*
 
@@ -318,7 +379,7 @@
 
 ---
 
-## Test #10 ✅
+## Test #11 ✅
 
 🔧 *Test case generated from schema*
 
@@ -355,7 +416,7 @@
 
 ---
 
-## Test #11 ✅
+## Test #12 ✅
 
 🔧 *Test case generated from schema*
 
@@ -392,7 +453,7 @@
 
 ---
 
-## Test #12 ✅
+## Test #13 ✅
 
 🔧 *Test case generated from schema*
 
@@ -429,7 +490,7 @@
 
 ---
 
-## Test #13 ✅
+## Test #14 ✅
 
 🔧 *Test case generated from schema*
 
@@ -466,7 +527,7 @@
 
 ---
 
-## Test #14 ✅
+## Test #15 ✅
 
 🔧 *Test case generated from schema*
 
@@ -503,7 +564,7 @@
 
 ---
 
-## Test #15 ✅
+## Test #16 ✅
 
 🔧 *Test case generated from schema*
 
@@ -540,7 +601,7 @@
 
 ---
 
-## Test #16 ✅
+## Test #17 ✅
 
 🔧 *Test case generated from schema*
 
@@ -577,7 +638,7 @@
 
 ---
 
-## Test #17 ✅
+## Test #18 ✅
 
 🔧 *Test case generated from schema*
 
@@ -623,7 +684,7 @@
 
 ---
 
-## Test #18 ✅
+## Test #19 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -670,62 +731,13 @@
   "user_id": "user-456",
   "message": "Okay! The weather in Reykjavik, Iceland is cold and cloudy with a temperature of 5\u00b0C (41\u00b0F) and a wind of 15 km/h. \ud83d\ude0a",
   "role": "assistant",
-  "created": 1773538857,
+  "created": 1773583499,
   "usage": {
-    "prompt_tokens": 2394,
+    "prompt_tokens": 2718,
     "completion_tokens": 39,
-    "total_tokens": 2433
+    "total_tokens": 2757
   }
 }
-```
-
----
-
-## Test #19 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/agent/chat`
-
-### Request Body
-
-```json
-{
-  "message": "Lorem ipsum dolor sit amet",
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Lorem ipsum dolor sit amet",
-  "stream": true,
-  "stream_format": "sse",
-  "timeout": 0.0,
-  "max_tokens": 1
-}
-```
-
-### Expected Response
-
-**Status:** `200 or 422 or 400 or 503 or 408`
-
-```json
-{
-  "conversation_id": "conv-123",
-  "user_id": "user-456",
-  "message": "The weather is sunny today!",
-  "role": "assistant",
-  "created": 1703347200,
-  "usage": {
-    "prompt_tokens": 56,
-    "completion_tokens": 31,
-    "total_tokens": 87
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `200`
-
-```json
-"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
@@ -746,7 +758,7 @@
   "stream": true,
   "stream_format": "sse",
   "timeout": 0.0,
-  "max_tokens": 500000
+  "max_tokens": 1
 }
 ```
 
@@ -795,7 +807,7 @@
   "stream": true,
   "stream_format": "sse",
   "timeout": 0.0,
-  "max_tokens": 1000000
+  "max_tokens": 500000
 }
 ```
 
@@ -843,8 +855,8 @@
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
   "stream_format": "sse",
-  "timeout": 0.123456789,
-  "max_tokens": 1
+  "timeout": 0.0,
+  "max_tokens": 1000000
 }
 ```
 
@@ -893,7 +905,7 @@
   "stream": true,
   "stream_format": "sse",
   "timeout": 0.123456789,
-  "max_tokens": 500000
+  "max_tokens": 1
 }
 ```
 
@@ -942,7 +954,7 @@
   "stream": true,
   "stream_format": "sse",
   "timeout": 0.123456789,
-  "max_tokens": 1000000
+  "max_tokens": 500000
 }
 ```
 
@@ -990,8 +1002,8 @@
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
   "stream_format": "sse",
-  "timeout": 0.999999999,
-  "max_tokens": 1
+  "timeout": 0.123456789,
+  "max_tokens": 1000000
 }
 ```
 
@@ -1040,7 +1052,7 @@
   "stream": true,
   "stream_format": "sse",
   "timeout": 0.999999999,
-  "max_tokens": 500000
+  "max_tokens": 1
 }
 ```
 
@@ -1089,7 +1101,7 @@
   "stream": true,
   "stream_format": "sse",
   "timeout": 0.999999999,
-  "max_tokens": 1000000
+  "max_tokens": 500000
 }
 ```
 
@@ -1123,6 +1135,55 @@
 ---
 
 ## Test #28 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/agent/chat`
+
+### Request Body
+
+```json
+{
+  "message": "Lorem ipsum dolor sit amet",
+  "conversation_id": "Lorem ipsum dolor sit amet",
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "stream_format": "sse",
+  "timeout": 0.999999999,
+  "max_tokens": 1000000
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 422 or 400 or 503 or 408`
+
+```json
+{
+  "conversation_id": "conv-123",
+  "user_id": "user-456",
+  "message": "The weather is sunny today!",
+  "role": "assistant",
+  "created": 1703347200,
+  "usage": {
+    "prompt_tokens": 56,
+    "completion_tokens": 31,
+    "total_tokens": 87
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+"[Streaming response: text/event-stream; charset=utf-8]"
+```
+
+---
+
+## Test #29 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1171,7 +1232,7 @@
 
 ---
 
-## Test #29 ✅
+## Test #30 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -1225,16 +1286,16 @@
 
 ```json
 {
-  "id": "chatcmpl-8e93fdd3c8d440629039cc9c",
+  "id": "chatcmpl-de1709b055aa400284d97558",
   "object": "chat.completion",
-  "created": 1773539006,
+  "created": 1773583654,
   "model": "ollama/gemma3:1b",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of France is Paris. \ud83d\ude0a \n\nWould you like to know anything else about Paris or France?"
+        "content": "The capital of France is **Paris**. \n\nDo you have any other questions about France or its capital?"
       },
       "finish_reason": "stop"
     }
@@ -1249,7 +1310,7 @@
 
 ---
 
-## Test #30 ✅
+## Test #31 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1310,7 +1371,7 @@
 
 ---
 
-## Test #31 ✅
+## Test #32 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1371,7 +1432,7 @@
 
 ---
 
-## Test #32 ✅
+## Test #33 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1414,7 +1475,7 @@
 
 ---
 
-## Test #33 ✅
+## Test #34 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1471,105 +1532,24 @@
 
 ```json
 {
-  "id": "chatcmpl-db37b430c6b048f0ae14a176",
+  "id": "chatcmpl-8b5d9b4b91ed41edb9471a6c",
   "object": "chat.completion",
-  "created": 1773539042,
+  "created": 1773583690,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Okay, I understand. You've provided the standard placeholder text: \"Lorem ipsum dolor sit amet\". \n\nIt's a very common placeholder text used in the printing and design industries. It's designed to mimic the visual appearance of printed text without requiring actual content. \n\nIs there anything specific you'd like to do with this text? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify its length, patterns, etc.)\n*   **Generate text around it?** (e.g., fill it with a different text or design)\n*   **Explain its purpose?** (e.g., why it's used)\n*   **Something else entirely?**"
+        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything you'd like me to do with it? For example, would you like me to:\n\n*   **Analyze it?** (e.g., identify its properties?)\n*   **Generate something related to it?** (e.g., a story, a sentence, a list?)\n*   **Explain its purpose?** (it's a placeholder used to fill out a page of text until the final content is finalized.)\n*   **Just acknowledge it?**"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 19,
-    "completion_tokens": 156,
-    "total_tokens": 175
-  }
-}
-```
-
----
-
-## Test #34 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/chat/completions`
-
-### Request Body
-
-```json
-{
-  "model": "Lorem ipsum dolor sit amet",
-  "messages": [
-    {
-      "role": "system",
-      "content": "Lorem ipsum dolor sit amet"
-    }
-  ],
-  "timeout": 0.0,
-  "stream": false,
-  "stream_format": "ndjson"
-}
-```
-
-### Expected Response
-
-**Status:** `200 or 422 or 400 or 404 or 501 or 408`
-
-```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-c10b6b531a414604a8b2a430",
-  "object": "chat.completion",
-  "created": 1773539059,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Okay, I understand. You've provided the classic \"Lorem Ipsum\" placeholder text. \n\nIt's a widely used placeholder text designed to mimic the appearance of printed text without requiring actual content. \n\nIs there anything specific you'd like to do with this text? For example, are you:\n\n*   **Wanting to generate more of it?** (I can continue the sequence.)\n*   **Wanting to analyze it?** (e.g., count words, identify patterns.)\n*   **Trying to understand its purpose?** (It's a common example of dummy text.)\n*   **Something else entirely?**"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 19,
-    "completion_tokens": 137,
-    "total_tokens": 156
+    "completion_tokens": 124,
+    "total_tokens": 143
   }
 }
 ```
@@ -1595,6 +1575,87 @@
   ],
   "timeout": 0.0,
   "stream": false,
+  "stream_format": "ndjson"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1734700000,
+  "model": "pixtral",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! How can I help you today?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 20,
+    "completion_tokens": 10,
+    "total_tokens": 30
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+{
+  "id": "chatcmpl-548cccca99964e35a32f2905",
+  "object": "chat.completion",
+  "created": 1773583706,
+  "model": "Lorem ipsum dolor sit amet",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Okay, I understand. You've provided the classic \"Lorem ipsum\" placeholder text. \n\nIs there anything you'd like me to do with it? For example, would you like me to:\n\n*   **Generate more Lorem Ipsum text?** (e.g., a longer paragraph, a list, etc.)\n*   **Analyze it?** (e.g., determine its purpose or context)\n*   **Explain its purpose?** (because it's a standard placeholder)\n*   **Something else entirely?**"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 19,
+    "completion_tokens": 114,
+    "total_tokens": 133
+  }
+}
+```
+
+---
+
+## Test #36 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/chat/completions`
+
+### Request Body
+
+```json
+{
+  "model": "Lorem ipsum dolor sit amet",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Lorem ipsum dolor sit amet"
+    }
+  ],
+  "timeout": 0.0,
+  "stream": false,
   "stream_format": "invalid_enum_value"
 }
 ```
@@ -1619,7 +1680,7 @@
 
 ---
 
-## Test #36 ✅
+## Test #37 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1680,7 +1741,7 @@
 
 ---
 
-## Test #37 ✅
+## Test #38 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1741,7 +1802,7 @@
 
 ---
 
-## Test #38 ✅
+## Test #39 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1784,7 +1845,7 @@
 
 ---
 
-## Test #39 ✅
+## Test #40 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1847,7 +1908,7 @@
 
 ---
 
-## Test #40 ✅
+## Test #41 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -1891,68 +1952,16 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-03-15T01:44:33.056843Z",
-  "response": "The capital of France is **Paris**. \ud83c\uddeb\ud83c\uddf7\n",
+  "created_at": "2026-03-15T14:08:39.993249Z",
+  "response": "The capital of France is **Paris**. \n\nIt\u2019s a great city! \ud83d\ude0a \n\nDo you want to know anything else about Paris?",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 21,
   "prompt_eval_duration": 0,
-  "eval_count": 13,
+  "eval_count": 31,
   "eval_duration": 0
-}
-```
-
----
-
-## Test #41 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/api/generate`
-
-### Request Body
-
-```json
-{
-  "model": "Lorem ipsum dolor sit amet",
-  "prompt": "Lorem ipsum dolor sit amet",
-  "stream": true,
-  "temperature": 0.0,
-  "top_p": 0.0,
-  "top_k": 1,
-  "timeout": 0.0
-}
-```
-
-### Expected Response
-
-**Status:** `200 or 422 or 400 or 404 or 501 or 408`
-
-```json
-{
-  "model": "gemma3:4b",
-  "created_at": "2024-12-20T00:00:00.000000Z",
-  "response": "The capital of France is Paris.",
-  "done": true,
-  "context": [],
-  "total_duration": 0,
-  "load_duration": 0,
-  "prompt_eval_count": 10,
-  "prompt_eval_duration": 0,
-  "eval_count": 10,
-  "eval_duration": 0
-}
-```
-
-### Actual Response
-
-**Status:** `501`
-
-```json
-{
-  "detail": "Streaming not yet implemented"
 }
 ```
 
@@ -1974,7 +1983,7 @@
   "temperature": 0.0,
   "top_p": 0.0,
   "top_k": 1,
-  "timeout": 0.123456789
+  "timeout": 0.0
 }
 ```
 
@@ -2026,7 +2035,7 @@
   "temperature": 0.0,
   "top_p": 0.0,
   "top_k": 1,
-  "timeout": 0.999999999
+  "timeout": 0.123456789
 }
 ```
 
@@ -2078,7 +2087,7 @@
   "temperature": 0.0,
   "top_p": 0.0,
   "top_k": 1,
-  "timeout": 1.111111111
+  "timeout": 0.999999999
 }
 ```
 
@@ -2130,7 +2139,7 @@
   "temperature": 0.0,
   "top_p": 0.0,
   "top_k": 1,
-  "timeout": 500000.0
+  "timeout": 1.111111111
 }
 ```
 
@@ -2182,7 +2191,7 @@
   "temperature": 0.0,
   "top_p": 0.0,
   "top_k": 1,
-  "timeout": 1000000.0
+  "timeout": 500000.0
 }
 ```
 
@@ -2233,8 +2242,8 @@
   "stream": true,
   "temperature": 0.0,
   "top_p": 0.0,
-  "top_k": 500000,
-  "timeout": 0.0
+  "top_k": 1,
+  "timeout": 1000000.0
 }
 ```
 
@@ -2286,7 +2295,7 @@
   "temperature": 0.0,
   "top_p": 0.0,
   "top_k": 500000,
-  "timeout": 0.123456789
+  "timeout": 0.0
 }
 ```
 
@@ -2338,7 +2347,7 @@
   "temperature": 0.0,
   "top_p": 0.0,
   "top_k": 500000,
-  "timeout": 0.999999999
+  "timeout": 0.123456789
 }
 ```
 
@@ -2375,6 +2384,58 @@
 ---
 
 ## Test #50 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/api/generate`
+
+### Request Body
+
+```json
+{
+  "model": "Lorem ipsum dolor sit amet",
+  "prompt": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "temperature": 0.0,
+  "top_p": 0.0,
+  "top_k": 500000,
+  "timeout": 0.999999999
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
+
+```json
+{
+  "model": "gemma3:4b",
+  "created_at": "2024-12-20T00:00:00.000000Z",
+  "response": "The capital of France is Paris.",
+  "done": true,
+  "context": [],
+  "total_duration": 0,
+  "load_duration": 0,
+  "prompt_eval_count": 10,
+  "prompt_eval_duration": 0,
+  "eval_count": 10,
+  "eval_duration": 0
+}
+```
+
+### Actual Response
+
+**Status:** `501`
+
+```json
+{
+  "detail": "Streaming not yet implemented"
+}
+```
+
+---
+
+## Test #51 ✅
 
 🔧 *Test case generated from schema*
 

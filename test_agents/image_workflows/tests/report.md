@@ -2,13 +2,74 @@
 
 ## Summary
 
-- **Total Tests:** 83
-- **Passed:** ✅ 83
+- **Total Tests:** 84
+- **Passed:** ✅ 84
 - **Failed:** ❌ 0
 
 ---
 
 ## Test #1 ✅
+
+📋 *Test case from OpenAPI example*
+
+**Endpoint:** `GET /private/v1/books`
+
+### Expected Response
+
+**Status:** `200`
+
+```json
+[
+  {
+    "file_path": "shelf1/simple-psionics.pdf",
+    "tags": [
+      "shelf1"
+    ],
+    "chunk_count": 51
+  },
+  {
+    "file_path": "shelf2/FashionDesigner.pdf",
+    "tags": [
+      "shelf2"
+    ],
+    "chunk_count": 5
+  }
+]
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+[
+  {
+    "file_path": "shelf1/simple-psionics.pdf",
+    "tags": [
+      "shelf1"
+    ],
+    "chunk_count": 51
+  },
+  {
+    "file_path": "shelf2/FashionDesigner.pdf",
+    "tags": [
+      "shelf2"
+    ],
+    "chunk_count": 5
+  },
+  {
+    "file_path": "shelf2/lycanthropes-in-eberron.pdf",
+    "tags": [
+      "shelf2"
+    ],
+    "chunk_count": 10
+  }
+]
+```
+
+---
+
+## Test #2 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -40,7 +101,7 @@
 
 ---
 
-## Test #2 ✅
+## Test #3 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -72,7 +133,7 @@
 
 ---
 
-## Test #3 ✅
+## Test #4 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -101,7 +162,7 @@
 
 ---
 
-## Test #4 ✅
+## Test #5 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -140,7 +201,7 @@
 
 ---
 
-## Test #5 ✅
+## Test #6 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -200,7 +261,7 @@
 
 ---
 
-## Test #6 ✅
+## Test #7 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -229,7 +290,7 @@
 
 ---
 
-## Test #7 ✅
+## Test #8 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -266,7 +327,7 @@
 
 ---
 
-## Test #8 ✅
+## Test #9 ✅
 
 🔧 *Test case generated from schema*
 
@@ -303,7 +364,7 @@
 
 ---
 
-## Test #9 ✅
+## Test #10 ✅
 
 🔧 *Test case generated from schema*
 
@@ -340,7 +401,7 @@
 
 ---
 
-## Test #10 ✅
+## Test #11 ✅
 
 🔧 *Test case generated from schema*
 
@@ -377,7 +438,7 @@
 
 ---
 
-## Test #11 ✅
+## Test #12 ✅
 
 🔧 *Test case generated from schema*
 
@@ -414,7 +475,7 @@
 
 ---
 
-## Test #12 ✅
+## Test #13 ✅
 
 🔧 *Test case generated from schema*
 
@@ -451,7 +512,7 @@
 
 ---
 
-## Test #13 ✅
+## Test #14 ✅
 
 🔧 *Test case generated from schema*
 
@@ -488,7 +549,7 @@
 
 ---
 
-## Test #14 ✅
+## Test #15 ✅
 
 🔧 *Test case generated from schema*
 
@@ -525,7 +586,7 @@
 
 ---
 
-## Test #15 ✅
+## Test #16 ✅
 
 🔧 *Test case generated from schema*
 
@@ -562,7 +623,7 @@
 
 ---
 
-## Test #16 ✅
+## Test #17 ✅
 
 🔧 *Test case generated from schema*
 
@@ -599,7 +660,7 @@
 
 ---
 
-## Test #17 ✅
+## Test #18 ✅
 
 🔧 *Test case generated from schema*
 
@@ -645,7 +706,7 @@
 
 ---
 
-## Test #18 ✅
+## Test #19 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -692,62 +753,13 @@
   "user_id": "user-456",
   "message": "Okay! The weather in Reykjavik, Iceland is cold and cloudy with a temperature of 5\u00b0C (41\u00b0F) and a wind of 15 km/h. \ud83d\ude0a",
   "role": "assistant",
-  "created": 1772888259,
+  "created": 1773582943,
   "usage": {
-    "prompt_tokens": 1946,
-    "completion_tokens": 658,
-    "total_tokens": 2604
+    "prompt_tokens": 2594,
+    "completion_tokens": 1163,
+    "total_tokens": 3757
   }
 }
-```
-
----
-
-## Test #19 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/agent/chat`
-
-### Request Body
-
-```json
-{
-  "message": "Lorem ipsum dolor sit amet",
-  "conversation_id": "Lorem ipsum dolor sit amet",
-  "user_id": "Lorem ipsum dolor sit amet",
-  "stream": true,
-  "stream_format": "sse",
-  "timeout": 0.0,
-  "max_tokens": 1
-}
-```
-
-### Expected Response
-
-**Status:** `200 or 422 or 400 or 503 or 408`
-
-```json
-{
-  "conversation_id": "conv-123",
-  "user_id": "user-456",
-  "message": "The weather is sunny today!",
-  "role": "assistant",
-  "created": 1703347200,
-  "usage": {
-    "prompt_tokens": 56,
-    "completion_tokens": 31,
-    "total_tokens": 87
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `200`
-
-```json
-"[Streaming response: text/event-stream; charset=utf-8]"
 ```
 
 ---
@@ -768,7 +780,7 @@
   "stream": true,
   "stream_format": "sse",
   "timeout": 0.0,
-  "max_tokens": 500000
+  "max_tokens": 1
 }
 ```
 
@@ -817,7 +829,7 @@
   "stream": true,
   "stream_format": "sse",
   "timeout": 0.0,
-  "max_tokens": 1000000
+  "max_tokens": 500000
 }
 ```
 
@@ -865,8 +877,8 @@
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
   "stream_format": "sse",
-  "timeout": 0.123456789,
-  "max_tokens": 1
+  "timeout": 0.0,
+  "max_tokens": 1000000
 }
 ```
 
@@ -915,7 +927,7 @@
   "stream": true,
   "stream_format": "sse",
   "timeout": 0.123456789,
-  "max_tokens": 500000
+  "max_tokens": 1
 }
 ```
 
@@ -964,7 +976,7 @@
   "stream": true,
   "stream_format": "sse",
   "timeout": 0.123456789,
-  "max_tokens": 1000000
+  "max_tokens": 500000
 }
 ```
 
@@ -1012,8 +1024,8 @@
   "user_id": "Lorem ipsum dolor sit amet",
   "stream": true,
   "stream_format": "sse",
-  "timeout": 0.999999999,
-  "max_tokens": 1
+  "timeout": 0.123456789,
+  "max_tokens": 1000000
 }
 ```
 
@@ -1062,7 +1074,7 @@
   "stream": true,
   "stream_format": "sse",
   "timeout": 0.999999999,
-  "max_tokens": 500000
+  "max_tokens": 1
 }
 ```
 
@@ -1111,7 +1123,7 @@
   "stream": true,
   "stream_format": "sse",
   "timeout": 0.999999999,
-  "max_tokens": 1000000
+  "max_tokens": 500000
 }
 ```
 
@@ -1145,6 +1157,55 @@
 ---
 
 ## Test #28 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/agent/chat`
+
+### Request Body
+
+```json
+{
+  "message": "Lorem ipsum dolor sit amet",
+  "conversation_id": "Lorem ipsum dolor sit amet",
+  "user_id": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "stream_format": "sse",
+  "timeout": 0.999999999,
+  "max_tokens": 1000000
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 422 or 400 or 503 or 408`
+
+```json
+{
+  "conversation_id": "conv-123",
+  "user_id": "user-456",
+  "message": "The weather is sunny today!",
+  "role": "assistant",
+  "created": 1703347200,
+  "usage": {
+    "prompt_tokens": 56,
+    "completion_tokens": 31,
+    "total_tokens": 87
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+"[Streaming response: text/event-stream; charset=utf-8]"
+```
+
+---
+
+## Test #29 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1193,7 +1254,7 @@
 
 ---
 
-## Test #29 ✅
+## Test #30 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -1247,31 +1308,31 @@
 
 ```json
 {
-  "id": "chatcmpl-5f81deecca8547d69f2d9008",
+  "id": "chatcmpl-6e97b728b67b4c4d985eebcd",
   "object": "chat.completion",
-  "created": 1772888316,
+  "created": 1773583005,
   "model": "qwen3-vl:2b-q4km",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "The capital of **France** is **Paris**.  \n\nIt is not only the political capital but also the cultural, historical, and economic heart of France. Paris is renowned for landmarks like the Eiffel Tower, the Louvre Museum, and its vibrant arts scene. It is the largest city in France and a global symbol of French identity.  \n\n*Why this matters*: Paris has been the capital since the Middle Ages and remains a global hub for tourism, culture, and diplomacy."
+        "content": "The capital of France is **Paris**.  \n\n### Key Details:\n- **Location**: Situated in the \u00cele-de-France region, near the Seine River.\n- **Role**: Official seat of the French government, including the National Assembly, the Presidential Palace, and the Chancellery.\n- **Historical Significance**: Became the capital in the 15th century after the fall of the Middle Ages, with its status solidified during the French Revolution (1792\u20131799) and the Bourbon Restoration (1815).  \n- **Population**: Approximately 2.1 million (as of 2023), making it one of Europe\u2019s most populous cities.  \n\nParis is renowned for its iconic landmarks (like the Eiffel Tower), cultural diversity, and as a global hub for arts, fashion, and science. \ud83c\uddeb\ud83c\uddf7"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 17,
-    "completion_tokens": 325,
-    "total_tokens": 342
+    "completion_tokens": 666,
+    "total_tokens": 683
   }
 }
 ```
 
 ---
 
-## Test #30 ✅
+## Test #31 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1332,7 +1393,7 @@
 
 ---
 
-## Test #31 ✅
+## Test #32 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1393,7 +1454,7 @@
 
 ---
 
-## Test #32 ✅
+## Test #33 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1436,7 +1497,7 @@
 
 ---
 
-## Test #33 ✅
+## Test #34 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1493,105 +1554,24 @@
 
 ```json
 {
-  "id": "chatcmpl-06c252bcda5a4e618218693c",
+  "id": "chatcmpl-f6b0372e26c8407e9083ee47",
   "object": "chat.completion",
-  "created": 1772888324,
+  "created": 1773583019,
   "model": "Lorem ipsum dolor sit amet",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "Ah, I see you've used some placeholder text! *Lorem ipsum* is commonly used in design and publishing to create space without specific content. It's a standard filler text often seen in mockups or layouts. Would you like help with anything specific? \ud83d\ude0a"
+        "content": "Hello! I notice you've shared some placeholder text\u2014*Lorem ipsum dolor sit amet*\u2014which is commonly used in design and publishing to create space. \ud83d\ude0a This phrase is often used as filler text to demonstrate layouts without specific content.  \n\nIf you'd like to discuss something related to design, writing, or another topic, feel free to ask! What would you like to explore? \ud83c\udf1f"
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
     "prompt_tokens": 15,
-    "completion_tokens": 292,
-    "total_tokens": 307
-  }
-}
-```
-
----
-
-## Test #34 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/chat/completions`
-
-### Request Body
-
-```json
-{
-  "model": "Lorem ipsum dolor sit amet",
-  "messages": [
-    {
-      "role": "system",
-      "content": "Lorem ipsum dolor sit amet"
-    }
-  ],
-  "timeout": 0.0,
-  "stream": false,
-  "stream_format": "ndjson"
-}
-```
-
-### Expected Response
-
-**Status:** `200 or 422 or 400 or 404 or 501 or 408`
-
-```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1734700000,
-  "model": "pixtral",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello! How can I help you today?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 20,
-    "completion_tokens": 10,
-    "total_tokens": 30
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `200`
-
-```json
-{
-  "id": "chatcmpl-ea61001b69b949dbb042a3ca",
-  "object": "chat.completion",
-  "created": 1772888327,
-  "model": "Lorem ipsum dolor sit amet",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Ah, I see you've used \"Lorem ipsum dolor sit amet\" \u2014 that's a common placeholder text used in design and typography to fill space until actual content is added. It's often seen in documents, websites, or print materials to indicate where content should go. \ud83d\ude0a\n\nIf you're asking about something specific (like a design project, a question, or a problem), feel free to let me know! I'm here to help."
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 15,
-    "completion_tokens": 350,
-    "total_tokens": 365
+    "completion_tokens": 361,
+    "total_tokens": 376
   }
 }
 ```
@@ -1617,6 +1597,87 @@
   ],
   "timeout": 0.0,
   "stream": false,
+  "stream_format": "ndjson"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1734700000,
+  "model": "pixtral",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! How can I help you today?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 20,
+    "completion_tokens": 10,
+    "total_tokens": 30
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `200`
+
+```json
+{
+  "id": "chatcmpl-265df4f3fcd64359ac103b7e",
+  "object": "chat.completion",
+  "created": 1773583021,
+  "model": "Lorem ipsum dolor sit amet",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! I see you've sent some placeholder text\u2014*Lorem ipsum*\u2014which is often used in design or publishing to fill space. \ud83d\ude0a Would you like help with something specific? Whether it's crafting a message, brainstorming ideas, or just chatting, I'm here to assist! What would you like to do today? \ud83c\udf1f"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 15,
+    "completion_tokens": 162,
+    "total_tokens": 177
+  }
+}
+```
+
+---
+
+## Test #36 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/chat/completions`
+
+### Request Body
+
+```json
+{
+  "model": "Lorem ipsum dolor sit amet",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Lorem ipsum dolor sit amet"
+    }
+  ],
+  "timeout": 0.0,
+  "stream": false,
   "stream_format": "invalid_enum_value"
 }
 ```
@@ -1641,7 +1702,7 @@
 
 ---
 
-## Test #36 ✅
+## Test #37 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1702,7 +1763,7 @@
 
 ---
 
-## Test #37 ✅
+## Test #38 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1763,7 +1824,7 @@
 
 ---
 
-## Test #38 ✅
+## Test #39 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1806,7 +1867,7 @@
 
 ---
 
-## Test #39 ✅
+## Test #40 ✅
 
 🔧 *Test case generated from schema*
 
@@ -1869,7 +1930,7 @@
 
 ---
 
-## Test #40 ✅
+## Test #41 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -1913,68 +1974,16 @@
 ```json
 {
   "model": "gemma3:4b",
-  "created_at": "2026-03-07T12:58:58.932423Z",
-  "response": "The capital of France is **Paris**.  \n\nHere's why it's important:  \n- **Political Center**: Paris houses the French government, including the National Assembly and the President of France.  \n- **Cultural Hub**: It's renowned for iconic landmarks like the Eiffel Tower, the Louvre Museum, and the Seine River.  \n- **Historical Significance**: Founded in 1180, it has been the capital for over 800 years, making it one of the oldest cities in Europe.  \n\nParis is also the most visited city in France, attracting millions of tourists each year! \ud83c\uddeb\ud83c\uddf7",
+  "created_at": "2026-03-15T13:57:12.699684Z",
+  "response": "The capital of France is **Paris**.  \n\nIt has been the capital since the Middle Ages and is renowned for landmarks like the Eiffel Tower, the Louvre Museum, and its vibrant culture. Paris is also the largest city in France and a global hub for art, fashion, and history. \ud83c\uddeb\ud83c\uddf7",
   "done": true,
   "context": [],
   "total_duration": 0,
   "load_duration": 0,
   "prompt_eval_count": 17,
   "prompt_eval_duration": 0,
-  "eval_count": 463,
+  "eval_count": 421,
   "eval_duration": 0
-}
-```
-
----
-
-## Test #41 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/api/generate`
-
-### Request Body
-
-```json
-{
-  "model": "Lorem ipsum dolor sit amet",
-  "prompt": "Lorem ipsum dolor sit amet",
-  "stream": true,
-  "temperature": 0.0,
-  "top_p": 0.0,
-  "top_k": 1,
-  "timeout": 0.0
-}
-```
-
-### Expected Response
-
-**Status:** `200 or 422 or 400 or 404 or 501 or 408`
-
-```json
-{
-  "model": "gemma3:4b",
-  "created_at": "2024-12-20T00:00:00.000000Z",
-  "response": "The capital of France is Paris.",
-  "done": true,
-  "context": [],
-  "total_duration": 0,
-  "load_duration": 0,
-  "prompt_eval_count": 10,
-  "prompt_eval_duration": 0,
-  "eval_count": 10,
-  "eval_duration": 0
-}
-```
-
-### Actual Response
-
-**Status:** `501`
-
-```json
-{
-  "detail": "Streaming not yet implemented"
 }
 ```
 
@@ -1996,7 +2005,7 @@
   "temperature": 0.0,
   "top_p": 0.0,
   "top_k": 1,
-  "timeout": 0.123456789
+  "timeout": 0.0
 }
 ```
 
@@ -2048,7 +2057,7 @@
   "temperature": 0.0,
   "top_p": 0.0,
   "top_k": 1,
-  "timeout": 0.999999999
+  "timeout": 0.123456789
 }
 ```
 
@@ -2100,7 +2109,7 @@
   "temperature": 0.0,
   "top_p": 0.0,
   "top_k": 1,
-  "timeout": 1.111111111
+  "timeout": 0.999999999
 }
 ```
 
@@ -2152,7 +2161,7 @@
   "temperature": 0.0,
   "top_p": 0.0,
   "top_k": 1,
-  "timeout": 500000.0
+  "timeout": 1.111111111
 }
 ```
 
@@ -2204,7 +2213,7 @@
   "temperature": 0.0,
   "top_p": 0.0,
   "top_k": 1,
-  "timeout": 1000000.0
+  "timeout": 500000.0
 }
 ```
 
@@ -2255,8 +2264,8 @@
   "stream": true,
   "temperature": 0.0,
   "top_p": 0.0,
-  "top_k": 500000,
-  "timeout": 0.0
+  "top_k": 1,
+  "timeout": 1000000.0
 }
 ```
 
@@ -2308,7 +2317,7 @@
   "temperature": 0.0,
   "top_p": 0.0,
   "top_k": 500000,
-  "timeout": 0.123456789
+  "timeout": 0.0
 }
 ```
 
@@ -2360,7 +2369,7 @@
   "temperature": 0.0,
   "top_p": 0.0,
   "top_k": 500000,
-  "timeout": 0.999999999
+  "timeout": 0.123456789
 }
 ```
 
@@ -2412,7 +2421,7 @@
   "temperature": 0.0,
   "top_p": 0.0,
   "top_k": 500000,
-  "timeout": 1.111111111
+  "timeout": 0.999999999
 }
 ```
 
@@ -2450,6 +2459,58 @@
 
 ## Test #51 ✅
 
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/api/generate`
+
+### Request Body
+
+```json
+{
+  "model": "Lorem ipsum dolor sit amet",
+  "prompt": "Lorem ipsum dolor sit amet",
+  "stream": true,
+  "temperature": 0.0,
+  "top_p": 0.0,
+  "top_k": 500000,
+  "timeout": 1.111111111
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 422 or 400 or 404 or 501 or 408`
+
+```json
+{
+  "model": "gemma3:4b",
+  "created_at": "2024-12-20T00:00:00.000000Z",
+  "response": "The capital of France is Paris.",
+  "done": true,
+  "context": [],
+  "total_duration": 0,
+  "load_duration": 0,
+  "prompt_eval_count": 10,
+  "prompt_eval_duration": 0,
+  "eval_count": 10,
+  "eval_duration": 0
+}
+```
+
+### Actual Response
+
+**Status:** `501`
+
+```json
+{
+  "detail": "Streaming not yet implemented"
+}
+```
+
+---
+
+## Test #52 ✅
+
 📋 *Test case from OpenAPI example*
 
 **Endpoint:** `POST /v1/extract-book-metadata`
@@ -2465,7 +2526,7 @@
         {
           "type": "image_url",
           "image_url": {
-            "url": "data:image/jpeg;base64,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"
+            "url": "data:image/jpeg;base64,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"
           }
         }
       ]
@@ -2506,7 +2567,7 @@
 ```json
 {
   "result": {
-    "title": "this is an image",
+    "title": "This is an image",
     "author": "example",
     "subtitle": "example",
     "publisher": "example",
@@ -2515,62 +2576,9 @@
   },
   "usage": {
     "prompt_tokens": 163,
-    "completion_tokens": 51,
-    "total_tokens": 214
+    "completion_tokens": 52,
+    "total_tokens": 215
   }
-}
-```
-
----
-
-## Test #52 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/extract-book-metadata`
-
-### Request Body
-
-```json
-{
-  "messages": [],
-  "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": true,
-  "stream_format": "sse"
-}
-```
-
-### Expected Response
-
-**Status:** `200 or 429 or 422`
-
-```json
-{
-  "result": {
-    "title": "example",
-    "author": "example",
-    "subtitle": "example",
-    "publisher": "example",
-    "series_title": "example",
-    "series_number": 0
-  },
-  "usage": {
-    "prompt_tokens": 0,
-    "completion_tokens": 0,
-    "total_tokens": 0
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `422`
-
-```json
-{
-  "detail": "messages array cannot be empty"
 }
 ```
 
@@ -2591,7 +2599,7 @@
   "temperature": 0.0,
   "max_tokens": 1,
   "stream": true,
-  "stream_format": "ndjson"
+  "stream_format": "sse"
 }
 ```
 
@@ -2644,46 +2652,7 @@
   "temperature": 0.0,
   "max_tokens": 1,
   "stream": true,
-  "stream_format": "invalid_enum_value"
-}
-```
-
-### Expected Response
-
-**Status:** `400 or 200 or 429 or 422`
-
-```json
-"400/422 (invalid enum value)"
-```
-
-### Actual Response
-
-**Status:** `422`
-
-```json
-{
-  "detail": "messages array cannot be empty"
-}
-```
-
----
-
-## Test #55 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/extract-book-metadata`
-
-### Request Body
-
-```json
-{
-  "messages": [],
-  "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": false,
-  "stream_format": "sse"
+  "stream_format": "ndjson"
 }
 ```
 
@@ -2721,6 +2690,45 @@
 
 ---
 
+## Test #55 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/extract-book-metadata`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.0,
+  "max_tokens": 1,
+  "stream": true,
+  "stream_format": "invalid_enum_value"
+}
+```
+
+### Expected Response
+
+**Status:** `400 or 200 or 429 or 422`
+
+```json
+"400/422 (invalid enum value)"
+```
+
+### Actual Response
+
+**Status:** `422`
+
+```json
+{
+  "detail": "messages array cannot be empty"
+}
+```
+
+---
+
 ## Test #56 ✅
 
 🔧 *Test case generated from schema*
@@ -2736,7 +2744,7 @@
   "temperature": 0.0,
   "max_tokens": 1,
   "stream": false,
-  "stream_format": "ndjson"
+  "stream_format": "sse"
 }
 ```
 
@@ -2789,46 +2797,7 @@
   "temperature": 0.0,
   "max_tokens": 1,
   "stream": false,
-  "stream_format": "invalid_enum_value"
-}
-```
-
-### Expected Response
-
-**Status:** `400 or 200 or 429 or 422`
-
-```json
-"400/422 (invalid enum value)"
-```
-
-### Actual Response
-
-**Status:** `422`
-
-```json
-{
-  "detail": "messages array cannot be empty"
-}
-```
-
----
-
-## Test #58 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/extract-book-metadata`
-
-### Request Body
-
-```json
-{
-  "messages": [],
-  "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.0,
-  "max_tokens": 500000,
-  "stream": true,
-  "stream_format": "sse"
+  "stream_format": "ndjson"
 }
 ```
 
@@ -2866,6 +2835,45 @@
 
 ---
 
+## Test #58 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/extract-book-metadata`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.0,
+  "max_tokens": 1,
+  "stream": false,
+  "stream_format": "invalid_enum_value"
+}
+```
+
+### Expected Response
+
+**Status:** `400 or 200 or 429 or 422`
+
+```json
+"400/422 (invalid enum value)"
+```
+
+### Actual Response
+
+**Status:** `422`
+
+```json
+{
+  "detail": "messages array cannot be empty"
+}
+```
+
+---
+
 ## Test #59 ✅
 
 🔧 *Test case generated from schema*
@@ -2881,7 +2889,7 @@
   "temperature": 0.0,
   "max_tokens": 500000,
   "stream": true,
-  "stream_format": "ndjson"
+  "stream_format": "sse"
 }
 ```
 
@@ -2934,6 +2942,59 @@
   "temperature": 0.0,
   "max_tokens": 500000,
   "stream": true,
+  "stream_format": "ndjson"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 429 or 422`
+
+```json
+{
+  "result": {
+    "title": "example",
+    "author": "example",
+    "subtitle": "example",
+    "publisher": "example",
+    "series_title": "example",
+    "series_number": 0
+  },
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `422`
+
+```json
+{
+  "detail": "messages array cannot be empty"
+}
+```
+
+---
+
+## Test #61 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/extract-book-metadata`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.0,
+  "max_tokens": 500000,
+  "stream": true,
   "stream_format": "invalid_enum_value"
 }
 ```
@@ -2958,7 +3019,7 @@
 
 ---
 
-## Test #61 ✅
+## Test #62 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3011,7 +3072,7 @@
 
 ---
 
-## Test #62 ✅
+## Test #63 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -3028,7 +3089,7 @@
         {
           "type": "image_url",
           "image_url": {
-            "url": "data:image/jpeg;base64,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"
+            "url": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAgAQADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigAooooAKK8ig+Mmi2fxE1+11TXtmiQpHHaL9jc4mHEoyqbuoPXj0q9qfjC2s/ippd5PrT2/h+bw8bvEkrJC26T5XKH+IggDjPagD0+iuc8O+PPDHiy4lt9E1eK6niXc0WxkbHqAwBI6cj1qvdyRD4oafGfENxFKdOcjRxHJ5cw3H96WB2AjpgjNAHV0VyOrfFDwVompyadqGvQR3cbbZESN5Nh7glVIB9ia6awv7TVLGG+sbiO4tZl3RyxtlWHsaALFFcp4+kij0nTzN4huNDU6jABPBHI5mOTiIhCCA3qeOOa0/EPirQ/ClqlzrmpQ2cchITfks5HXaoBJxx0HegDYorA8OeNvDni0yroeqxXbxDc6BWR1HrtYA498Vv0AFFcZd/FnwLZX7WU/iK3E6tsbYjuoPuyqV/Wuok1Sxj0h9V+0xtYJAbgzxnepjA3FhjORjnigC3RXF3Hxa8C2otvO8QwD7QiyRgRSMQrcjcAvycdmxXX21zBeWsVzazJNBKgeOSNgyup5BBHUUAS0Vznjx44/BOpvNrU2iRhFzqMCO7wfOvICEMc9OD3qS58UaJoFrpMOq6ssbXkR8iaZWAl2IGZmOCF4OfmI60Ab9Fcro/wASvB2vXslnp2vW0k8aM7K4aP5VGWILgAgAEnHYZo0n4keD9d1caVpuu2896SQsYV1Dkf3WIAb8CaAOqorJ1/xPovhe0S61rUYbOJztQyZJc+gAyT+Aqn4d8d+GPFkskOiavDdTRjc0W1kfHrtYAke9AHRUVjeIvFmheFLWO41zUorOOQkIGBZnx1wqgk49hVHTPiH4T1m7sLXTtZiuZ79pFt40R8sUXcwbj5MDn5sZ7ZoA6eisLxF4z8O+E1jOuarDZtIMohBZ2HqFUE498VL4f8VaH4qtXudE1KG8jjID7MhkJ6blIBH4igDYooooAKKKKACiiigAooooA868Pf8AJcvGPvY2f/oIqprmm2ep/tBaIt7bxzpBorzIsi7gHEjAHB9M5+uK6HxD8O9N1/WhrKalq+laiYhC9xpd35DSIDwG4Of8+lXoPCFlB4jsNda7vpr2y08aerTSBhImc73+XJcnqcj6UAcv4ut4bX4yeALuCNY57gXsMzqMF0WIbQfXG41JqP8AyX/Rv+wHL/6MNdXqnhmy1bxDout3Etwtzo5ma3WNgEbzFCtvBBJ4HGCPxom8M2U/jC28TNLcC9t7VrRIww8soxySRjOefWgDidN8P+LPAb6nHpOkaXr2mXV1JdAGbyLv5jkqxYFWx2/pXZeDNe03xJ4Us9U0m2+y2koYCDYF8tgxDDA465+vWuen+EulSNIsGveJbS0kJL2dvqbCEg9RtIJx+Ndhoui2Hh7SLfStLtxb2duu2OMEnvkkk8kkkkn3oA4n4yf8i5ov/YctP5tV3xj4U1bUPEukeJdDOny32mpJF9l1EN5Uit3Urkqw55x6enO94l8M2XiqytbS+luI47a6ju0MDAEumcA5B45qp4k8EWHiW8hvZL/VdPvIo/KW4068aFtuScHqDyT2oAzfDnimS68XzaHrvh2PSdfFn9oSSKVJknh3YJDgAj5v4T6V2VzcR2lrNcykiOFGkcgZ4Aya5zwz4C0nwxfz6jFPf3+pTp5cl9qNwZpimc7c8ADIHbtXTsqujI6hlYYIIyCKAPJdK1Pxr4r8Pm/0PQPCFh4fug5jg1PzGZ0BIJYRjaM4PaoPh7PJL+z9rEburLDBfxx7CSoXaxwuecZJxXQR/B3w9C7xRahrkelu5dtKTUGW1OTkjYBnH41u6N4H0vQ/CV74btJbn7Dd+cHLsu9RKCGCkKAMZ44P40AY/wAMdA0ofCnSrY2MDR31oHuQyA+aXznd69cfQCovghK8nwm0jexbY06jPoJXwK7LQtHt/D+hWWkWjyvb2cQijaUguQPUgAZ/CqvhTwzZeD/D1vomny3EttAXZWuGDOdzFjkgAdT6UAYXxg/5JRr/AP1xT/0Ytc14z0+11TxB8LrO9hWa3eRy8bjKttijYAjuMgcV6P4k0C18UeHrzRb2SaO2ulCu0DAOAGDcEgjqPSqt74RsL/UdAvZZrkS6GWNsFZcPuUKd/wAvPAHTFAHFfFvRdOvdX8DpPaRFZNZjtnwoG6JvvIfY46VY+LdnbWun+Fbq3gjintdetUheNApRTuyox0HA49hXZa94YsvEN1pNxdy3CPpd4t5AImUBnXoGyDkfTB96PEvhiy8U2tnb30txGlpeR3kZgZQS6ZwDkHjnn+dAGB428RXdn4g0bQdF0ax1DXLxZJYZL44it0UfM2evOOg9K4nVB4qs/ir4KuvESeHIrqa4liRtIEoleMrhhJv6rzx7k16X4r8EaV4uNpLeSXdreWbFre8spvKmiz1AbB649KyLP4T6Faavp+rte6td6lZTecLu7uvNklwMBXLD7o54XHWgDMjhgvv2hrsakiSPaaOj6ckoyBlhuZQe+Swz9fSq3iWz063/AGgfBc9tHEl9PBdG52AAsoicIx9/vjPt7Vo/E+Hwks+l3fiOTVdOuE3/AGbVtNVw8GMZUugOM7sjIPQ4xznk/Bek6ZrfxO03WPDq6reabpcMz3Ws6mzs95LImxUBYAkKDnoO/tkAdYR+LL34ueMbjRo/Dkl/bSxRj+2RMZI4dvyeVs6KRgn3I9a6fw14S8X23xEbxNrX/COwRy2bW08ekmZfOOcqzBxgkdM56Vv+JPh/o3iXUYtTkkvbDVI12LfadcGGbb6EjIP4ineHPA1h4b1CTUE1HV9RvXiMPn6leNMwQkEgDgDlR27UAdRRRRQAUUUUAf/Z"
           }
         }
       ]
@@ -3061,58 +3122,12 @@
 
 ```json
 {
-  "result": "This Is An Image",
+  "result": "",
   "usage": {
     "prompt_tokens": 90,
-    "completion_tokens": 1211,
-    "total_tokens": 1301
+    "completion_tokens": 4006,
+    "total_tokens": 4096
   }
-}
-```
-
----
-
-## Test #63 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/extract-book-title`
-
-### Request Body
-
-```json
-{
-  "messages": [],
-  "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": true,
-  "stream_format": "sse"
-}
-```
-
-### Expected Response
-
-**Status:** `200 or 429 or 422`
-
-```json
-{
-  "result": "example",
-  "usage": {
-    "prompt_tokens": 0,
-    "completion_tokens": 0,
-    "total_tokens": 0
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `422`
-
-```json
-{
-  "detail": "messages array cannot be empty"
 }
 ```
 
@@ -3133,7 +3148,7 @@
   "temperature": 0.0,
   "max_tokens": 1,
   "stream": true,
-  "stream_format": "ndjson"
+  "stream_format": "sse"
 }
 ```
 
@@ -3179,46 +3194,7 @@
   "temperature": 0.0,
   "max_tokens": 1,
   "stream": true,
-  "stream_format": "invalid_enum_value"
-}
-```
-
-### Expected Response
-
-**Status:** `400 or 200 or 429 or 422`
-
-```json
-"400/422 (invalid enum value)"
-```
-
-### Actual Response
-
-**Status:** `422`
-
-```json
-{
-  "detail": "messages array cannot be empty"
-}
-```
-
----
-
-## Test #66 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/extract-book-title`
-
-### Request Body
-
-```json
-{
-  "messages": [],
-  "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": false,
-  "stream_format": "sse"
+  "stream_format": "ndjson"
 }
 ```
 
@@ -3249,6 +3225,45 @@
 
 ---
 
+## Test #66 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/extract-book-title`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.0,
+  "max_tokens": 1,
+  "stream": true,
+  "stream_format": "invalid_enum_value"
+}
+```
+
+### Expected Response
+
+**Status:** `400 or 200 or 429 or 422`
+
+```json
+"400/422 (invalid enum value)"
+```
+
+### Actual Response
+
+**Status:** `422`
+
+```json
+{
+  "detail": "messages array cannot be empty"
+}
+```
+
+---
+
 ## Test #67 ✅
 
 🔧 *Test case generated from schema*
@@ -3264,7 +3279,7 @@
   "temperature": 0.0,
   "max_tokens": 1,
   "stream": false,
-  "stream_format": "ndjson"
+  "stream_format": "sse"
 }
 ```
 
@@ -3310,46 +3325,7 @@
   "temperature": 0.0,
   "max_tokens": 1,
   "stream": false,
-  "stream_format": "invalid_enum_value"
-}
-```
-
-### Expected Response
-
-**Status:** `400 or 200 or 429 or 422`
-
-```json
-"400/422 (invalid enum value)"
-```
-
-### Actual Response
-
-**Status:** `422`
-
-```json
-{
-  "detail": "messages array cannot be empty"
-}
-```
-
----
-
-## Test #69 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/extract-book-title`
-
-### Request Body
-
-```json
-{
-  "messages": [],
-  "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.0,
-  "max_tokens": 500000,
-  "stream": true,
-  "stream_format": "sse"
+  "stream_format": "ndjson"
 }
 ```
 
@@ -3380,6 +3356,45 @@
 
 ---
 
+## Test #69 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/extract-book-title`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.0,
+  "max_tokens": 1,
+  "stream": false,
+  "stream_format": "invalid_enum_value"
+}
+```
+
+### Expected Response
+
+**Status:** `400 or 200 or 429 or 422`
+
+```json
+"400/422 (invalid enum value)"
+```
+
+### Actual Response
+
+**Status:** `422`
+
+```json
+{
+  "detail": "messages array cannot be empty"
+}
+```
+
+---
+
 ## Test #70 ✅
 
 🔧 *Test case generated from schema*
@@ -3395,7 +3410,7 @@
   "temperature": 0.0,
   "max_tokens": 500000,
   "stream": true,
-  "stream_format": "ndjson"
+  "stream_format": "sse"
 }
 ```
 
@@ -3441,6 +3456,52 @@
   "temperature": 0.0,
   "max_tokens": 500000,
   "stream": true,
+  "stream_format": "ndjson"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 429 or 422`
+
+```json
+{
+  "result": "example",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `422`
+
+```json
+{
+  "detail": "messages array cannot be empty"
+}
+```
+
+---
+
+## Test #72 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/extract-book-title`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.0,
+  "max_tokens": 500000,
+  "stream": true,
   "stream_format": "invalid_enum_value"
 }
 ```
@@ -3465,7 +3526,7 @@
 
 ---
 
-## Test #72 ✅
+## Test #73 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3511,7 +3572,7 @@
 
 ---
 
-## Test #73 ✅
+## Test #74 ✅
 
 📋 *Test case from OpenAPI example*
 
@@ -3528,7 +3589,7 @@
         {
           "type": "image_url",
           "image_url": {
-            "url": "data:image/jpeg;base64,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"
+            "url": "data:image/jpeg;base64,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"
           }
         }
       ]
@@ -3572,59 +3633,9 @@
   },
   "usage": {
     "prompt_tokens": 198,
-    "completion_tokens": 29,
-    "total_tokens": 227
+    "completion_tokens": 24,
+    "total_tokens": 222
   }
-}
-```
-
----
-
-## Test #74 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/extract-nutrition-information`
-
-### Request Body
-
-```json
-{
-  "messages": [],
-  "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": true,
-  "stream_format": "sse"
-}
-```
-
-### Expected Response
-
-**Status:** `200 or 429 or 422`
-
-```json
-{
-  "result": {
-    "calories": 0,
-    "serving_size": 0.0,
-    "unit": "example"
-  },
-  "usage": {
-    "prompt_tokens": 0,
-    "completion_tokens": 0,
-    "total_tokens": 0
-  }
-}
-```
-
-### Actual Response
-
-**Status:** `422`
-
-```json
-{
-  "detail": "messages array cannot be empty"
 }
 ```
 
@@ -3645,7 +3656,7 @@
   "temperature": 0.0,
   "max_tokens": 1,
   "stream": true,
-  "stream_format": "ndjson"
+  "stream_format": "sse"
 }
 ```
 
@@ -3695,46 +3706,7 @@
   "temperature": 0.0,
   "max_tokens": 1,
   "stream": true,
-  "stream_format": "invalid_enum_value"
-}
-```
-
-### Expected Response
-
-**Status:** `400 or 200 or 429 or 422`
-
-```json
-"400/422 (invalid enum value)"
-```
-
-### Actual Response
-
-**Status:** `422`
-
-```json
-{
-  "detail": "messages array cannot be empty"
-}
-```
-
----
-
-## Test #77 ✅
-
-🔧 *Test case generated from schema*
-
-**Endpoint:** `POST /v1/extract-nutrition-information`
-
-### Request Body
-
-```json
-{
-  "messages": [],
-  "model": "Lorem ipsum dolor sit amet",
-  "temperature": 0.0,
-  "max_tokens": 1,
-  "stream": false,
-  "stream_format": "sse"
+  "stream_format": "ndjson"
 }
 ```
 
@@ -3769,6 +3741,45 @@
 
 ---
 
+## Test #77 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/extract-nutrition-information`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.0,
+  "max_tokens": 1,
+  "stream": true,
+  "stream_format": "invalid_enum_value"
+}
+```
+
+### Expected Response
+
+**Status:** `400 or 200 or 429 or 422`
+
+```json
+"400/422 (invalid enum value)"
+```
+
+### Actual Response
+
+**Status:** `422`
+
+```json
+{
+  "detail": "messages array cannot be empty"
+}
+```
+
+---
+
 ## Test #78 ✅
 
 🔧 *Test case generated from schema*
@@ -3784,7 +3795,7 @@
   "temperature": 0.0,
   "max_tokens": 1,
   "stream": false,
-  "stream_format": "ndjson"
+  "stream_format": "sse"
 }
 ```
 
@@ -3834,6 +3845,56 @@
   "temperature": 0.0,
   "max_tokens": 1,
   "stream": false,
+  "stream_format": "ndjson"
+}
+```
+
+### Expected Response
+
+**Status:** `200 or 429 or 422`
+
+```json
+{
+  "result": {
+    "calories": 0,
+    "serving_size": 0.0,
+    "unit": "example"
+  },
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  }
+}
+```
+
+### Actual Response
+
+**Status:** `422`
+
+```json
+{
+  "detail": "messages array cannot be empty"
+}
+```
+
+---
+
+## Test #80 ✅
+
+🔧 *Test case generated from schema*
+
+**Endpoint:** `POST /v1/extract-nutrition-information`
+
+### Request Body
+
+```json
+{
+  "messages": [],
+  "model": "Lorem ipsum dolor sit amet",
+  "temperature": 0.0,
+  "max_tokens": 1,
+  "stream": false,
   "stream_format": "invalid_enum_value"
 }
 ```
@@ -3858,7 +3919,7 @@
 
 ---
 
-## Test #80 ✅
+## Test #81 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3908,7 +3969,7 @@
 
 ---
 
-## Test #81 ✅
+## Test #82 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3958,7 +4019,7 @@
 
 ---
 
-## Test #82 ✅
+## Test #83 ✅
 
 🔧 *Test case generated from schema*
 
@@ -3997,7 +4058,7 @@
 
 ---
 
-## Test #83 ✅
+## Test #84 ✅
 
 🔧 *Test case generated from schema*
 
