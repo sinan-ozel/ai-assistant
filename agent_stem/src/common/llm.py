@@ -7,6 +7,7 @@ endpoints (chat completions, generate, agent chat, etc.).
 import logging
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
+import litellm
 from litellm import acompletion, completion
 
 logger = logging.getLogger(__name__)
@@ -319,20 +320,37 @@ async def call_llm_by_model_streaming(
     # Call LiteLLM with async streaming
     try:
         response = await acompletion(**litellm_kwargs)
+    except litellm.Timeout as e:
+        logger.warning(
+            "LiteLLM streaming timed out for model '%s' (api_base=%s): %s. "
+            "DevOps: check that the LLM service is reachable and responsive; "
+            "consider increasing the 'timeout' value in the provider config.",
+            litellm_kwargs.get("model"),
+            litellm_kwargs.get("api_base"),
+            e,
+        )
+        raise
+    except litellm.APIConnectionError as e:
+        logger.warning(
+            "LiteLLM streaming could not connect to model '%s' (api_base=%s): %s. "
+            "DevOps: verify the LLM service is running and that 'api_base' in "
+            "the provider config points to the correct host and port.",
+            litellm_kwargs.get("model"),
+            litellm_kwargs.get("api_base"),
+            e,
+        )
+        raise
     except Exception as e:
-        # Log kwargs for debugging (mask api_key, truncate long values)
-        kwargs_for_log = kwargs.copy()
+        kwargs_for_log = litellm_kwargs.copy()
         if "api_key" in kwargs_for_log:
             kwargs_for_log["api_key"] = "***masked***"
-
-        # Truncate long values in messages (e.g., base64 images)
         if "messages" in kwargs_for_log:
             kwargs_for_log["messages"] = _truncate_messages(
                 kwargs_for_log["messages"]
             )
-        logger.error(f"Calling completion with kwargs: {kwargs_for_log}")
-        logger.error(f"LiteLLM completion failed with kwargs: {kwargs_for_log}")
-        logger.error(f"Error: {e}")
+        logger.error("LiteLLM streaming failed with kwargs: %s", kwargs_for_log)
+        logger.error("Error: %s", e)
+        raise
 
     async for chunk in response:
         yield chunk

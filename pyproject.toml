@@ -51,6 +51,7 @@ test = [
 dev = [
     "ruff>=0.12.11",          # For linting
     "black>=24.0.0",          # For code formatting (Black)
+    "isort>=5.0.0",           # For moving and sorting imports
     "docformatter>=1.7.5",    # For formatting docstrings
 ]
 
@@ -58,6 +59,9 @@ docs = [
     "mkdocs-material>=9.0.0", # Material theme for MkDocs
     "mkdocstrings[python]>=0.24.0",  # API documentation from docstrings
 ]
+
+[tool.isort]
+profile = "black"
 
 [tool.ruff]
 line-length = 80

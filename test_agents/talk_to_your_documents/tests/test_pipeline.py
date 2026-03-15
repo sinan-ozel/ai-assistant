@@ -1,9 +1,13 @@
 """Tests for the PDF → Markdown → Qdrant pipeline."""
 
+import os
 import time
 from pathlib import Path
 
 import pytest
+import requests
+
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
 LIBRARY_DIR = Path("/app/cortex/library")
 
@@ -14,7 +18,13 @@ TIMEOUT = 180  # seconds
 # Allow time for PDF conversion + embedding model + chunking to complete.
 CHUNK_TIMEOUT = 600  # seconds
 
-QDRANT_COLLECTION = "library"
+QDRANT_FALLBACK_COLLECTION = "library"
+
+
+def _collection_for_path(md_path: Path) -> str:
+    """Mirror the pipeline's logic: top-level folder under LIBRARY_DIR is the collection."""
+    parts = md_path.relative_to(LIBRARY_DIR).parts
+    return parts[0] if len(parts) > 1 else QDRANT_FALLBACK_COLLECTION
 
 
 @pytest.mark.depends(on=["healthy"])
@@ -77,11 +87,14 @@ def test_chunks_stored_in_qdrant(pdf_conversion_reset, chunk_reset):
     start = time.time()
     while True:
         try:
-            info = qdrant.get_collection(QDRANT_COLLECTION)
-            if info.points_count and info.points_count > 0:
+            total = sum(
+                qdrant.get_collection(c.name).points_count or 0
+                for c in qdrant.get_collections().collections
+            )
+            if total > 0:
                 break
         except Exception:
-            pass  # collection not yet created
+            pass  # collections not yet created
 
         if time.time() - start > CHUNK_TIMEOUT:
             raise TimeoutError(
@@ -108,6 +121,7 @@ def test_qdrant_updates_after_frontmatter_edit(pdf_conversion_reset, chunk_reset
 
     qdrant = chunk_reset
     md_path = LIBRARY_DIR / "shelf1" / "simple-psionics.md"
+    collection = _collection_for_path(md_path)
     file_path = str(md_path.relative_to(LIBRARY_DIR).with_suffix(".pdf"))
     point_filter = qmodels.Filter(
         must=[
@@ -122,7 +136,9 @@ def test_qdrant_updates_after_frontmatter_edit(pdf_conversion_reset, chunk_reset
     start = time.time()
     while not md_path.exists():
         if time.time() - start > TIMEOUT:
-            raise TimeoutError(f"{md_path.name} did not appear within {TIMEOUT}s")
+            raise TimeoutError(
+                f"{md_path} is missing — the PDF pipeline did not create it within {TIMEOUT}s"
+            )
         time.sleep(1)
 
     # Step 2: wait for its chunks to land in Qdrant; record the timestamp
@@ -131,7 +147,7 @@ def test_qdrant_updates_after_frontmatter_edit(pdf_conversion_reset, chunk_reset
     while original_completed_at is None:
         try:
             results, _ = qdrant.scroll(
-                collection_name=QDRANT_COLLECTION,
+                collection_name=collection,
                 scroll_filter=point_filter,
                 limit=1,
                 with_payload=True,
@@ -149,7 +165,12 @@ def test_qdrant_updates_after_frontmatter_edit(pdf_conversion_reset, chunk_reset
 
     # Step 3: add a field to the frontmatter — this touches mtime
     content = md_path.read_text(encoding="utf-8")
-    _, fm, body = content.split("---", 2)
+    parts = content.split("---", 2)
+    if len(parts) < 3:
+        pytest.fail(
+            f"{md_path} exists but is missing the YAML front matter '---' delimiter"
+        )
+    _, fm, body = parts
     md_path.write_text(f"---{fm}test_note: added_by_test\n---{body}", encoding="utf-8")
 
     # Step 4: wait for Qdrant to show a newer chunking_completed_at
@@ -157,7 +178,7 @@ def test_qdrant_updates_after_frontmatter_edit(pdf_conversion_reset, chunk_reset
     while True:
         try:
             results, _ = qdrant.scroll(
-                collection_name=QDRANT_COLLECTION,
+                collection_name=collection,
                 scroll_filter=point_filter,
                 limit=1,
                 with_payload=True,

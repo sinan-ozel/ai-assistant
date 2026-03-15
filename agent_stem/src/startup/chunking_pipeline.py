@@ -83,7 +83,9 @@ def _get_embedder():
     if _embedder is None:
         from sentence_transformers import SentenceTransformer
 
-        logger.info("Chunking pipeline: loading embedding model %s.", EMBEDDING_MODEL)
+        logger.info(
+            "Chunking pipeline: loading embedding model %s.", EMBEDDING_MODEL
+        )
         _embedder = SentenceTransformer(EMBEDDING_MODEL)
         logger.info("Chunking pipeline: embedding model loaded.")
     return _embedder
@@ -146,11 +148,26 @@ def _to_file_path(source_key: str) -> str:
     return str(p.with_suffix(".pdf"))
 
 
+def _collection_for_path(source_key: str) -> str:
+    """Return the Qdrant collection / LanceDB table name for *source_key*.
+
+    Uses the name of the top-level folder under ``LIBRARY_DIR`` as the
+    collection name, so each shelf gets its own collection.  Files placed
+    directly under ``LIBRARY_DIR`` (no subfolder) fall back to
+    ``QDRANT_COLLECTION``.
+    """
+    try:
+        parts = Path(source_key).relative_to(LIBRARY_DIR).parts
+    except ValueError:
+        return QDRANT_COLLECTION
+    return parts[0] if len(parts) > 1 else QDRANT_COLLECTION
+
+
 def _safe_json(obj) -> str:
     """JSON-serialise *obj* to a string for flat storage columns.
 
-    LanceDB stores structured metadata as JSON strings when there is no
-    native nested-struct schema defined up front.
+    LanceDB stores structured metadata as JSON strings when there is no native
+    nested-struct schema defined up front.
     """
     return json.dumps(obj, ensure_ascii=False, default=str)
 
@@ -337,7 +354,9 @@ class MarkdownChunker:
                     ch_match = MarkdownChunker.CHAPTER_RE.search(title)
                     chapter = int(ch_match.group(2)) if ch_match else None
 
-                    toc.append({"title": title, "page": page, "chapter": chapter})
+                    toc.append(
+                        {"title": title, "page": page, "chapter": chapter}
+                    )
                     toc_end_idx = i + 1
                     failures = 0
             else:
@@ -439,12 +458,20 @@ class MarkdownChunker:
                         last_valid_page = page_num
                         current_page = page_num
                         classified.append(
-                            {"kind": "footer", "page": page_num, "raw": raw_line}
+                            {
+                                "kind": "footer",
+                                "page": page_num,
+                                "raw": raw_line,
+                            }
                         )
                     else:
                         # Page number went backwards — treat line as body text
                         classified.append(
-                            {"kind": "body", "raw": raw_line, "page": current_page}
+                            {
+                                "kind": "body",
+                                "raw": raw_line,
+                                "page": current_page,
+                            }
                         )
                 else:
                     # Chapter footer line — no page number to extract
@@ -476,7 +503,9 @@ class MarkdownChunker:
                 continue
 
             # Default: body text
-            classified.append({"kind": "body", "raw": raw_line, "page": current_page})
+            classified.append(
+                {"kind": "body", "raw": raw_line, "page": current_page}
+            )
 
         # ------------------------------------------------------------------
         # Pass 2: walk classified lines and emit chunks
@@ -570,8 +599,16 @@ class MarkdownChunker:
                     "page_count_from_pdf": book_meta.get("pages"),
                     "tags": tags,
                     **{
-                        k: v for k, v in book_meta.items()
-                        if k not in {"body_title", "pdf_title", "pdf_author", "pages", "tags"}
+                        k: v
+                        for k, v in book_meta.items()
+                        if k
+                        not in {
+                            "body_title",
+                            "pdf_title",
+                            "pdf_author",
+                            "pages",
+                            "tags",
+                        }
                     },
                 },
                 # Timing fields are stamped by process_markdown_file after
@@ -624,7 +661,8 @@ class MarkdownChunker:
 
     @staticmethod
     def _is_table_line(line: str) -> bool:
-        """Return True if *line* looks like a Markdown table row (``|...|``)."""
+        """Return True if *line* looks like a Markdown table row
+        (``|...|``)."""
         return bool(MarkdownChunker.TABLE_RE.match(line.strip()))
 
     @staticmethod
@@ -997,12 +1035,14 @@ def _write_to_qdrant(
     from qdrant_client.http import models as qmodels
 
     client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+    collection = _collection_for_path(source_key)
+    file_path = _to_file_path(source_key)
 
     # Create the collection on first use
     existing = {c.name for c in client.get_collections().collections}
-    if QDRANT_COLLECTION not in existing:
+    if collection not in existing:
         client.create_collection(
-            collection_name=QDRANT_COLLECTION,
+            collection_name=collection,
             vectors_config=qmodels.VectorParams(
                 size=EMBEDDING_DIM,
                 distance=qmodels.Distance.COSINE,
@@ -1010,14 +1050,12 @@ def _write_to_qdrant(
         )
         logger.info(
             "Chunking pipeline: created Qdrant collection '%s'.",
-            QDRANT_COLLECTION,
+            collection,
         )
-
-    file_path = _to_file_path(source_key)
 
     # Delete all existing points for this source file so we start clean
     client.delete(
-        collection_name=QDRANT_COLLECTION,
+        collection_name=collection,
         points_selector=qmodels.FilterSelector(
             filter=qmodels.Filter(
                 must=[
@@ -1046,11 +1084,11 @@ def _write_to_qdrant(
             )
         )
 
-    client.upsert(collection_name=QDRANT_COLLECTION, points=points)
+    client.upsert(collection_name=collection, points=points)
     logger.info(
         "Chunking pipeline: upserted %d points to Qdrant collection '%s'.",
         len(points),
-        QDRANT_COLLECTION,
+        collection,
     )
 
 
@@ -1087,15 +1125,19 @@ def _write_to_lancedb(
                 "page_number": meta.get("page_number"),
                 "token_count": meta.get("token_count", 0),
                 "parent_index": meta.get("parent_index"),
-                "section_hierarchy": _safe_json(meta.get("section_hierarchy", [])),
+                "section_hierarchy": _safe_json(
+                    meta.get("section_hierarchy", [])
+                ),
                 "book": _safe_json(meta.get("book", {})),
                 "chunking_started_at": meta.get("chunking_started_at"),
                 "chunking_completed_at": meta.get("chunking_completed_at"),
             }
         )
 
-    if LANCEDB_TABLE in db.table_names():
-        tbl = db.open_table(LANCEDB_TABLE)
+    table = _collection_for_path(source_key)
+
+    if table in db.table_names():
+        tbl = db.open_table(table)
         # Escape single quotes in the file path for the SQL predicate
         escaped = file_path.replace("'", "''")
         tbl.delete(f"file_path = '{escaped}'")
@@ -1105,15 +1147,13 @@ def _write_to_lancedb(
         )
         tbl.add(rows)
     else:
-        db.create_table(LANCEDB_TABLE, data=rows)
-        logger.info(
-            "Chunking pipeline: created LanceDB table '%s'.", LANCEDB_TABLE
-        )
+        db.create_table(table, data=rows)
+        logger.info("Chunking pipeline: created LanceDB table '%s'.", table)
 
     logger.info(
         "Chunking pipeline: wrote %d rows to LanceDB table '%s'.",
         len(rows),
-        LANCEDB_TABLE,
+        table,
     )
 
 
@@ -1178,7 +1218,9 @@ async def process_markdown_file(path: "Path | str") -> tuple[list, list]:
     stats = {
         "total_chunks": len(chunks),
         "empty_chunks": sum(1 for c in chunks if not c.get("text")),
-        "total_tokens": sum(c["metadata"].get("tokens", 0) for c in chunks),
+        "total_tokens": sum(
+            c["metadata"].get("token_count", 0) for c in chunks
+        ),
     }
 
     # 5. Write to vector store — also run in executor (network / disk I/O)
@@ -1206,6 +1248,16 @@ async def process_markdown_file(path: "Path | str") -> tuple[list, list]:
             stats["total_chunks"],
             stats["empty_chunks"],
         )
+
+    # 6. Update the library index in Redis with tags and chunk count for this book
+    file_path_key = _to_file_path(str(path))
+    with Memory() as memory:
+        if not hasattr(memory, "library"):
+            memory.library = {}
+        memory.library[file_path_key] = {
+            "tags": book_meta.get("tags", []),
+            "chunk_count": stats["total_chunks"],
+        }
 
     return chunks, toc
 
@@ -1247,8 +1299,12 @@ async def run_chunking_pipeline() -> None:
             continue
 
         md_files = sorted(
-            p for p in LIBRARY_DIR.rglob("*.md")
-            if not any(part.startswith(".") for part in p.parts[len(LIBRARY_DIR.parts):])
+            p
+            for p in LIBRARY_DIR.rglob("*.md")
+            if not any(
+                part.startswith(".")
+                for part in p.parts[len(LIBRARY_DIR.parts) :]
+            )
         )
         logger.debug(
             "Chunking pipeline: check running, %d Markdown file(s) found.",

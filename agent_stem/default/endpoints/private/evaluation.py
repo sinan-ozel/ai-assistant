@@ -86,163 +86,152 @@ async def handler(path: str, workflows_state: dict, providers_state: dict):
 
     # Start evaluation in background
     async def run_evaluation_async():
-        try:
-            logger.info(f"Starting evaluation for workflow: {path}")
+        logger.info(f"Starting evaluation for workflow: {path}")
 
-            # Check for cancellation before starting
-            with Memory() as memory:
-                if not hasattr(memory, "workflow_evaluation_state"):
-                    memory.workflow_evaluation_state = {}
-                state = memory.workflow_evaluation_state.get(path, {})
-                if state.get("cancelled"):
-                    logger.info(
-                        f"Evaluation was cancelled before starting: {path}"
-                    )
-                    memory.workflow_evaluation_state[path] = {
-                        "status": "cancelled",
-                        "current_evaluation": None,
-                        "results": None,
-                        "error": "Evaluation was cancelled",
-                        "started_at": state.get("started_at"),
-                        "cancelled": True,
-                    }
-                    return
+        # Check for cancellation before starting
+        with Memory() as memory:
+            if not hasattr(memory, "workflow_evaluation_state"):
+                memory.workflow_evaluation_state = {}
+            state = memory.workflow_evaluation_state.get(path, {})
+            if state.get("cancelled"):
+                logger.info(
+                    f"Evaluation was cancelled before starting: {path}"
+                )
+                memory.workflow_evaluation_state[path] = {
+                    "status": "cancelled",
+                    "current_evaluation": None,
+                    "results": None,
+                    "error": "Evaluation was cancelled",
+                    "started_at": state.get("started_at"),
+                    "cancelled": True,
+                }
+                return
 
-            # Parse evaluation YAML
-            eval_yaml_str = yaml.dump(workflow_data["evaluation"])
-            test_cases = parse_evaluation_yaml(eval_yaml_str, base_dir)
+        # Parse evaluation YAML
+        eval_yaml_str = yaml.dump(workflow_data["evaluation"])
+        test_cases = parse_evaluation_yaml(eval_yaml_str, base_dir)
 
-            # Get provider configuration
-            provider = {}
-            provider_name = workflow_data.get("provider")
-            if provider_name:
-                # Find provider in providers_state
+        # Get provider configuration
+        provider = {}
+        provider_name = workflow_data.get("provider")
+        if provider_name:
+            # Find provider in providers_state
+            for p in providers_state.get("providers", []):
+                if p.get("name") == provider_name:
+                    provider = p.copy()
+                    break
+
+        if not provider:
+            # Use default provider
+            default_provider_name = providers_state.get("default_provider")
+            if default_provider_name:
                 for p in providers_state.get("providers", []):
-                    if p.get("name") == provider_name:
+                    if p.get("name") == default_provider_name:
                         provider = p.copy()
                         break
 
-            if not provider:
-                # Use default provider
-                default_provider_name = providers_state.get("default_provider")
-                if default_provider_name:
-                    for p in providers_state.get("providers", []):
-                        if p.get("name") == default_provider_name:
-                            provider = p.copy()
-                            break
+        if not provider:
+            if providers_state.get("loading", False):
+                raise ValueError(
+                    "Provider discovery is still in progress. "
+                    "Check GET /private/v1/providers for status "
+                    "and retry once status is no longer 'initializing'."
+                )
+            raise ValueError("No provider available for evaluation")
 
-            if not provider:
-                if providers_state.get("loading", False):
-                    raise ValueError(
-                        "Provider discovery is still in progress. "
-                        "Check GET /private/v1/providers for status "
-                        "and retry once status is no longer 'initializing'."
-                    )
-                raise ValueError("No provider available for evaluation")
+        # Log which provider is being used
+        provider_name_used = (
+            workflow_data.get("provider")
+            or providers_state.get("default_provider")
+            or "unknown"
+        )
+        logger.info(
+            f"Using provider '{provider_name_used}' for evaluation "
+            f"of workflow: {path}"
+        )
 
-            # Log which provider is being used
-            provider_name_used = (
-                workflow_data.get("provider")
-                or providers_state.get("default_provider")
-                or "unknown"
-            )
-            logger.info(
-                f"Using provider '{provider_name_used}' for evaluation "
-                f"of workflow: {path}"
-            )
+        # Ensure provider has a model key
+        if "model" not in provider:
+            provider["model"] = provider.get("name")
 
-            # Ensure provider has a model key
-            if "model" not in provider:
-                provider["model"] = provider.get("name")
+        # Build system message from workflow (same logic as workflow handler)
+        # This includes the prompt template + output schema instructions
+        from startup.workflows import json_schema_to_prompt_format
 
-            # Build system message from workflow (same logic as workflow handler)
-            # This includes the prompt template + output schema instructions
-            from startup.workflows import json_schema_to_prompt_format
+        # Get prompt from execution section or legacy root-level field
+        if "execution" in workflow_data:
+            exec_section = workflow_data["execution"]
+            exec_type = exec_section["type"]
 
-            # Get prompt from execution section or legacy root-level field
-            if "execution" in workflow_data:
-                exec_section = workflow_data["execution"]
-                exec_type = exec_section["type"]
-
-                if exec_type == "prompt":
-                    base_prompt = exec_section["prompt"]
-                elif exec_type == "python":
-                    raise ValueError(
-                        "Python execution not yet supported for evaluations"
-                    )
-                else:
-                    raise ValueError(f"Unknown execution type: {exec_type}")
+            if exec_type == "prompt":
+                base_prompt = exec_section["prompt"]
+            elif exec_type == "python":
+                raise ValueError(
+                    "Python execution not yet supported for evaluations"
+                )
             else:
-                # Legacy format - prompt at root level
-                base_prompt = workflow_data.get("prompt", "")
+                raise ValueError(f"Unknown execution type: {exec_type}")
+        else:
+            # Legacy format - prompt at root level
+            base_prompt = workflow_data.get("prompt", "")
 
-            # Build system message with prompt + output schema instructions
-            output_schema = workflow_data.get("output_schema", {})
-            schema_instructions = json_schema_to_prompt_format(output_schema)
-            system_message = f"{base_prompt.strip()}\n\n{schema_instructions}"
+        # Build system message with prompt + output schema instructions
+        output_schema = workflow_data.get("output_schema", {})
+        schema_instructions = json_schema_to_prompt_format(output_schema)
+        system_message = f"{base_prompt.strip()}\n\n{schema_instructions}"
 
-            # Run evaluations in executor to avoid blocking
-            loop = asyncio.get_event_loop()
-            results = await loop.run_in_executor(
-                None,
-                run_all_evaluations,
-                test_cases,
-                provider,
-                providers_state,
-                path,
-                system_message,
-            )
+        # Run evaluations in executor to avoid blocking
+        loop = asyncio.get_event_loop()
+        results = await loop.run_in_executor(
+            None,
+            run_all_evaluations,
+            test_cases,
+            provider,
+            providers_state,
+            path,
+            system_message,
+        )
 
-            # Store results
-            with Memory() as memory:
-                if not hasattr(memory, "workflow_evaluation_state"):
-                    memory.workflow_evaluation_state = {}
+        # Store results
+        with Memory() as memory:
+            if not hasattr(memory, "workflow_evaluation_state"):
+                memory.workflow_evaluation_state = {}
 
-                state = memory.workflow_evaluation_state.get(path, {})
-                memory.workflow_evaluation_state[path] = {
-                    "status": "completed",
-                    "current_evaluation": None,
-                    "results": results,
-                    "error": None,
-                    "started_at": state.get("started_at"),
-                    "cancelled": False,
-                }
-            logger.info(f"Evaluation completed for workflow: {path}")
+            state = memory.workflow_evaluation_state.get(path, {})
+            memory.workflow_evaluation_state[path] = {
+                "status": "completed",
+                "current_evaluation": None,
+                "results": results,
+                "error": None,
+                "started_at": state.get("started_at"),
+                "cancelled": False,
+            }
+        logger.info(f"Evaluation completed for workflow: {path}")
 
-        except Exception as e:
-            logger.error(
-                f"Evaluation error for workflow {path}: {type(e).__name__}: {e}"
-            )
-            logger.error(f"Setting status to 'error' for workflow: {path}")
-            try:
-                with Memory() as memory:
-                    if not hasattr(memory, "workflow_evaluation_state"):
-                        memory.workflow_evaluation_state = {}
+        with Memory() as memory:
+            if not hasattr(memory, "workflow_evaluation_state"):
+                memory.workflow_evaluation_state = {}
 
-                    state = memory.workflow_evaluation_state.get(path, {})
-                    # Check if it was cancelled
-                    if state.get("cancelled"):
-                        status = "cancelled"
-                        error_msg = "Evaluation was cancelled by user"
-                    else:
-                        status = "error"
-                        error_msg = str(e)
+            state = memory.workflow_evaluation_state.get(path, {})
+            # Check if it was cancelled
+            if state.get("cancelled"):
+                status = "cancelled"
+                error_msg = "Evaluation was cancelled by user"
+            else:
+                status = "error"
+                error_msg = str(e)
 
-                    memory.workflow_evaluation_state[path] = {
-                        "status": status,
-                        "current_evaluation": None,
-                        "results": None,
-                        "error": error_msg,
-                        "started_at": state.get("started_at"),
-                        "cancelled": state.get("cancelled", False),
-                    }
-                logger.info(
-                    f"Error status successfully saved to Memory for workflow: {path}"
-                )
-            except Exception as mem_error:
-                logger.error(
-                    f"Failed to save error status to Memory: {mem_error}"
-                )
+            memory.workflow_evaluation_state[path] = {
+                "status": status,
+                "current_evaluation": None,
+                "results": None,
+                "error": error_msg,
+                "started_at": state.get("started_at"),
+                "cancelled": state.get("cancelled", False),
+            }
+        logger.info(
+            f"Error status successfully saved to Memory for workflow: {path}"
+        )
 
     # Start background task
     asyncio.create_task(run_evaluation_async())

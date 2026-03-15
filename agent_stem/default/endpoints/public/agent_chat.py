@@ -166,39 +166,38 @@ def handle_streaming(
         """Generate streaming chunks in the requested format."""
         full_content = []
 
-        try:
-            async for chunk in call_llm_by_model_streaming(
-                messages=prompt_messages,
-                providers_state=providers_state,
-                model=None,  # Use default provider
-                timeout=timeout,
-                max_tokens=max_tokens,
-            ):
-                # Extract delta content from chunk
-                if chunk.choices and len(chunk.choices) > 0:
-                    choice = chunk.choices[0]
-                    delta = choice.delta
+        async for chunk in call_llm_by_model_streaming(
+            messages=prompt_messages,
+            providers_state=providers_state,
+            model=None,  # Use default provider
+            timeout=timeout,
+            max_tokens=max_tokens,
+        ):
+            # Extract delta content from chunk
+            if chunk.choices and len(chunk.choices) > 0:
+                choice = chunk.choices[0]
+                delta = choice.delta
 
-                    # Build agent chat streaming chunk
-                    chunk_data = {
-                        "conversation_id": conversation_id,
-                        "user_id": user_id,
-                        "role": "assistant",
-                        "created": created,
-                        "delta": {},
-                        "finish_reason": choice.finish_reason,
-                    }
+                # Build agent chat streaming chunk
+                chunk_data = {
+                    "conversation_id": conversation_id,
+                    "user_id": user_id,
+                    "role": "assistant",
+                    "created": created,
+                    "delta": {},
+                    "finish_reason": choice.finish_reason,
+                }
 
-                    # Add content if present
-                    if hasattr(delta, "content") and delta.content:
-                        chunk_data["delta"]["content"] = delta.content
-                        full_content.append(delta.content)
+                # Add content if present
+                if hasattr(delta, "content") and delta.content:
+                    chunk_data["delta"]["content"] = delta.content
+                    full_content.append(delta.content)
 
-                    # Yield in appropriate format
-                    if stream_format == STREAM_FORMAT_SSE:
-                        yield f"data: {json.dumps(chunk_data)}\n\n"
-                    else:  # NDJSON
-                        yield json.dumps(chunk_data) + "\n"
+                # Yield in appropriate format
+                if stream_format == STREAM_FORMAT_SSE:
+                    yield f"data: {json.dumps(chunk_data)}\n\n"
+                else:  # NDJSON
+                    yield json.dumps(chunk_data) + "\n"
 
             # After streaming completes, store messages in memory
             assistant_message = "".join(full_content)
@@ -217,37 +216,6 @@ def handle_streaming(
                 yield "data: [DONE]\n\n"
             else:  # NDJSON
                 yield json.dumps({"done": True}) + "\n"
-
-        except litellm.Timeout as e:
-            error_data = {"error": {"message": str(e), "type": "timeout"}}
-            if stream_format == STREAM_FORMAT_SSE:
-                yield f"data: {json.dumps(error_data)}\n\n"
-            else:
-                yield json.dumps(error_data) + "\n"
-        except litellm.APIConnectionError as e:
-            error_msg = str(e).lower()
-            if "timeout" in error_msg or "timed out" in error_msg:
-                error_data = {"error": {"message": str(e), "type": "timeout"}}
-            else:
-                error_data = {
-                    "error": {"message": str(e), "type": "connection_error"}
-                }
-            if stream_format == STREAM_FORMAT_SSE:
-                yield f"data: {json.dumps(error_data)}\n\n"
-            else:
-                yield json.dumps(error_data) + "\n"
-        except Exception as e:
-            logger.error(f"Streaming error in agent chat: {e}")
-            error_data = {
-                "error": {
-                    "message": f"LLM call failed: {str(e)}",
-                    "type": "server_error",
-                }
-            }
-            if stream_format == STREAM_FORMAT_SSE:
-                yield f"data: {json.dumps(error_data)}\n\n"
-            else:
-                yield json.dumps(error_data) + "\n"
 
     # Set media type based on format
     if stream_format == STREAM_FORMAT_SSE:

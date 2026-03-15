@@ -2,13 +2,14 @@ FROM python:3.11-slim
 
 WORKDIR /workspace
 
-# Install only the linting / formatting tools needed for this image.
-# The project dev dependencies are declared in `pyproject.toml`'s `dev`
-# extra, but for a lint-only container we install the tools directly
-# to avoid building the package.
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir ruff black isort docformatter && \
-    rm -rf /var/lib/apt/lists/* /root/.cache/pip
+# Copy pyproject.toml for dependency installation.
+# Install only the declared dev dependencies (not the package itself) so that
+# this layer is invalidated only when pyproject.toml changes, not on every
+# source file edit.
+COPY pyproject.toml /workspace/pyproject.toml
+RUN pip install --no-cache-dir $(python3 -c \
+    "import tomllib; d=tomllib.load(open('pyproject.toml','rb')); \
+     print(' '.join(d['project']['optional-dependencies']['dev']))")
 
 # Files will be mounted at /workspace at runtime
 CMD ["./lint/lint.sh"]

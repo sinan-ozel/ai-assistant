@@ -16,6 +16,12 @@ for d in "${targets[@]}"; do
   if [ -d "$d" ]; then
     echo ""
     echo "=========================================="
+    echo "Running isort on $d..."
+    echo "=========================================="
+    isort "$d"
+
+    echo ""
+    echo "=========================================="
     echo "Running Black on $d..."
     echo "=========================================="
     black "$d"
@@ -28,7 +34,7 @@ for d in "${targets[@]}"; do
 
     echo ""
     echo "=========================================="
-    echo "Running ruff --select I on $d..."
+    echo "Running ruff --fix on $d..."
     echo "=========================================="
     ruff check "$d" --fix
   else

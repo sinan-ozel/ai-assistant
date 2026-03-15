@@ -22,9 +22,9 @@ from pathlib import Path
 
 import pymupdf
 import pymupdf4llm
-from pymupdf.mupdf import FzErrorLibrary
 import yaml
 from common import CUSTOMIZATION_FOLDER
+from pymupdf.mupdf import FzErrorLibrary
 from redis_memory import Memory
 
 logger = logging.getLogger(__name__)
@@ -57,13 +57,12 @@ def _compute_hash(path: Path) -> str:
     return hasher.hexdigest()
 
 
-
 def _unique_top_level_header(md_text: str) -> str | None:
     """Return the text of the single top-level header, or None.
 
-    Top-level means the header depth with the fewest '#' characters found
-    in the document. If there is exactly one such header, its text is
-    returned (without leading '#' characters or surrounding whitespace).
+    Top-level means the header depth with the fewest '#' characters found in
+    the document. If there is exactly one such header, its text is returned
+    (without leading '#' characters or surrounding whitespace).
     """
     headers: list[tuple[int, str]] = []
     for line in md_text.splitlines():
@@ -116,9 +115,8 @@ def _front_matter(
 
 
 def _to_markdown_safe(pdf_path: Path, **kwargs) -> str:
-    """Attempt pymupdf4llm.to_markdown, falling back to ignore_images=True
-    on JPX decode errors, then page-by-page if that also fails.
-    """
+    """Attempt pymupdf4llm.to_markdown, falling back to ignore_images=True on
+    JPX decode errors, then page-by-page if that also fails."""
     try:
         return pymupdf4llm.to_markdown(str(pdf_path), **kwargs)
     except FzErrorLibrary as e:
@@ -131,7 +129,9 @@ def _to_markdown_safe(pdf_path: Path, **kwargs) -> str:
             pdf_path.name,
         )
         try:
-            return pymupdf4llm.to_markdown(str(pdf_path), ignore_images=True, **kwargs)
+            return pymupdf4llm.to_markdown(
+                str(pdf_path), ignore_images=True, **kwargs
+            )
         except FzErrorLibrary as e2:
             if "Failed to decode JPX image" not in str(e2):
                 raise
@@ -145,8 +145,10 @@ def _to_markdown_safe(pdf_path: Path, **kwargs) -> str:
 
 
 def _convert_safe(pdf_path: Path, **kwargs) -> str:
-    """Last-resort page-by-page conversion, skipping pages that raise
-    JPX decode errors. Each skipped page is logged with filename and number.
+    """Last-resort page-by-page conversion, skipping pages that raise JPX
+    decode errors.
+
+    Each skipped page is logged with filename and number.
     """
     doc = pymupdf.open(str(pdf_path))
     page_count = doc.page_count
@@ -167,14 +169,15 @@ def _convert_safe(pdf_path: Path, **kwargs) -> str:
                 pno,
                 pdf_path.name,
             )
-            pages.append(f"\n\n[Page {pno} skipped — JPX image decode error]\n\n")
+            pages.append(
+                f"\n\n[Page {pno} skipped — JPX image decode error]\n\n"
+            )
 
     return "".join(pages)
 
 
 def _convert(pdf_path: Path) -> str:
-    """Convert a PDF to Markdown with YAML front matter prepended
-    (blocking).
+    """Convert a PDF to Markdown with YAML front matter prepended (blocking).
 
     Performs a two-pass conversion: the first pass uses standard text
     extraction. If the output looks image-based (too few words per page),
@@ -207,7 +210,12 @@ def _convert(pdf_path: Path) -> str:
             )
             ocr_used = True
 
-    return _front_matter(pdf_path, md_text, page_count=page_count, ocr_used=ocr_used) + md_text
+    return (
+        _front_matter(
+            pdf_path, md_text, page_count=page_count, ocr_used=ocr_used
+        )
+        + md_text
+    )
 
 
 async def run_pdf_pipeline() -> None:
@@ -227,8 +235,12 @@ async def run_pdf_pipeline() -> None:
             continue
 
         pdf_files = sorted(
-            p for p in LIBRARY_DIR.rglob("*.pdf")
-            if not any(part.startswith(".") for part in p.parts[len(LIBRARY_DIR.parts):])
+            p
+            for p in LIBRARY_DIR.rglob("*.pdf")
+            if not any(
+                part.startswith(".")
+                for part in p.parts[len(LIBRARY_DIR.parts) :]
+            )
         )
         logger.debug(
             "PDF pipeline: check running, %d PDF(s) found.", len(pdf_files)
@@ -248,7 +260,10 @@ async def run_pdf_pipeline() -> None:
                 stored_hash = entry.get("hash")
 
                 # Mark as Checking while we examine this file
-                memory.pdf_pipeline_state[pdf_key] = {**entry, "status": STATUS_CHECKING}
+                memory.pdf_pipeline_state[pdf_key] = {
+                    **entry,
+                    "status": STATUS_CHECKING,
+                }
 
             md_path = pdf_path.with_suffix(".md")
             output_missing = not md_path.exists()
@@ -280,7 +295,10 @@ async def run_pdf_pipeline() -> None:
                     if not hasattr(memory, "pdf_pipeline_state"):
                         memory.pdf_pipeline_state = {}
                     entry = memory.pdf_pipeline_state.get(pdf_key) or {}
-                    memory.pdf_pipeline_state[pdf_key] = {**entry, "status": STATUS_CONVERTED}
+                    memory.pdf_pipeline_state[pdf_key] = {
+                        **entry,
+                        "status": STATUS_CONVERTED,
+                    }
 
         # ── Phase 2: convert each queued PDF ────────────────────────────────
         for pdf_path in queued_paths:

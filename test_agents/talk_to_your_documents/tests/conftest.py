@@ -11,7 +11,6 @@ REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 
 QDRANT_HOST = os.getenv("QDRANT_HOST", "qdrant-test")
 QDRANT_PORT = int(os.getenv("QDRANT_PORT", "6333"))
-QDRANT_COLLECTION = os.getenv("QDRANT_COLLECTION", "library")
 
 # Path is the same in both the app and test containers because
 # both mount CORTEX_FOLDER at /app/cortex.
@@ -60,10 +59,8 @@ def chunk_reset():
     r.delete("memory:chunking_pipeline_state")
 
     client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
-    try:
-        client.delete_collection(QDRANT_COLLECTION)
-    except Exception:
-        pass  # collection may not exist yet
+    for c in client.get_collections().collections:
+        client.delete_collection(c.name)
 
     # Snapshot all visible Markdown files before the test runs
     snapshots: dict[Path, str] = {}
