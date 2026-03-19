@@ -8,6 +8,7 @@ Implement the following feature: $ARGUMENTS
 
 Read agent_stem/default/endpoints/public/README.md
 Read agent_stem/src/startup/WORKFLOWS.md
+Read agent_stem/src/startup/PROVIDERS.md
 
 ## Step 1:
 Read the code in the following folders:
