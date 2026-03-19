@@ -32,6 +32,7 @@ Do not use the library's private methods.
 Familiarize yourself with the way logging is used, you will be using the same pattern.
 
 Understand `.vscode/tasks.json`, this is where all of the development pipelines live.
+In particular, read all the dependencies under "Run the Pipeline" task.
 
 Then look at all `**/Dockerfile` and `pyproject.toml` to understand the dependencies.
 
