@@ -32,12 +32,13 @@ GOALS
 - [ ] (0.1.0) Starting documentation: agent chat
 - [ ] (0.1.0) Starting documentation: quickstart
 - [ ] (0.1.0) Starting documentation: examples: Talk to your documents, Son of Anton
-- [ ] (0.1.0) Starting documentation:
 - [ ] Add thinking in the agent chat view
 - [ ] (0.1.0) Add a test for LanceDB chunking.
 - [ ] (0.1.0) Add a test for conversation memory in non-redis environments.
+- [ ] (0.1.0) Add a test for setting a keyword differently in the agent chat if it is not set.
 - [ ] (0.1.0) Add a test for Antropic.
 - [ ] (0.1.0) Simplify the Mistral environment and add it to the local tests.
+- [ ] Add a test to `no_agent` where you can call Mistral with an API key.
 
 - [x] Refactor: Think about the test harness. Maybe you start an environment, and test different agents on it?
 - [x] Test Harness: Do not use the everything environment for agents, just use the no_llm environment
@@ -63,7 +64,7 @@ tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet im
 - [ ] (0.1.0) Change the test in no_qdrant environment to use the endpoints.
 - [ ] Remove the generalize try ... except Exception blocks from multiple places.
 - [ ] (0.1.0) Add open labels labels to the Dockerfile. Include documentation, code.
-
+- [ ] Force workflows to be streaming ndjson only.
 
 
 
