@@ -1,0 +1,42 @@
+services:
+  # Test infrastructure services
+  # Application under test
+  app:
+    build:
+      context: ../..
+      dockerfile: agent_stem/Dockerfile
+    container_name: app-test-nothing
+    env_file:
+      - .env
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import json,urllib.request,sys; \
+          r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); \
+          d=json.load(r); \
+          sys.exit(0 if not d.get('providers_loading') else 1)"
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 60s
+    volumes:
+      - ${AGENT_FOLDER:-./cortex}:/app/cortex
+
+  # Test runner
+  tests:
+    build:
+      context: ../..
+      dockerfile: test_environments/Dockerfile
+    container_name: tests-runner-nothing
+    environment:
+      - BASE_URL=http://app:8000
+    depends_on:
+      app:
+        condition: service_healthy
+    volumes:
+      - ${TEST_FOLDER:-.}:/tests
+      - ${AGENT_FOLDER:-./cortex}:/app/cortex

@@ -1,0 +1,87 @@
+services:
+  # Test infrastructure services
+  redis-test:
+    image: redis:7.4.2-alpine
+    container_name: redis-test-no-qdrant
+    command: redis-server
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  embedding-test:
+    image: sinanozel/ollama.0.12.11:all-minilm-33m
+    container_name: embedding-test-no-qdrant
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/11434' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Application under test
+  app:
+    build:
+      context: ../..
+      dockerfile: agent_stem/Dockerfile
+    container_name: app-test-no-qdrant
+    networks:
+      - test-network
+    environment:
+      - REDIS_HOST=redis-test
+      - REDIS_PORT=6379
+      - EMBEDDING_SERVER=http://embedding-test:11434
+    env_file:
+      - .env
+    depends_on:
+      redis-test:
+        condition: service_healthy
+      embedding-test:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import json,urllib.request,sys; \
+          r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); \
+          d=json.load(r); \
+          sys.exit(0 if not d.get('providers_loading') else 1)"
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 60s
+    volumes:
+      - ${AGENT_FOLDER:-./cortex}:/app/cortex
+
+  # Test runner
+  tests:
+    build:
+      context: ../..
+      dockerfile: test_environments/Dockerfile
+    container_name: tests-runner-no-qdrant
+    networks:
+      - test-network
+    environment:
+      - BASE_URL=http://app:8000
+      - REDIS_HOST=redis-test
+      - REDIS_PORT=6379
+    depends_on:
+      redis-test:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    volumes:
+      - ${TEST_FOLDER:-.}:/tests
+      - ${AGENT_FOLDER:-./cortex}:/app/cortex
+    command: ["pytest", "-v"]
+
+networks:
+  test-network:
+    driver: bridge

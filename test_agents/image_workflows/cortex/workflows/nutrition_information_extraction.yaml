@@ -1,0 +1,64 @@
+name: nutrition_information_extraction
+path: /v1/extract-nutrition-information
+description: Takes an image of a packaged food product label and extracts the nutrition information as JSON.
+provider: vision
+
+input_requirements:
+  content_types: [image]
+  description: Requires one image of a food product nutrition label
+
+output_schema:
+  type: object
+  properties:
+    calories:
+      type: integer
+      description: Total calories per serving.
+    serving_size:
+      type: number
+      description: Numeric serving size value.
+    unit:
+      type: string
+      description: Unit of measurement for serving size (e.g., "g", "ml", "oz", "cup").
+  required: [calories, serving_size, unit]
+
+execution:
+  type: prompt
+  prompt: |
+    The image is the label of a packaged food product.
+
+    Extract the following information from the nutrition facts label and return ONLY a JSON object with no additional text:
+
+    - calories: total calories per serving (integer)
+    - serving_size: numeric serving size value (float)
+    - unit: unit of measurement for serving size (string, e.g., "g", "ml", "oz", "cup")
+
+    Example:
+    ```json
+    {
+      "calories": 90,
+      "serving_size": 28.0,
+      "unit": "g"
+    }
+    ```
+
+evaluation:
+  repeat: 2
+  threshold: 2
+  cases:
+    - id: calories-label-180
+      steps:
+        - input:
+            image_path: "evaluation/images/IMG_B768CE83-9FEC-461A-BE63-CDDF64EBEB58.jpeg"
+            max_tokens: 2048
+          expectations:
+          - type: oneOf
+            values:
+              - calories: 180
+                serving_size: 40.0
+                unit: g
+              - calories: 180
+                serving_size: 2.0
+                unit: pieces
+              - calories: 180
+                serving_size: 2.0
+                unit: pcs

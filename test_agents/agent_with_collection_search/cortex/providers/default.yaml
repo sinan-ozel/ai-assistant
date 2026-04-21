@@ -1,0 +1,2 @@
+api_base: http://${OLLAMA_HOST}
+model: ollama/gemma3:1b

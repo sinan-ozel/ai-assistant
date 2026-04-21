@@ -1,0 +1,45 @@
+{
+    "name": "micro-service-agent-devcontainer",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "workspaceFolder": "/workspace",
+    "remoteUser": "root",
+    "mounts": [
+        "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind",
+        "source=${localWorkspaceFolder},target=/workspace,type=bind"
+    ],
+    "features": {
+	    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+	      "version": "latest",
+	      "moby": false,
+	      "dockerDashComposeVersion": "v2",
+	      "enableNonRootDocker": "false"
+	    },
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "42crunch.vscode-openapi",
+		        "github.copilot",
+		        "github.copilot-chat",
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "clemenspeters.format-json",
+                "euskadi31.json-pretty-printer",
+                "jgalianoz.qr-generator",
+                "gruntfuggly.todo-tree",
+                "github.vscode-github-actions",
+                "ms-kubernetes-tools.vscode-kubernetes-tools",
+                "redhat.vscode-yaml",
+                "spmeesseman.vscode-taskexplorer",
+                "Tim-Koehler.helm-intellisense",
+                "shd101wyy.markdown-preview-enhanced",
+                "ms-vscode.makefile-tools"
+            ]
+        }
+    },
+    // "postStartCommand": "nohup dockerd > /var/log/dockerd.log 2>&1 & sleep 5 && echo 'Docker daemon started' && echo 'DevContainer ready!'"
+}

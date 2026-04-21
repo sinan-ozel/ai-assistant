@@ -1,0 +1,73 @@
+services:
+  agent-stem-dev:
+    image: agent-stem:latest
+    container_name: agent-stem-dev
+    volumes:
+      - ..:/workspace
+      - ${AGENT_FOLDER:-./cortex}:/app/cortex
+    working_dir: /workspace
+    ports:
+      - "8000:8000"
+      - "8501:8501"
+    environment:
+      - EMBEDDING_SERVER=http://embedding:11434
+      # - CONVERSATION_WINDOW_LIMIT=4096
+      # - LOG_LEVEL=DEBUG
+    networks:
+      - agent-dev-network
+    depends_on:
+      - redis
+      - embedding
+
+  redis:
+    image: redis:7.4.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ${DEV_DATA_FOLDER:-./dev-data}/redis:/data
+    command: redis-server
+    networks:
+      - agent-dev-network
+
+  embedding:
+    image: sinanozel/ollama.0.12.11:all-minilm-33m
+    container_name: embedding
+    networks:
+      - agent-dev-network
+
+  llamacpp:
+    image: sinanozel/llama.cuda:qwen3-0.6b
+    networks:
+      - agent-dev-network
+    # command: ["-m", "/models/model.gguf", "--host", "0.0.0.0", "--port", "8080", "-ngl", "999", "-c", "4096", "--no-jinja"]
+    deploy:
+      resources:
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 120s
+
+  ollama:
+    image: sinanozel/ollama.0.12.11:gemma3-270m
+    container_name: ollama
+    networks:
+      - agent-dev-network
+    deploy:
+      resources:
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/11434' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+networks:
+  agent-dev-network:
+    driver: bridge

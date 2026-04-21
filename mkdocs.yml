@@ -1,0 +1,79 @@
+site_name: agent-stem
+site_description: Lightweight AI agent framework — run locally with Docker, deploy at scale on Kubernetes
+site_url: https://sinan-ozel.github.io/ai-assistant/
+repo_url: https://github.com/sinan-ozel/ai-assistant
+repo_name: sinan-ozel/ai-assistant
+
+theme:
+  name: material
+  palette:
+    # Automatically follows the OS dark/light preference.
+    # The toggle lets users override the system setting.
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.annotate
+    - content.code.copy
+
+plugins:
+  - search
+  - mike:
+      canonical_version: latest
+
+extra:
+  version:
+    provider: mike
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Quick Start: getting-started/quickstart.md
+    - Docker Compose: getting-started/docker-compose.md
+    - Kubernetes & Helm: getting-started/kubernetes.md
+  - Configuration:
+    - Cortex Overview: configuration/cortex.md
+    - Model Providers: model_providers.md
+    - Agent Prompt (DSL): configuration/prompt-dsl.md
+    - Workflows: configuration/workflows.md
+    - Document Library (RAG): configuration/library.md
+  - API Reference:
+    - Endpoints: api/endpoints.md
+  - Evaluation:
+    - Agent Eval DSL: eval_dsl.md
+    - Workflow Evaluation: configuration/workflows.md
+  - Development:
+    - Testing: development/testing.md
+    - Contributing: development/contributing.md
+    - Releasing: development/releasing.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true

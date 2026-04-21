@@ -1,0 +1,4 @@
+api_base: ${LLAMA_CPP_HOST}
+model: openai/gemma4:e2b
+api_key: dummy
+timeout: 150

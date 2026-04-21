@@ -1,0 +1,40 @@
+import os
+import time
+
+import pytest
+import requests
+
+BASE_URL = os.getenv("BASE_URL", "http://app:8000")
+
+
+@pytest.mark.depends(name="healthy")
+def test_health_endpoint():
+    """Test the /health endpoint with retries and timeout."""
+    url = f"{BASE_URL}/health"
+    start = time.time()
+    timeout = 20  # seconds
+    while True:
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                break
+        except Exception:
+            raise
+            pass
+        if time.time() - start > timeout:
+            raise TimeoutError(
+                f"/health endpoint did not return expected response within {timeout} seconds"
+            )
+        time.sleep(1)
+
+    print(response.json())
+
+    while True:
+        response = requests.get(url)
+        if response.json().get("status") == "ok":
+            break
+        if time.time() - start > timeout:
+            raise TimeoutError(
+                f"/health endpoint did not return expected response within {timeout} seconds"
+            )
+        time.sleep(1)

@@ -1,0 +1,5 @@
+services:
+  docs-builder:
+    build:
+      context: ${HOST_PROJECT_PATH:-.}/..
+      dockerfile: docs-build/Dockerfile

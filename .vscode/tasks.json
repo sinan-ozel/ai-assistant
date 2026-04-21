@@ -1,0 +1,743 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Container",
+            "type": "docker-build",
+            "dockerBuild": {
+                "context": "${workspaceFolder}",
+                "dockerfile": "${workspaceFolder}/agent_stem/Dockerfile",
+                "tag": "agent-stem:latest"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Run Agent",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/agent_stem/docker-compose.default.yaml",
+                "up"
+            ],
+            "dependsOn": ["Build Container"],
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/cortex",
+                    "DEV_DATA_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/dev-data"
+                }
+            },
+        },
+        {
+            "label": "Run Agent (without Redis)",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/agent_stem/docker-compose.no-redis.yaml",
+                "up"
+            ],
+            "dependsOn": ["Build Container"],
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/cortex",
+                    "DEV_DATA_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/dev-data"
+                }
+            },
+        },
+        {
+            "label": "Run Agent (without Qdrant)",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/agent_stem/docker-compose.no-qdrant.yaml",
+                "up"
+            ],
+            "dependsOn": ["Build Container"],
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/cortex",
+                    "DEV_DATA_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/dev-data"
+                }
+            },
+        },
+        {
+            "label": "Run Tests (No LLM)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_no_llm/docker-compose.yaml'; D='${workspaceFolder}/test_environments/test_env_no_llm'; docker compose -f \"$F\" --project-directory \"$D\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" --project-directory \"$D\" up --build --abort-on-container-exit --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" --project-directory \"$D\" down --remove-orphans; exit $EC"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests (No Services)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_nothing/docker-compose.yaml'; D='${workspaceFolder}/test_environments/test_env_nothing'; docker compose -f \"$F\" --project-directory \"$D\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" --project-directory \"$D\" up --build --abort-on-container-exit --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" --project-directory \"$D\" down --remove-orphans; exit $EC"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests (Mistral)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_mistral/docker-compose.yaml'; D='${workspaceFolder}/test_environments/test_env_mistral'; docker compose -f \"$F\" --project-directory \"$D\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" --project-directory \"$D\" up --build --abort-on-container-exit --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" --project-directory \"$D\" down --remove-orphans; exit $EC"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests (Self-Hosted LLM)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_self_hosted_llm/docker-compose.yaml'; D='${workspaceFolder}/test_environments/test_env_self_hosted_llm'; docker compose -f \"$F\" --project-directory \"$D\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" --project-directory \"$D\" up --build --abort-on-container-exit --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" --project-directory \"$D\" down --remove-orphans; exit $EC"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests (Local LLM)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_local_llm/docker-compose.yaml'; D='${workspaceFolder}/test_environments/test_env_local_llm'; docker compose -f \"$F\" --project-directory \"$D\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" --project-directory \"$D\" up --build --abort-on-container-exit --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" --project-directory \"$D\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_environments/test_env_local_llm/cortex"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_${input:test_env}/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/${input:agent}/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Reformat Code",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/reformat/docker-compose.yaml",
+                "up",
+                "--build"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Lint",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/lint/docker-compose.yaml",
+                "up",
+                "--build",
+                "--abort-on-container-exit",
+                "--exit-code-from",
+                "linter"
+            ],
+            "dependsOn": ["Reformat Code"],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Unit Tests: self_hosted_llm",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_self_hosted_llm/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/no_agent/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/no_agent/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: image_workflows @ self_hosted_llm",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_self_hosted_llm/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/image_workflows/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/image_workflows/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: text_workflows @ self_hosted_llm",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_self_hosted_llm/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/text_workflows/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/text_workflows/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: mistral_agent @ mistral",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_mistral/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/mistral_agent/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/mistral_agent/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: son_of_anton @ self_hosted_llm",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_self_hosted_llm/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/son_of_anton/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/son_of_anton/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: talk_to_your_documents @ self_hosted_llm",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_self_hosted_llm/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/talk_to_your_documents/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/talk_to_your_documents/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: talk_to_your_documents @ no_qdrant",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_no_qdrant/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/talk_to_your_documents/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/talk_to_your_documents/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: agent_with_search @ no_qdrant",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_no_qdrant/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_search/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_search/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: agent_with_search @ no_redis",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_no_redis/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_search/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_search/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: agent_with_search @ nothing",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_nothing/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_search/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_search/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: agent_with_search_2 @ no_qdrant",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_no_qdrant/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_search_2/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_search_2/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: agent_with_search_3 @ no_qdrant",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_no_qdrant/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_search_3/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_search_3/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: agent_with_collection_search @ no_qdrant",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_no_qdrant/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_collection_search/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_collection_search/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: agent_with_only_a_system_message @ default",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_default/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_only_a_system_message/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_only_a_system_message/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: agent_with_temperature @ default",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_default/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_temperature/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_temperature/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: agent_with_search @ default",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_default/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_search/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_search/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: agent_with_search_2 @ default",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_default/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_search_2/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_search_2/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: agent_with_search_3 @ default",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_default/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_search_3/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_search_3/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: agent_with_collection_search @ default",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_default/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_collection_search/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_collection_search/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: image_workflows @ default",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_default/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/image_workflows/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/image_workflows/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: coding_agent @ mistral",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_mistral/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/coding_agent/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/coding_agent/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Tests (Anthropic)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_anthropic/docker-compose.yaml'; D='${workspaceFolder}/test_environments/test_env_anthropic'; docker compose -f \"$F\" --project-directory \"$D\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" --project-directory \"$D\" up --build --abort-on-container-exit --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" --project-directory \"$D\" down --remove-orphans; exit $EC"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: anthropic_agent @ anthropic",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_anthropic/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/anthropic_agent/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/anthropic_agent/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: bad_agent @ default",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_default/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/bad_agent/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/bad_agent/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: agent_with_eval @ default",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_default/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_eval/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_eval/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: agent_with_incorrect_eval @ default",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_default/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_incorrect_eval/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_incorrect_eval/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Quick & Costless Agent Integration Tests",
+            "dependsOn": [
+                "Run Integration Tests: talk_to_your_documents @ no_qdrant",
+                "Run Integration Tests: agent_with_only_a_system_message @ default",
+                "Run Integration Tests: agent_with_temperature @ default",
+                "Run Integration Tests: agent_with_search @ default",
+                "Run Integration Tests: agent_with_search_2 @ default",
+                "Run Integration Tests: agent_with_search_3 @ default",
+                "Run Integration Tests: agent_with_collection_search @ default",
+                "Run Integration Tests: agent_with_search @ no_qdrant",
+                "Run Integration Tests: agent_with_search_2 @ no_qdrant",
+                "Run Integration Tests: agent_with_search_3 @ no_qdrant",
+                "Run Integration Tests: agent_with_collection_search @ no_qdrant",
+                "Run Integration Tests: image_workflows @ default",
+                "Run Integration Tests: agent_with_eval @ default",
+                "Run Integration Tests: agent_with_incorrect_eval @ default"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Quick & Costly Agent Integration Tests",
+            "dependsOn": [
+                "Run Quick & Costless Agent Integration Tests",
+                "Run Integration Tests: coding_agent @ mistral",
+                "Run Integration Tests: mistral_agent @ mistral",
+                "Run Integration Tests: anthropic_agent @ anthropic"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "Run All Costless Agent Integration Tests",
+            "dependsOn": [
+                "Run Integration Tests: text_workflows @ self_hosted_llm",
+                "Run Integration Tests: image_workflows @ self_hosted_llm",
+                "Run Integration Tests: son_of_anton @ self_hosted_llm",
+                "Run Integration Tests: talk_to_your_documents @ self_hosted_llm",
+                "Run Integration Tests: agent_with_search @ no_redis",
+                "Run Integration Tests: agent_with_search @ nothing",
+                "Run Quick & Costless Agent Integration Tests",
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "Run All Agent Integration Tests",
+            "dependsOn": [
+                "Run Integration Tests: text_workflows @ self_hosted_llm",
+                "Run Integration Tests: image_workflows @ self_hosted_llm",
+                "Run Integration Tests: son_of_anton @ self_hosted_llm",
+                "Run Integration Tests: talk_to_your_documents @ self_hosted_llm",
+                "Run Quick & Costly Agent Integration Tests",
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "Run the Pipeline",
+            "dependsOn": [
+                "Lint",
+                // "Run Tests (Local LLM)",
+                "Run Unit Tests: self_hosted_llm",
+                "Run All Agent Integration Tests"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "(!) Run All Tests",
+            "dependsOn": [
+                "Reformat Code",
+                "Lint",
+                "Run Unit Tests: self_hosted_llm",
+                "Run All Agent Integration Tests"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "Check Docs Build",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/docs-build/docker-compose.yaml",
+                "up",
+                "--build",
+                "--abort-on-container-exit",
+                "--exit-code-from",
+                "docs-builder"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Docker Login",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "grep -qs index.docker.io \"${HOME}/.docker/config.json\" || docker login"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Release",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "${workspaceFolder}/release/release.sh"
+            ],
+            "dependsOn": [
+                "Docker Login",
+                "Check Docs Build",
+                "Lint",
+                "Run All Agent Integration Tests"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "Export OpenAPI to YAML",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "mkdir -p ${workspaceFolder}/docs && curl -s http://localhost:8000/openapi.json | python3 -c \"import sys, json, yaml; print(yaml.dump(json.load(sys.stdin), default_flow_style=False, sort_keys=False))\" > ${workspaceFolder}/docs/openapi.yaml && echo 'OpenAPI spec written to docs/openapi.yaml'"
+            ],
+            "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+            "id": "agent",
+            "type": "pickString",
+            "description": "Choose the agent",
+            "options": [
+                "text_workflows",
+                "image_workflows",
+                "son_of_anton",
+                "talk_to_your_documents",
+                "agent_with_search",
+                "agent_with_search_2",
+                "agent_with_eval"
+            ],
+            "default": "text_workflows"
+        },
+        {
+            "id": "test_env",
+            "type": "pickString",
+            "description": "Choose the test environment",
+            "options": [
+                "default",
+                "mistral",
+                "no_qdrant",
+                "no_llm",
+                "nothing"
+            ],
+            "default": "default"
+        }
+    ]
+}

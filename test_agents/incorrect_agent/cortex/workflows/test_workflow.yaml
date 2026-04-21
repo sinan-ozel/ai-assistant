@@ -1,0 +1,34 @@
+name: test_workflow_with_bad_provider
+path: /v1/test-bad-provider
+description: A test workflow that uses an incorrectly configured provider to trigger errors.
+provider: bad_vision
+
+input_requirements:
+  content_types: [image]
+  description: Requires one image
+
+output_schema:
+  type: object
+  properties:
+    result:
+      type: string
+      description: Test result
+  required: [result]
+
+execution:
+  type: prompt
+  prompt: |
+    Describe this image in one sentence.
+
+evaluation:
+  repeat: 1
+  threshold: 1
+  cases:
+    - id: test-bad-provider-case
+      steps:
+        - input:
+            image_path: "evaluation/images/test.jpeg"
+            max_tokens: 64
+          expectations:
+          - type: equality
+            value: "This should fail"

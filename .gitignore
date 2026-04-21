@@ -1,0 +1,13 @@
+.devcontainer/data
+.devcontainer/devcontainer.env
+.vscode/settings.json
+**/__pycache__
+**/.pytest_cache
+**/.env
+**/dev-data
+**/.DS_Store
+**/.eberron
+**/library/**.md
+_*.md
+_*/
+**/report.md

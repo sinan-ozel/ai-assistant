@@ -1,0 +1,130 @@
+services:
+  # Test infrastructure services
+  redis-test:
+    image: redis:7.4.2-alpine
+    command: redis-server
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  qdrant-test:
+    image: qdrant/qdrant:v1.12.1
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  embedding-test:
+    image: sinanozel/ollama.0.12.11:all-minilm-33m
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/11434' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  llamacpp-test:
+    image: sinanozel/llama.cuda:qwen3-0.6b
+    networks:
+      - test-network
+    # command: ["-m", "/models/model.gguf", "--host", "0.0.0.0", "--port", "8080", "-ngl", "999", "-c", "4096", "--no-jinja"]
+    deploy:
+      resources:
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 120s
+
+  # Ollama server with gemma3-270m model
+  ollama-test:
+    image: sinanozel/ollama.0.12.11:gemma3-270m
+    networks:
+      - test-network
+    deploy:
+      resources:
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/11434' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Application under test
+  app:
+    build:
+      context: ../..
+      dockerfile: agent_stem/Dockerfile
+    networks:
+      - test-network
+    environment:
+      - REDIS_HOST=redis-test
+      - REDIS_PORT=6379
+      - QDRANT_HOST=qdrant-test
+      - QDRANT_PORT=6333
+      - EMBEDDING_SERVER=http://embedding-test:11434
+      - DEFAULT_PROVIDER=local_gemma3_270m
+    env_file:
+      - .env
+    depends_on:
+      redis-test:
+        condition: service_healthy
+      qdrant-test:
+        condition: service_healthy
+      embedding-test:
+        condition: service_healthy
+      llamacpp-test:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import json,urllib.request,sys; \
+          r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); \
+          d=json.load(r); \
+          sys.exit(0)"
+        ]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    volumes:
+      - ${AGENT_FOLDER:-./cortex}:/app/cortex
+
+  # Test runner
+  tests:
+    build:
+      context: ../..
+      dockerfile: test_environments/Dockerfile
+    networks:
+      - test-network
+    environment:
+      - BASE_URL=http://app:8000
+      - REDIS_HOST=redis-test
+      - REDIS_PORT=6379
+    depends_on:
+      redis-test:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    volumes:
+      - ${TEST_FOLDER:-.}:/tests
+    command: ["pytest", "--openapi=http://app:8000", "--openapi-no-strict-example-checking", "--openapi-markdown-output=report.md", "--openapi-no-stdout", "--openapi-timeout=60", "-v", "--maxfail=1"]
+
+networks:
+  test-network:
+    driver: bridge
