@@ -684,6 +684,20 @@
             "problemMatcher": []
         },
         {
+            "label": "Release (Dev)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "${workspaceFolder}/release/release.sh",
+                "--dev"
+            ],
+            "dependsOn": [
+                "Run Quick & Costless Agent Integration Tests"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
             "label": "Release",
             "type": "shell",
             "command": "bash",
