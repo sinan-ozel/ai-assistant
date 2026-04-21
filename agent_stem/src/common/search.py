@@ -122,6 +122,7 @@ def ingestion_in_progress() -> bool:
     try:
         from redis_memory import Memory
         from startup.chunking_pipeline import _chunking_pipeline_state
+        from startup.pdf_pipeline import _pdf_pipeline_state
 
         with Memory() as memory:
             pdf_state: dict = getattr(memory, "pdf_pipeline_state", {}) or {}
@@ -129,8 +130,8 @@ def ingestion_in_progress() -> bool:
                 getattr(memory, "chunking_pipeline_state", {}) or {}
             )
 
-        # When Redis is unavailable chunk_state will be empty; use the
-        # in-process global as the authoritative source for chunking status.
+        if not pdf_state:
+            pdf_state = _pdf_pipeline_state
         if not chunk_state:
             chunk_state = _chunking_pipeline_state
 
