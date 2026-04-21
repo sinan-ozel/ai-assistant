@@ -66,7 +66,7 @@ GOALS
 - [x] Test Harness: Add some "bad" agents to see that they crash.
 - [x] Test Harness: Bad agent with error-raising DSL - should genuinely rais
 - [ ] Add MCP testing to the test harness
-
+- [ ] Raise error if embedding server changes.
 
 - [ ] (0.1.0) Show the system prompt in streamlit
 - [ ] (0.1.0) Show evaluation button & results in streamlit.
