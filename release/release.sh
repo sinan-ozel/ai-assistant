@@ -12,6 +12,7 @@
 #   - pyproject.toml version must be valid semver (MAJOR.MINOR.PATCH)
 #   - git tag v<version> must not already exist
 #   - <version> must be strictly greater than the latest existing semver tag
+#   - Docker daemon must be running; prompts for login if not already authenticated
 #
 # TODO: Release documentation (MkDocs site) at the same time as the image.
 #       Consider: mkdocs gh-deploy or publishing to a hosting service in CI.
