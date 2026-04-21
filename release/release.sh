@@ -102,6 +102,19 @@ if (( NEW_INT <= LATEST_INT )) && [[ -n "$LATEST_TAG" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Docker pre-flight check
+# ---------------------------------------------------------------------------
+
+if ! docker info > /dev/null 2>&1; then
+    die "Docker daemon is not running or not reachable."
+fi
+
+if ! docker system info 2>/dev/null | grep -q 'Username:'; then
+    echo ">>> Not logged in to Docker Hub. Running docker login ..."
+    docker login || die "Docker login failed."
+fi
+
+# ---------------------------------------------------------------------------
 # Build
 # ---------------------------------------------------------------------------
 
