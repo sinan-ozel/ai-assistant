@@ -581,6 +581,8 @@
         {
             "label": "Run Quick & Costless Agent Integration Tests",
             "dependsOn": [
+                "Reformat Code",
+                "Lint",
                 "Run Integration Tests: talk_to_your_documents @ no_qdrant",
                 "Run Integration Tests: agent_with_only_a_system_message @ default",
                 "Run Integration Tests: agent_with_temperature @ default",
@@ -631,6 +633,8 @@
                 "Run Integration Tests: image_workflows @ self_hosted_llm",
                 "Run Integration Tests: son_of_anton @ self_hosted_llm",
                 "Run Integration Tests: talk_to_your_documents @ self_hosted_llm",
+                "Run Integration Tests: agent_with_search @ no_redis",
+                "Run Integration Tests: agent_with_search @ nothing",
                 "Run Quick & Costly Agent Integration Tests",
             ],
             "dependsOrder": "sequence",
