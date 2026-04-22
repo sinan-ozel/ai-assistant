@@ -67,7 +67,10 @@ GOALS
 - [x] Test Harness: Bad agent with error-raising DSL - should genuinely rais
 - [ ] Add MCP testing to the test harness
 - [ ] Raise error if embedding server changes.
-- [ ] (0.1.0) In the "no redis" environment, the ingestion pipeline keeps working. There is a deeper issue.
+
+- [ ] In the Release (Dev) Check, fail if reformatting is necessary before the tests start. Also fail if there is a stable tag that matches the current version, the current version needs to be larger.
+
+- [ ] In the Release Check, fail if reformatting is necessary before the tests start. If the version is not greater than the last tag, fail.
 
 - [ ] (0.1.0) Show the system prompt in streamlit
 - [ ] (0.1.0) Show evaluation button & results in streamlit.
