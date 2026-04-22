@@ -98,7 +98,8 @@ tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet im
 - [ ] (0.2.0) Force workflows to be streaming ndjson only.
 - [ ] (0.2.0) Register workflows as MCP tools
 - [ ] Give a better way to develop edit the system message dependgin on context.
-- [ ] Divvy-up chat.py into 01.understand_the_context.py, 02.act_on_the_problem, 03.show_the_result.
+- [ ] (?) Divvy-up chat.py into 01.understand_the_context.py, 02.act_on_the_problem, 03.show_the_result.
+- [ ] (0.4.0) Add `ocr` as a provider, use this for OCR.
 
 
 - [ ] Bug: See the following, this is a problem. The model is missing from the server, but we got a non-descript 400 error.
