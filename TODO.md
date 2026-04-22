@@ -67,6 +67,7 @@ GOALS
 - [x] Test Harness: Bad agent with error-raising DSL - should genuinely rais
 - [ ] Add MCP testing to the test harness
 - [ ] Raise error if embedding server changes.
+- [ ] (0.1.0) In the "no redis" environment, the ingestion pipeline keeps working. There is a deeper issue.
 
 - [ ] (0.1.0) Show the system prompt in streamlit
 - [ ] (0.1.0) Show evaluation button & results in streamlit.

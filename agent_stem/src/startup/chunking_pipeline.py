@@ -1403,7 +1403,9 @@ def _set_chunking_start(md_key: str, started_at: str) -> None:
     with Memory() as memory:
         if not hasattr(memory, "chunking_pipeline_state"):
             memory.chunking_pipeline_state = {}
-        memory.chunking_pipeline_state[md_key] = _chunking_pipeline_state[md_key]
+        memory.chunking_pipeline_state[md_key] = _chunking_pipeline_state[
+            md_key
+        ]
 
 
 def _set_chunking_done(md_key: str, completed_at: str) -> None:
@@ -1418,7 +1420,9 @@ def _set_chunking_done(md_key: str, completed_at: str) -> None:
     with Memory() as memory:
         if not hasattr(memory, "chunking_pipeline_state"):
             memory.chunking_pipeline_state = {}
-        memory.chunking_pipeline_state[md_key] = _chunking_pipeline_state[md_key]
+        memory.chunking_pipeline_state[md_key] = _chunking_pipeline_state[
+            md_key
+        ]
 
 
 def _scan_and_queue_markdowns(library_dir: Path) -> list[Path]:
@@ -1431,8 +1435,7 @@ def _scan_and_queue_markdowns(library_dir: Path) -> list[Path]:
         p
         for p in library_dir.rglob("*.md")
         if not any(
-            part.startswith(".")
-            for part in p.parts[len(library_dir.parts) :]
+            part.startswith(".") for part in p.parts[len(library_dir.parts) :]
         )
     )
     logger.debug(
@@ -1444,7 +1447,14 @@ def _scan_and_queue_markdowns(library_dir: Path) -> list[Path]:
 
     for md_path in md_files:
         md_key = str(md_path)
-        file_mtime = md_path.stat().st_mtime
+        try:
+            file_mtime = md_path.stat().st_mtime
+        except FileNotFoundError:
+            logger.warning(
+                "Chunking pipeline: %s disappeared before stat — skipping.",
+                md_path.name,
+            )
+            continue
 
         entry = _chunking_pipeline_state.get(md_key) or {}
         _chunking_pipeline_state[md_key] = {**entry, "status": STATUS_CHECKING}
@@ -1461,7 +1471,9 @@ def _scan_and_queue_markdowns(library_dir: Path) -> list[Path]:
                     "status": STATUS_CHECKING,
                 }
                 entry = _chunking_pipeline_state[md_key]
-            memory.chunking_pipeline_state[md_key] = _chunking_pipeline_state[md_key]
+            memory.chunking_pipeline_state[md_key] = _chunking_pipeline_state[
+                md_key
+            ]
 
         completed_at_str = entry.get("chunking_completed_at")
         if completed_at_str:
@@ -1490,7 +1502,9 @@ def _scan_and_queue_markdowns(library_dir: Path) -> list[Path]:
             with Memory() as memory:
                 if not hasattr(memory, "chunking_pipeline_state"):
                     memory.chunking_pipeline_state = {}
-                memory.chunking_pipeline_state[md_key] = _chunking_pipeline_state[md_key]
+                memory.chunking_pipeline_state[md_key] = (
+                    _chunking_pipeline_state[md_key]
+                )
             queued_paths.append(md_path)
             logger.info(
                 "Chunking pipeline: %s queued — %s.", md_path.name, reason
@@ -1503,7 +1517,9 @@ def _scan_and_queue_markdowns(library_dir: Path) -> list[Path]:
             with Memory() as memory:
                 if not hasattr(memory, "chunking_pipeline_state"):
                     memory.chunking_pipeline_state = {}
-                memory.chunking_pipeline_state[md_key] = _chunking_pipeline_state[md_key]
+                memory.chunking_pipeline_state[md_key] = (
+                    _chunking_pipeline_state[md_key]
+                )
 
     return queued_paths
 

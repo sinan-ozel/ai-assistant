@@ -5,7 +5,10 @@ from fastapi import HTTPException
 
 
 async def handler():
-    """Health check endpoint. Returns 503 while providers are loading."""
+    """Health check endpoint.
+
+    Returns 503 while providers are loading.
+    """
     if providers_state.get("loading", True):
         raise HTTPException(
             status_code=503,

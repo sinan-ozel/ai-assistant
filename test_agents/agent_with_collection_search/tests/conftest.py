@@ -31,7 +31,7 @@ def clear_test_memory():
 
 
 @pytest.fixture
-def chunk_reset():
+def chunk_reset(scope='session'):
     """Reset the chunking pipeline state and drop all vector-store collections.
 
     Clears the Redis chunking state and the library index so every Markdown

@@ -234,8 +234,7 @@ def _scan_and_queue_pdfs(library_dir: Path) -> list[Path]:
         p
         for p in library_dir.rglob("*.pdf")
         if not any(
-            part.startswith(".")
-            for part in p.parts[len(library_dir.parts) :]
+            part.startswith(".") for part in p.parts[len(library_dir.parts) :]
         )
     )
     logger.debug(
@@ -282,12 +281,12 @@ def _scan_and_queue_pdfs(library_dir: Path) -> list[Path]:
             with Memory() as memory:
                 if not hasattr(memory, "pdf_pipeline_state"):
                     memory.pdf_pipeline_state = {}
-                memory.pdf_pipeline_state[pdf_key] = _pdf_pipeline_state[pdf_key]
+                memory.pdf_pipeline_state[pdf_key] = _pdf_pipeline_state[
+                    pdf_key
+                ]
 
             queued_paths.append(pdf_path)
-            logger.info(
-                "PDF pipeline: %s queued — %s.", pdf_path.name, reason
-            )
+            logger.info("PDF pipeline: %s queued — %s.", pdf_path.name, reason)
         else:
             _pdf_pipeline_state[pdf_key] = {
                 **_pdf_pipeline_state.get(pdf_key, {}),
@@ -296,7 +295,9 @@ def _scan_and_queue_pdfs(library_dir: Path) -> list[Path]:
             with Memory() as memory:
                 if not hasattr(memory, "pdf_pipeline_state"):
                     memory.pdf_pipeline_state = {}
-                memory.pdf_pipeline_state[pdf_key] = _pdf_pipeline_state[pdf_key]
+                memory.pdf_pipeline_state[pdf_key] = _pdf_pipeline_state[
+                    pdf_key
+                ]
 
     return queued_paths
 

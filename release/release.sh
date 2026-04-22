@@ -188,6 +188,17 @@ docker build \
     -t "${DOCKER_IMAGE}:latest" \
     "${WORKSPACE_ROOT}"
 
+echo ">>> Syncing Helm chart version to $VERSION ..."
+CHART="$WORKSPACE_ROOT/helm/ai-assistant/Chart.yaml"
+if [[ -f "$CHART" ]]; then
+    sed -i '' "s/^version:.*/version: ${VERSION}/" "$CHART"
+    sed -i '' "s/^appVersion:.*/appVersion: \"${VERSION}\"/" "$CHART"
+    git add "$CHART"
+    git commit -m "chore: sync Helm chart version to $VERSION"
+else
+    echo "WARNING: $CHART not found — skipping Helm version sync."
+fi
+
 echo ">>> Tagging git commit as $GIT_TAG ..."
 git tag -a "$GIT_TAG" -m "Release $VERSION"
 

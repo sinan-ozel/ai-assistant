@@ -25,7 +25,7 @@ EXPECTED_BOOKS = {
 
 
 @pytest.mark.depends(on=["healthy"], name="test_books_ingested")
-def test_books_ingested(chunk_reset):
+def test_books_ingested():
     """Both library Markdown files should be chunked and listed by the books API.
 
     The fixture clears the chunking pipeline state and drops Qdrant

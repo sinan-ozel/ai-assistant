@@ -445,8 +445,9 @@ def discover_providers() -> Dict[str, Any]:
                 is_custom=False,
                 validate_on_startup=False,
             )
-            logger.debug("discover_providers found new provider: %s",
-                         provider_data)
+            logger.debug(
+                "discover_providers found new provider: %s", provider_data
+            )
             all_providers.append(provider_data)
 
     # Load from custom directory
@@ -475,12 +476,15 @@ def discover_providers() -> Dict[str, Any]:
     # Get available providers
     available_names = [p["name"] for p in all_providers if p["available"]]
 
-    logger.debug("discover_providers complete. "
-                 "providers: %s "
-                 "available_providers: %s "
-                 "default_provider: %s",
-                 all_providers, available_names, default_provider_name)
-
+    logger.debug(
+        "discover_providers complete. "
+        "providers: %s "
+        "available_providers: %s "
+        "default_provider: %s",
+        all_providers,
+        available_names,
+        default_provider_name,
+    )
 
     return {
         "providers": all_providers,

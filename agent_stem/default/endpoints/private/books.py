@@ -14,7 +14,9 @@ _QDRANT_TIMEOUT = 1.0
 def _books_from_qdrant() -> list[dict]:
     from qdrant_client import QdrantClient
 
-    client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT, timeout=_QDRANT_TIMEOUT)
+    client = QdrantClient(
+        host=QDRANT_HOST, port=QDRANT_PORT, timeout=_QDRANT_TIMEOUT
+    )
     books: dict[str, dict] = {}
     for collection in client.get_collections().collections:
         offset = None
@@ -32,7 +34,9 @@ def _books_from_qdrant() -> list[dict]:
                     continue
                 if fp not in books:
                     book = point.payload.get("book") or {}
-                    tags = book.get("tags", []) if isinstance(book, dict) else []
+                    tags = (
+                        book.get("tags", []) if isinstance(book, dict) else []
+                    )
                     books[fp] = {"tags": tags, "chunk_count": 0}
                 books[fp]["chunk_count"] += 1
             if next_offset is None:
@@ -41,7 +45,9 @@ def _books_from_qdrant() -> list[dict]:
     result = [{"file_path": fp, **info} for fp, info in books.items()]
     for entry in result:
         for key, val in entry.items():
-            if not isinstance(val, (str, int, float, bool, list, dict, type(None))):
+            if not isinstance(
+                val, (str, int, float, bool, list, dict, type(None))
+            ):
                 raise TypeError(
                     f"Qdrant returned non-serializable type {type(val).__name__!r} "
                     f"for field {key!r}: {val!r}"
@@ -62,14 +68,18 @@ def _books_from_lancedb() -> list[dict]:
             if not fp:
                 continue
             book = row.get("book") or {}
-            tags = list(book.get("tags") or []) if isinstance(book, dict) else []
+            tags = (
+                list(book.get("tags") or []) if isinstance(book, dict) else []
+            )
             if fp not in books:
                 books[fp] = {"tags": tags, "chunk_count": 0}
             books[fp]["chunk_count"] += 1
     result = [{"file_path": fp, **info} for fp, info in books.items()]
     for entry in result:
         for key, val in entry.items():
-            if not isinstance(val, (str, int, float, bool, list, dict, type(None))):
+            if not isinstance(
+                val, (str, int, float, bool, list, dict, type(None))
+            ):
                 raise TypeError(
                     f"LanceDB returned non-serializable type {type(val).__name__!r} "
                     f"for field {key!r}: {val!r}"

@@ -14,6 +14,12 @@ Design Principles:
 6. Evaluation is a first-class citizen in this: the framework lets you write your evaluation.
 7. Locally-hosted or self-hosted models are also a first-class citizen: this has been developed and tested with small models working on a very old machine.
 
+## The cortex is your application
+
+The `cortex/` directory is not configuration — it **is** the application. Choosing a model, writing the system prompt, defining workflows, loading documents: these are application-level decisions made during development and evaluation, not deployment decisions made by infrastructure teams.
+
+This means the cortex travels with the code, not with the cluster. Docker Compose mounts it as a local directory; Kubernetes delivers it as a ConfigMap. The container image, Redis, Qdrant, and the model servers are infrastructure — interchangeable and replaceable. The cortex is what makes your agent *your* agent.
+
 
 ## This is how you configure your agent
 

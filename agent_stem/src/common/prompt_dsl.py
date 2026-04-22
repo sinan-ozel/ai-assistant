@@ -153,8 +153,8 @@ class Search:
     def _fetch(self) -> str:
         """Run the search and return formatted results as a string.
 
-        Results are cached after the first call so repeated access does not
-        re-run the query.
+        Results are cached after the first call so repeated access does not re-
+        run the query.
         """
         if self._cached is not None:
             return self._cached

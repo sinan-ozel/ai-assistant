@@ -3,7 +3,6 @@ import inspect
 import logging
 import os
 import signal
-
 from typing import Any, Dict
 
 from common.state import providers_state, workflows_state
@@ -39,18 +38,14 @@ async def run_provider_discovery():
     backoff_seconds = 3
 
     for attempt in range(1, max_retries + 1):
-        discovery_result = await loop.run_in_executor(
-            None, discover_providers
-        )
+        discovery_result = await loop.run_in_executor(None, discover_providers)
 
         # Update the existing dict instead of replacing it to maintain
         # references
         providers_state.update(discovery_result)
         logger.debug("providers_state: %s", providers_state)
 
-        available_count = len(
-            providers_state.get("available_providers", [])
-        )
+        available_count = len(providers_state.get("available_providers", []))
         total_providers = len(providers_state.get("providers", []))
 
         logger.info(
@@ -148,6 +143,7 @@ async def startup_event():
         has_request = "request" in params and request_body_spec
 
         if has_request:
+
             async def create_wrapper(
                 original_handler, request_spec, handler_params
             ):
@@ -159,9 +155,7 @@ async def startup_event():
                     request: Dict[str, Any] = Body(
                         ...,
                         openapi_examples=(
-                            {"example": {"value": example}}
-                            if example
-                            else None
+                            {"example": {"value": example}} if example else None
                         ),
                     ),
                     **path_params,
@@ -171,9 +165,7 @@ async def startup_event():
                     return await original_handler(**kwargs)
 
                 new_params = [
-                    p
-                    for p in sig.parameters.values()
-                    if p.name != "request"
+                    p for p in sig.parameters.values() if p.name != "request"
                 ]
                 body_param = inspect.Parameter(
                     "request",
@@ -213,7 +205,8 @@ async def startup_event():
             status_code = 200
             if spec.get("responses") and 200 not in spec["responses"]:
                 success_codes = sorted(
-                    c for c in spec["responses"]
+                    c
+                    for c in spec["responses"]
                     if isinstance(c, int) and 200 <= c < 300
                 )
                 if success_codes:
