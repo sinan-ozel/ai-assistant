@@ -98,7 +98,8 @@ def _embed_query(text: str) -> list[float]:
         ) from exc
     except (TimeoutError, OSError) as exc:
         raise EmbeddingUnavailableError(
-            f"Embedding server at {url} did not respond within 500 ms "
+            f"Embedding server at {url} did not respond within "
+            f"{EMBEDDING_TIMEOUT * 1000:.0f} ms "
             f"(busy or unreachable): {exc}"
         ) from exc
 

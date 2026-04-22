@@ -40,6 +40,8 @@ DEFAULT_SYSTEM_MESSAGE = os.environ.get(
     "context across messages.",
 )
 
+EMBEDDING_TIMEOUT = float(os.environ.get("EMBEDDING_TIMEOUT", "0.5"))
+
 logger = logging.getLogger(__name__)
 
 
@@ -486,10 +488,11 @@ async def handler(request: dict):
             )
         except EmbeddingUnavailableError as e:
             logger.error(
-                "Agent chat: embedding server did not respond within 500 ms "
+                "Agent chat: embedding server did not respond within %s ms "
                 "for user=%s conversation=%s — search unavailable. "
                 "The embedding server may be busy processing documents. "
                 "Error: %s",
+                EMBEDDING_TIMEOUT * 1000,
                 user_id,
                 conversation_id,
                 e,
