@@ -1,8 +1,7 @@
 """Tests for max_tokens edge cases in workflow endpoints.
 
-These tests probe how the nutrition extraction endpoint behaves when
-max_tokens is too low (should fail with a clear error), very large,
-or omitted entirely.
+These tests probe how the nutrition extraction endpoint behaves when max_tokens
+is too low (should fail with a clear error), very large, or omitted entirely.
 """
 
 import base64
@@ -37,8 +36,11 @@ def _image_message(image_base64: str) -> dict:
 
 def test_nutrition_extraction_low_max_tokens():
     """With max_tokens=50, a reasoning model exhausts the budget before
-    producing any output. The endpoint should return 400 and the error
-    message should hint that max_tokens may be too low."""
+    producing any output.
+
+    The endpoint should return 400 and the error message should hint that
+    max_tokens may be too low.
+    """
     image_base64 = get_image_base64(IMAGE_PATH)
 
     response = requests.post(
@@ -51,22 +53,22 @@ def test_nutrition_extraction_low_max_tokens():
         timeout=300,
     )
 
-    assert response.status_code == 400, (
-        f"Expected 400 but got {response.status_code}: {response.content}"
-    )
+    assert (
+        response.status_code == 400
+    ), f"Expected 400 but got {response.status_code}: {response.content}"
     detail = response.json().get("detail", {})
     error = detail.get("error", "") if isinstance(detail, dict) else str(detail)
-    assert "max_tokens" in error.lower(), (
-        f"Expected max_tokens hint in error message, got: {error!r}"
-    )
+    assert (
+        "max_tokens" in error.lower()
+    ), f"Expected max_tokens hint in error message, got: {error!r}"
 
 
 def test_nutrition_extraction_streaming_ndjson_low_max_tokens():
     """Same as above but via the NDJSON streaming path.
 
-    With max_tokens=50, the model produces no visible content.
-    The final streaming chunk should carry a parse_error that mentions
-    max_tokens."""
+    With max_tokens=50, the model produces no visible content. The final
+    streaming chunk should carry a parse_error that mentions max_tokens.
+    """
     image_base64 = get_image_base64(IMAGE_PATH)
 
     response = requests.post(
@@ -82,9 +84,9 @@ def test_nutrition_extraction_streaming_ndjson_low_max_tokens():
         stream=True,
     )
 
-    assert response.status_code == 200, (
-        f"Streaming endpoint returned {response.status_code}: {response.content}"
-    )
+    assert (
+        response.status_code == 200
+    ), f"Streaming endpoint returned {response.status_code}: {response.content}"
 
     chunks = []
     for line in response.iter_lines(decode_unicode=True):
@@ -97,15 +99,15 @@ def test_nutrition_extraction_streaming_ndjson_low_max_tokens():
     error_chunk = next(
         (c for c in chunks if "parse_error" in c or "error" in c), None
     )
-    assert error_chunk is not None, (
-        f"Expected a chunk with parse_error or error, got: {chunks}"
-    )
+    assert (
+        error_chunk is not None
+    ), f"Expected a chunk with parse_error or error, got: {chunks}"
     error_text = error_chunk.get("parse_error", "") or str(
         error_chunk.get("error", "")
     )
-    assert "max_tokens" in error_text.lower(), (
-        f"Expected max_tokens hint in parse_error, got: {error_text!r}"
-    )
+    assert (
+        "max_tokens" in error_text.lower()
+    ), f"Expected max_tokens hint in parse_error, got: {error_text!r}"
 
 
 def test_nutrition_extraction_large_max_tokens():
@@ -132,7 +134,7 @@ def test_nutrition_extraction_large_max_tokens():
     assert isinstance(data, dict)
     assert len(data["result"]) > 0
     print(data)
-    assert 'calories' in data['result']
+    assert "calories" in data["result"]
 
 
 def test_nutrition_extraction_no_max_tokens():
@@ -158,7 +160,7 @@ def test_nutrition_extraction_no_max_tokens():
     assert isinstance(data, dict)
     assert len(data["result"]) > 0
     print(data)
-    assert 'calories' in data['result']
-    assert 'usage' in data
-    assert 'completion_tokens' in data['usage']
-    assert isinstance(data['usage']['completion_tokens'], int)
+    assert "calories" in data["result"]
+    assert "usage" in data
+    assert "completion_tokens" in data["usage"]
+    assert isinstance(data["usage"]["completion_tokens"], int)
