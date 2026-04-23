@@ -66,7 +66,7 @@ services:
       - QDRANT_HOST=qdrant-test
       - QDRANT_PORT=6333
       - EMBEDDING_SERVER=http://embedding-test:11434
-      - EMBEDDING_TIMEOUT=1.5
+      - EMBEDDING_TIMEOUT=2.0
       # - LOG_LEVEL=DEBUG
     env_file:
       - .env

@@ -100,6 +100,9 @@ tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet im
 - [ ] Give a better way to develop edit the system message dependgin on context.
 - [ ] (?) Divvy-up chat.py into 01.understand_the_context.py, 02.act_on_the_problem, 03.show_the_result.
 - [ ] (0.4.0) Add `ocr` as a provider, use this for OCR.
+- [ ] (0.1.0) Something is weird with the tests. The conversations sizes seem to keep growing: (1) add some additinal info lines abouth the last message, and a median message. (2) Are the tests using the same conversation id? (3) How does conversation ids work?
+- [ ] (0.1.0) Make sure that different conversations work on the streamlit
+- [ ] (0.1.0) Make sure that different tenants work on the streamlit interface
 
 
 - [ ] Bug: See the following, this is a problem. The model is missing from the server, but we got a non-descript 400 error.
