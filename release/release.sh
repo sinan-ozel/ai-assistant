@@ -26,7 +26,7 @@
 
 set -euo pipefail
 
-DOCKER_IMAGE="sinanozel/agent-stem"
+DOCKER_IMAGE="sinanozel/ai-assistant"
 WORKSPACE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # ---------------------------------------------------------------------------
