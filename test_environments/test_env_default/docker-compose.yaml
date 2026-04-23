@@ -24,7 +24,7 @@ services:
       retries: 5
 
   embedding-test:
-    image: sinanozel/ollama.0.12.11:all-minilm-33m/
+    image: sinanozel/ollama.0.12.11:all-minilm-33m
     # image: sinanozel/llama.cuda.6gb:all-minilm-33m
     container_name: embedding-test-default
     networks:
