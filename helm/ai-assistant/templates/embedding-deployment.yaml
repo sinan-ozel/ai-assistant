@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ai-assistant.fullname" . }}-embedding
+  labels:
+    {{- include "ai-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: embedding
+spec:
+  replicas: {{ .Values.embedding.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "ai-assistant.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: embedding
+  template:
+    metadata:
+      labels:
+        {{- include "ai-assistant.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: embedding
+    spec:
+      containers:
+        - name: embedding
+          image: "{{ .Values.embedding.image.repository }}:{{ .Values.embedding.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: embed
+              containerPort: {{ .Values.embedding.port }}
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: embed
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 5

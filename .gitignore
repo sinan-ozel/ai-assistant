@@ -11,3 +11,4 @@
 _*.md
 _*/
 **/report.md
+.ruff_cache

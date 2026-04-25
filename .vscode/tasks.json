@@ -696,6 +696,7 @@
                 "--dev"
             ],
             "dependsOn": [
+                "Assert main branch",
                 "Run Quick & Costless Agent Integration Tests"
             ],
             "dependsOrder": "sequence",
@@ -724,6 +725,49 @@
             "args": [
                 "-c",
                 "mkdir -p ${workspaceFolder}/docs && curl -s http://localhost:8000/openapi.json | python3 -c \"import sys, json, yaml; print(yaml.dump(json.load(sys.stdin), default_flow_style=False, sort_keys=False))\" > ${workspaceFolder}/docs/openapi.yaml && echo 'OpenAPI spec written to docs/openapi.yaml'"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Assert main branch",
+            "type": "shell",
+            "command": "[ \"$(git -C \"${workspaceFolder}\" branch --show-current)\" = \"main\" ] || (echo 'ERROR: Must be on main to release.' && exit 1)",
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Example on Kubernetes",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "helm uninstall ai-assistant 2>/dev/null || true; bash '${workspaceFolder}/scripts/post-release-install.sh' '${input:example_agent}'"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Stop Kubernetes",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "helm uninstall ai-assistant 2>/dev/null && echo 'Release uninstalled.' || echo 'No release to uninstall.'; minikube stop"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Post-Release Tests",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "${workspaceFolder}/scripts/post-release-test.sh"
             ],
             "problemMatcher": []
         }
@@ -756,6 +800,16 @@
                 "nothing"
             ],
             "default": "default"
+        },
+        {
+            "id": "example_agent",
+            "type": "pickString",
+            "description": "Choose the example to deploy",
+            "options": [
+                "basic_example",
+                "mistral_example"
+            ],
+            "default": "basic_example"
         }
     ]
 }

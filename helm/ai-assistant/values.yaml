@@ -1,0 +1,152 @@
+# ── Main application ────────────────────────────────────────────────────────
+image:
+  repository: sinanozel/ai-assistant
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+env:
+  logLevel: INFO
+  # Maximum tokens in the conversation context window.
+  # Leave empty for no limit (uses the model's full context).
+  conversationWindowLimit: ""
+
+# API keys injected as a Kubernetes Secret.
+# Leave empty to omit the Secret entirely (e.g. when using only local servers).
+secrets:
+  mistralApiKey: ""
+  anthropicApiKey: ""
+
+# ── Embedding server ─────────────────────────────────────────────────────────
+# Two tag options — both expose the Ollama /api/embed endpoint on port 11434:
+#   all-minilm-33m      — small, fast, 33M-param sentence embeddings
+#   embeddinggemma-300m — larger, higher-quality Gemma-based embeddings
+embedding:
+  replicaCount: 1
+  image:
+    repository: sinanozel/ollama.0.12.11
+    tag: all-minilm-33m
+  port: 11434
+  # Model name sent to POST /api/embed — must match what is loaded in the image.
+  model: "all-minilm:33m"
+
+# ── Redis ────────────────────────────────────────────────────────────────────
+redis:
+  replicaCount: 1
+  image:
+    repository: redis
+    tag: "7.4.2-alpine"
+
+# ── Qdrant ───────────────────────────────────────────────────────────────────
+qdrant:
+  replicaCount: 1
+  image:
+    repository: qdrant/qdrant
+    tag: "v1.12.1"
+
+# ── Ollama model server (optional) ──────────────────────────────────────────
+# Enable this to run a local Ollama LLM inside the cluster.
+# Available tags (sinanozel/ollama.0.12.11):
+#   gemma3-270m  gemma3-12b  gemma3-27b  mistral-7b
+#   llama3.2-vision-11b  granite3.2-8b  granite3.2-2b
+#   orieg-gemma3-tools-1b  orieg-gemma3-tools-4b  orieg-gemma3-tools-12b
+#   gemma3n-e4b  phi4-mini-reasoning-3.8b  gpt-oss-20b  deepcoder-14b
+ollama:
+  enabled: false
+  replicaCount: 1
+  image:
+    repository: sinanozel/ollama.0.12.11
+    tag: gemma3-12b
+  # LiteLLM model string — must match the model loaded in the image.
+  # Format: ollama/<name>:<tag>  e.g. ollama/gemma3:12b
+  model: "ollama/gemma3:12b"
+  timeout: 150
+  # GPU scheduling. Requires the NVIDIA GPU operator (or device plugin) on the cluster.
+  # Setting nvidia.com/gpu under limits is sufficient — Kubernetes will only schedule
+  # this pod on nodes that advertise that resource. nodeSelector and tolerations are
+  # optional escape hatches for more complex cluster topologies.
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+  nodeSelector: {}
+  tolerations: []
+
+# ── llama.cpp model server (optional) ───────────────────────────────────────
+# Enable this to run a llama.cpp LLM inside the cluster.
+# The model name below is for documentation only — llama.cpp serves
+# whatever model is baked into the image.
+#
+# 6 GB VRAM (sinanozel/llama.cuda.6gb):
+#   qwen3.5-4b  qwen3.5-2b  qwen3.5-0.8b  gemma4-e2b  qwen3-vl-2b
+# 12 GB VRAM (sinanozel/llama.cuda.12gb):
+#   qwen3.5-4b
+# Large (sinanozel/llama.cuda):
+#   qwen3.5-9b-q4km  deepcoder-14b-q4km  gpt-oss-20b-q4km
+#   gemma4-31b  gemma4-e4b  gemma4-e2b
+llamacpp:
+  enabled: false
+  replicaCount: 1
+  image:
+    repository: sinanozel/llama.cuda.6gb
+    tag: qwen3.5-2b
+  model: "openai/qwen3.5-2b"
+  timeout: 150
+  # GPU scheduling — same mechanism as ollama above.
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+  nodeSelector: {}
+  tolerations: []
+
+# ── Cortex ───────────────────────────────────────────────────────────────────
+# The cortex is your application — system prompt, provider choice, workflows,
+# and documents. It is mounted at /app/cortex inside the container.
+#
+# Three modes (mutually exclusive — first match wins: hostPath > configMapName > inline):
+#
+# Mode 1 — hostPath (recommended for local dev / post-release testing):
+#   Mount a directory from the minikube node directly into the pod. Preserves
+#   the full cortex directory tree (chat/, providers/, workflows/, etc.) without
+#   any ConfigMap key-encoding. Use with `minikube mount` to expose a local
+#   directory into the minikube node first:
+#     minikube mount /local/path/to/cortex:/mnt/ai-assistant-cortex &
+#     helm upgrade --install ... --set cortex.hostPath=/mnt/ai-assistant-cortex
+#
+# Mode 2 — bring your own ConfigMap:
+#   Set cortex.configMapName to the name of an existing ConfigMap. The chart
+#   mounts it as-is; you manage it separately.
+#
+# Mode 3 — inline cortex (for quick starts and demos):
+#   Leave both hostPath and configMapName empty. The chart generates a ConfigMap
+#   from the values below. Only chat/prompt.py is supported; providers/default.yaml
+#   is auto-generated from the ollama / llamacpp settings.
+cortex:
+  # Path on the minikube node to mount as /app/cortex (mode 1).
+  # Expose a local directory first with: minikube mount <local>:<hostPath>
+  hostPath: ""
+
+  # Name of an existing ConfigMap to mount as /app/cortex (mode 2).
+  # When set, hostPath must be empty and inline values below are ignored.
+  configMapName: ""
+
+  # Inline chat/prompt.py content (mode 3 only).
+  chatPrompt: |
+    """You are a helpful AI assistant. Answer questions clearly and concisely.
+    If you do not know the answer, say so rather than guessing."""
+
+    print(input_text)
+
+# ── Extra environment variables from existing Secrets ────────────────────────
+# Reference any Kubernetes Secret by name to inject all its keys as env vars
+# into the application container. Use this to supply API keys for providers
+# defined in your cortex (e.g. OPENAI_API_KEY, MISTRAL_API_KEY, ANTHROPIC_API_KEY).
+#
+# Example:
+#   kubectl create secret generic my-llm-keys \
+#     --from-literal=OPENAI_API_KEY=sk-... \
+#     --from-literal=MISTRAL_API_KEY=...
+#   then set:  extraEnvFromSecret: my-llm-keys
+#
+# The provider YAML in your cortex can then reference ${OPENAI_API_KEY} as usual.
+extraEnvFromSecret: ""

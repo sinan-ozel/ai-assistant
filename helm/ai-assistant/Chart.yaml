@@ -1,0 +1,32 @@
+apiVersion: v2
+name: ai-assistant
+description: Helm chart for the ai-assistant agent framework
+
+# version      — chart version (packaging/compatibility changes).
+# appVersion   — the Docker image tag this chart expects.
+#
+# Both must match [project].version in pyproject.toml.
+#
+# How to keep them in sync:
+#   Production release: release.sh reads pyproject.toml and creates a git tag;
+#     run `sed -i '' "s/^version:.*/version: $VERSION/" helm/ai-assistant/Chart.yaml`
+#     and `sed -i '' "s/^appVersion:.*/appVersion: \"$VERSION\"/" helm/ai-assistant/Chart.yaml`
+#     before committing, or add this step to release.sh.
+#   Dev release: appVersion should use the dev tag (e.g. "0.1.0-dev.1") produced
+#     by release.sh --dev; bump it manually or wire it into the dev release step.
+#
+# A future CI step can automate this with:
+#   VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+keywords:
+  - ai
+  - llm
+  - agent
+
+maintainers:
+  - name: Sinan Ozel
+    email: coding@sinan.slmail.me

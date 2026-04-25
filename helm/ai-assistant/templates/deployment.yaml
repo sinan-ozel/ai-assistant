@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ai-assistant.fullname" . }}
+  labels:
+    {{- include "ai-assistant.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "ai-assistant.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: app
+  template:
+    metadata:
+      labels:
+        {{- include "ai-assistant.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: app
+    spec:
+      {{- if .Values.cortex.hostPath }}
+      initContainers:
+        - name: wait-for-cortex
+          image: busybox:stable
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for cortex to be accessible..."
+              until ls /app/cortex/providers/*.yaml >/dev/null 2>&1; do
+                sleep 2
+              done
+              echo "Cortex ready."
+          volumeMounts:
+            - name: cortex
+              mountPath: /app/cortex
+      {{- end }}
+      containers:
+        - name: app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: streamlit
+              containerPort: 8501
+              protocol: TCP
+          {{- if .Values.extraEnvFromSecret }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.extraEnvFromSecret | quote }}
+          {{- end }}
+          env:
+            - name: REDIS_HOST
+              value: {{ include "ai-assistant.redisHost" . | quote }}
+            - name: REDIS_PORT
+              value: "6379"
+            - name: QDRANT_HOST
+              value: {{ include "ai-assistant.qdrantHost" . | quote }}
+            - name: QDRANT_PORT
+              value: "6333"
+            - name: EMBEDDING_SERVER
+              value: "http://{{ include "ai-assistant.embeddingHost" . }}:{{ .Values.embedding.port }}"
+            - name: EMBEDDING_MODEL
+              value: {{ .Values.embedding.model | quote }}
+            {{- if .Values.ollama.enabled }}
+            - name: OLLAMA_HOST
+              value: "{{ include "ai-assistant.ollamaHost" . }}:11434"
+            {{- end }}
+            {{- if .Values.llamacpp.enabled }}
+            - name: LLAMA_CPP_HOST
+              value: "http://{{ include "ai-assistant.llamacppHost" . }}:8080/v1"
+            {{- end }}
+            - name: LOG_LEVEL
+              value: {{ .Values.env.logLevel | quote }}
+            {{- if .Values.env.conversationWindowLimit }}
+            - name: CONVERSATION_WINDOW_LIMIT
+              value: {{ .Values.env.conversationWindowLimit | quote }}
+            {{- end }}
+            {{- if or .Values.secrets.mistralApiKey .Values.secrets.anthropicApiKey }}
+            {{- if .Values.secrets.mistralApiKey }}
+            - name: MISTRAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ai-assistant.fullname" . }}-api-keys
+                  key: MISTRAL_API_KEY
+            {{- end }}
+            {{- if .Values.secrets.anthropicApiKey }}
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ai-assistant.fullname" . }}-api-keys
+                  key: ANTHROPIC_API_KEY
+            {{- end }}
+            {{- end }}
+          volumeMounts:
+            - name: cortex
+              mountPath: /app/cortex
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 10
+      volumes:
+        - name: cortex
+          {{- if .Values.cortex.hostPath }}
+          hostPath:
+            path: {{ .Values.cortex.hostPath | quote }}
+            type: Directory
+          {{- else if .Values.cortex.configMapName }}
+          configMap:
+            name: {{ .Values.cortex.configMapName | quote }}
+          {{- else }}
+          configMap:
+            name: {{ include "ai-assistant.fullname" . }}-cortex
+            items:
+              - key: chat-prompt.py
+                path: chat/prompt.py
+              {{- if or .Values.ollama.enabled .Values.llamacpp.enabled }}
+              - key: providers-default.yaml
+                path: providers/default.yaml
+              {{- end }}
+          {{- end }}

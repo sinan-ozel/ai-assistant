@@ -1,0 +1,19 @@
+{{- if .Values.llamacpp.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ai-assistant.fullname" . }}-llamacpp
+  labels:
+    {{- include "ai-assistant.labels" . | nindent 4 }}
+    app.kubernetes.io/component: llamacpp
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "ai-assistant.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: llamacpp
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+{{- end }}

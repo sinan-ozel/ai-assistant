@@ -1,0 +1,11 @@
+# Helm values for the mistral_example cortex.
+# API keys are read automatically from examples/mistral_example/.env by the
+# post-release scripts and created as the 'ai-assistant-api-keys' secret.
+
+extraEnvFromSecret: ai-assistant-api-keys
+
+ollama:
+  enabled: false
+
+llamacpp:
+  enabled: false

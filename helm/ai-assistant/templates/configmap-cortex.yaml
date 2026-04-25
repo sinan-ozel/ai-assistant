@@ -1,0 +1,19 @@
+{{- if and (not .Values.cortex.hostPath) (not .Values.cortex.configMapName) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ai-assistant.fullname" . }}-cortex
+  labels:
+    {{- include "ai-assistant.labels" . | nindent 4 }}
+data:
+  # chat/prompt.py — the agent's system prompt and response logic.
+  # Mounted at /app/cortex/chat/prompt.py via the volume items mapping.
+  chat-prompt.py: |
+{{ .Values.cortex.chatPrompt | indent 4 }}
+  {{- if or .Values.ollama.enabled .Values.llamacpp.enabled }}
+  # providers/default.yaml — generated from values.ollama / values.llamacpp.
+  # Mounted at /app/cortex/providers/default.yaml.
+  providers-default.yaml: |
+{{ include "ai-assistant.providerDefault" . | indent 4 }}
+  {{- end }}
+{{- end }}
