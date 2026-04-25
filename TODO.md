@@ -1,4 +1,4 @@
-- [ ] Publish to Docker Hub (Local pipeline: reformat, lint, test, publish)
+- [x] Publish to Docker Hub (Local pipeline: reformat, lint, test, publish)
 - [x] Rename the Repo
 - [ ] Write a script to make sure: (1) not print in prod code (2) no imports below the top.
 
@@ -6,11 +6,11 @@ GOALS
 - [x] (0.1.0) YAML Workflows 0.1.0
 - [x] (0.1.0) Python-as-DSL Hackable Chat
 - [x] (0.1.0) RAG
-- [ ] (0.2.0) Tools
+- [ ] (0..0) Add MCP server
 - [x] (0.1.0) Document Ingestion Pipeline
 
-- [ ] (0.1.0) Helm Charts
-- [ ] (0.1.0) Testing for Helm Charts
+- [x] (0.1.0) Helm Charts
+- [x] (0.1.0) Testing for Helm Charts
 - [ ] (0.1.0) Local Run docker-compose examples
 
 - [x] (0.1.0) Remove remaining PII and reset the tree
@@ -34,7 +34,7 @@ GOALS
 - [x] (0.1.0) Starting documentation: workflows
 - [x] (0.1.0) Starting documentation: agent chat
 - [x] (0.1.0) Starting documentation: quickstart
-- [ ] (0.1.0) Starting documentation: examples: Talk to your documents
+- [x] (0.1.0) Starting documentation: examples: Talk to your documents
 - [ ] (0.1.1) Add thinking in the agent chat view
 - [x] (0.1.0) Add a test for LanceDB chunking.
 - [ ] (0.1.0) Add a test for conversation memory in non-redis environments.
