@@ -414,10 +414,8 @@ def discover_providers() -> Dict[str, Any]:
                 ]
                 error_msg = (
                     f"Default provider failed validation: {provider_data['error']}. "
-                    f"You need to either set up MISTRAL_API_KEY environment variable, "
-                    f"or create your own default.yaml in the providers folder of your "
-                    f"cortex mount. Available provider names: "
-                    f"{', '.join(available_defaults)}"
+                    "You need to create your own default.yaml in the providers "
+                    f"folder of your cortex mount."
                 )
                 logger.error(error_msg)
                 raise RuntimeError(error_msg)
