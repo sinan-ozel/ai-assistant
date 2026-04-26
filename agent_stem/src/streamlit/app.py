@@ -1,5 +1,6 @@
 """Streamlit chat application for agent interaction."""
 
+import base64
 import json
 import time
 import uuid
@@ -22,7 +23,7 @@ def initialize_session_state():
         st.session_state.messages = []
 
 
-def send_message(message: str):
+def send_message(message: str, media: list | None = None):
     """Send a message to the agent chat endpoint and stream the response."""
     payload = {
         "message": message,
@@ -31,6 +32,8 @@ def send_message(message: str):
         "stream": True,
         "stream_format": "sse",
     }
+    if media:
+        payload["media"] = media
 
     try:
         response = requests.post(
@@ -112,10 +115,38 @@ def main():
                 else:
                     st.chat_message("assistant").write(content)
 
+        # Image uploader — sits above the chat input
+        _MIME = {
+            "jpg": "image/jpeg",
+            "jpeg": "image/jpeg",
+            "png": "image/png",
+            "gif": "image/gif",
+            "webp": "image/webp",
+        }
+        uploaded_files = st.file_uploader(
+            "Attach images (JPEG, PNG, GIF, WebP)",
+            type=list(_MIME),
+            accept_multiple_files=True,
+            label_visibility="collapsed",
+        )
+
         # Chat input at bottom of sidebar
         user_input = st.chat_input("Type your message here...")
 
         if user_input:
+            # Build media list from any uploaded images
+            media = []
+            for f in uploaded_files or []:
+                ext = f.name.rsplit(".", 1)[-1].lower()
+                mime = _MIME.get(ext, f"image/{ext}")
+                b64 = base64.b64encode(f.read()).decode("utf-8")
+                media.append(
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:{mime};base64,{b64}"},
+                    }
+                )
+
             # Add user message to history
             st.session_state.messages.append(
                 {"role": "user", "content": user_input}
@@ -129,7 +160,7 @@ def main():
                 with st.chat_message("assistant"):
                     placeholder = st.empty()
                     response_text = ""
-                    for chunk in send_message(user_input):
+                    for chunk in send_message(user_input, media=media or None):
                         response_text += chunk
                         placeholder.markdown(response_text + "▌")
                     placeholder.markdown(response_text)

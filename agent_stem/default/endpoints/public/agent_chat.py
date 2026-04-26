@@ -217,6 +217,15 @@ async def handle_streaming(
                     f"to a faster model or provider."
                 ),
             )
+        if "image" in error_msg or "base64" in error_msg:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "The model could not process the image input. "
+                    "Ensure media URLs are valid base64 data URLs and that "
+                    "the model supports image input."
+                ),
+            )
         raise HTTPException(
             status_code=500, detail=f"LLM connection failed: {str(e)}"
         )
@@ -388,6 +397,7 @@ async def handler(request: dict):
 
     # Extract request parameters
     message = request.get("message")
+    media = request.get("media", [])
     conversation_id = request.get("conversation_id")
     user_id = request.get("user_id", "default-user")
     stream = request.get("stream", False)
@@ -569,7 +579,18 @@ async def handler(request: dict):
         prompt_messages = [{"role": "system", "content": system_message}]
         prompt_messages.extend(fitted_history)
 
-        # Add current user message(s) to prompt
+        # Add current user message(s) to prompt.
+        # If the caller attached images, build a multimodal content list:
+        # [text part, ...media parts].  Images are NOT stored in Redis memory
+        # (only the plain-text message is), so base64 blobs never accumulate
+        # in the conversation history.
+        if media:
+            text = (
+                user_message_content
+                if isinstance(user_message_content, str)
+                else str(user_message_content)
+            )
+            user_message_content = [{"type": "text", "text": text}] + media
         user_msg = {"role": "user", "content": user_message_content}
         prompt_messages.append(user_msg)
 
@@ -683,6 +704,15 @@ async def handler(request: dict):
                         f"model or provider."
                     ),
                 )
+            if "image" in error_msg or "base64" in error_msg:
+                raise HTTPException(
+                    status_code=422,
+                    detail=(
+                        "The model could not process the image input. "
+                        "Ensure media URLs are valid base64 data URLs and that "
+                        "the model supports image input."
+                    ),
+                )
             # Otherwise, re-raise to be handled by outer exception handler
             raise
         except litellm.InternalServerError as e:
@@ -789,6 +819,49 @@ spec = {
                                 "Maximum number of tokens to generate in the "
                                 "response."
                             ),
+                        },
+                        "media": {
+                            "type": "array",
+                            "description": (
+                                "Optional list of images to attach to the "
+                                "message. Supported formats: JPEG "
+                                "(image/jpeg), PNG (image/png), GIF "
+                                "(image/gif), WebP (image/webp). Each item "
+                                "must use type 'image_url' with a base64 "
+                                "data URL: "
+                                "data:<mime_type>;base64,<base64_data>."
+                            ),
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": ["image_url"],
+                                        "description": (
+                                            "Media type identifier; "
+                                            "must be 'image_url'."
+                                        ),
+                                    },
+                                    "image_url": {
+                                        "type": "object",
+                                        "description": (
+                                            "Image reference containing "
+                                            "the base64 data URL."
+                                        ),
+                                        "properties": {
+                                            "url": {
+                                                "type": "string",
+                                                "description": (
+                                                    "Base64 data URL, e.g. "
+                                                    "data:image/jpeg;base64,..."
+                                                ),
+                                            }
+                                        },
+                                        "required": ["url"],
+                                    },
+                                },
+                                "required": ["type", "image_url"],
+                            },
                         },
                     },
                     "required": ["message"],
