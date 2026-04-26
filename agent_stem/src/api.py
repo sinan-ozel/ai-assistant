@@ -212,6 +212,11 @@ async def startup_event():
                 if success_codes:
                     status_code = success_codes[0]
 
+            tag = (
+                "private"
+                if spec["path"].startswith("/private")
+                else "public"
+            )
             app.add_api_route(
                 spec["path"],
                 route_handler,
@@ -221,6 +226,7 @@ async def startup_event():
                 responses=spec.get("responses", {}),
                 status_code=status_code,
                 openapi_extra=openapi_extra,
+                tags=[tag],
             )
             logger.info(f"Registered {method} {spec['path']} from {name}")
 
@@ -289,6 +295,7 @@ async def startup_event():
                 description=spec.get("description"),
                 responses=spec.get("responses", {}),
                 openapi_extra=openapi_extra,
+                tags=["workflows"],
             )
             logger.info(
                 f"Registered {method} {spec['path']} from workflow {name}"

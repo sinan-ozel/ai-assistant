@@ -45,12 +45,12 @@ GOALS
 - [ ] (0.1.0) Test chat evaluation in no_redis environment
 - [ ] (0.1.0) Test conversation in no_redis environment
 - [ ] (0.1.0) Test workflow evaluation in no_redis environment
-- [ ] Refactor: clean up the tests, remove unnecessary fixtures.
+- [x] Refactor: clean up the tests, remove unnecessary fixtures.
 - [ ] (0.1.0) If there is no eval.py, disable the button on the frontend, and change the message.
-- [ ] (0.1.0) Remove "deploy" from streamlit
-- [ ] (0.1.0) Add links to OpenAPI documentation: http://localhost:8000/docs
-- [ ] (0.1.0) Use the books endpoint to pot something on the frontend
-- [ ] Extend the books endpoint, implement v2 where we see everything in the pipeline.
+- [x] (0.1.0) Remove "deploy" from streamlit
+- [x] (0.1.0) Add links to OpenAPI documentation: http://localhost:8000/docs
+- [x] (0.1.0) Use the books endpoint to pot something on the frontend
+- [ ] (0.2.0) Extend the books endpoint, implement v2 where we see everything in the pipeline.
 - [ ] (0.1.0) On the OpenAPI, categorize the endpoints as Private, Public and Workflows
 - [ ] (0.1.0) Create an environment to test quick fails if the environmental variables are set incorrectly, or proper error messages.
 
@@ -62,7 +62,7 @@ GOALS
 - [ ] In the Release Check, fail if reformatting is necessary before the tests start. If the version is not greater than the last tag, fail.
 
 - [ ] (0.1.0) Show the system prompt in streamlit
-- [ ] (0.1.0) Show evaluation button & results in streamlit.
+- [x] (0.1.0) Show evaluation button & results in streamlit.
 - [ ] (0.1.0) Show all workflows in streamlit - Maybe a link to the OpenAPI ?
 
 - [ ] (0.1.0) Make sure that the evaluation function is using redis-memory for storage.
