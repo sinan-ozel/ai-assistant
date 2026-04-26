@@ -1,6 +1,7 @@
 - [x] Publish to Docker Hub (Local pipeline: reformat, lint, test, publish)
 - [x] Rename the Repo
 - [ ] Write a script to make sure: (1) not print in prod code (2) no imports below the top.
+- [ ] Check out how orchestration works at Claude Code.
 
 GOALS
 - [x] (0.1.0) YAML Workflows 0.1.0
@@ -12,7 +13,6 @@ GOALS
 - [x] (0.1.0) Helm Charts
 - [x] (0.1.0) Testing for Helm Charts
 - [ ] (0.1.0) Local Run docker-compose examples
-
 
 
 - [ ] Add some sort of agent_id and use as a prefix. agent:short-term-memory:<user_id>:<convo_id>
@@ -51,8 +51,10 @@ GOALS
 - [x] (0.1.0) Add links to OpenAPI documentation: http://localhost:8000/docs
 - [x] (0.1.0) Use the books endpoint to pot something on the frontend
 - [ ] (0.2.0) Extend the books endpoint, implement v2 where we see everything in the pipeline.
-- [ ] (0.1.0) On the OpenAPI, categorize the endpoints as Private, Public and Workflows
+- [x] (0.1.0) On the OpenAPI, categorize the endpoints as Private, Public and Workflows
 - [ ] (0.1.0) Create an environment to test quick fails if the environmental variables are set incorrectly, or proper error messages.
+- [ ] (0.1.1) Ability to add books and create shelves on the interface.
+
 
 - [ ] Add MCP testing to the test harness
 - [ ] (0.1.1) Raise error if embedding server changes.
@@ -66,7 +68,7 @@ GOALS
 - [ ] (0.1.0) Show all workflows in streamlit - Maybe a link to the OpenAPI ?
 
 - [ ] (0.1.0) Make sure that the evaluation function is using redis-memory for storage.
-- [ ] (0.1.0) Remove the "Agent Chat Interface" title on the main screen on streamlit.
+- [x] (0.1.0) Remove the "Agent Chat Interface" title on the main screen on streamlit.
 
 - [ ] (0.3.0) Add L1 and cosine distance as metrics.
 - [ ] Refactor: move default_providers global from under api.py to somewher reasonable under common
@@ -82,8 +84,8 @@ tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet im
 - [ ] Improve chunking: detect tables, refactor the chunking library, place tests.
 - [ ] (0.3.0) Add custom embedding provider. Remove EMBEDDING_HOST from env in the test environments, and remove the servers.
 - [ ] (0.1.0) Change the test in no_qdrant environment to use the endpoints.
-- [ ] Refactor: Remove the generalize try ... except Exception blocks from multiple places.
-- [ ] (0.1.0) Add open labels labels to the Dockerfile. Include documentation, code.
+- [x] Refactor: Remove the generalize try ... except Exception blocks from multiple places.
+- [ ] (0.1.0) Add open labels to the Dockerfile. Include documentation, code.
 - [ ] (0.2.0) Force workflows to be streaming ndjson only.
 - [ ] (0.2.0) Register workflows as MCP tools
 - [ ] Give a better way to develop edit the system message dependgin on context.
@@ -92,7 +94,7 @@ tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet im
 - [ ] (0.1.0) Something is weird with the tests. The conversations sizes seem to keep growing: (1) add some additinal info lines abouth the last message, and a median message. (2) Are the tests using the same conversation id? (3) How does conversation ids work?
 - [ ] (0.1.0) Make sure that different conversations work on the streamlit
 - [ ] (0.1.0) Make sure that different tenants work on the streamlit interface
-
+- [ ] If the embedding server or mode changes, rerun the chunking, log a warning.
 
 - [ ] Bug: See the following, this is a problem. The model is missing from the server, but we got a non-descript 400 error.
 tests-runner-default    |     def test_nutrition_information_extraction():
