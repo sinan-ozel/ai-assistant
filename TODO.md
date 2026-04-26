@@ -13,17 +13,10 @@ GOALS
 - [x] (0.1.0) Testing for Helm Charts
 - [ ] (0.1.0) Local Run docker-compose examples
 
-- [x] (0.1.0) Remove remaining PII and reset the tree
-
-- [x] Upgrade pytest-openapi to 0.2.2
-- [x] (0.1.0) Finish logic / protocol for the default provider: if multiple custom, the one called default is default. Also: vision, large, small, default, reasoning, evaluation, coding, embedding
-- [x] (0.1.0) Rename the default providers.
 
 
 - [ ] Add some sort of agent_id and use as a prefix. agent:short-term-memory:<user_id>:<convo_id>
 - [ ] Think about how loops work
-- [x] (0.1.0) Put in an evaluation scheme for the agent chat
-- [x] (0.1.0) Put in the markdown ingestion
 - [ ] (0.2.0) Markdown ingestion: may have an issue, it may rewrite the same file in deployments with multiple pods.
 - [ ] (0.1.1) Update the chunking pipeline to delete files if the md does not exist, same for PDF. (Think on this: I want the markdown files to be the source of truth, but there will be a race condition if this is implemented.)
 - [x] (0.1.0) Markdown ingestion: Markdown to chunking.
@@ -61,10 +54,6 @@ GOALS
 - [ ] (0.1.0) On the OpenAPI, categorize the endpoints as Private, Public and Workflows
 - [ ] (0.1.0) Create an environment to test quick fails if the environmental variables are set incorrectly, or proper error messages.
 
-- [x] Refactor: Think about the test harness. Maybe you start an environment, and test different agents on it?
-- [x] Test Harness: Do not use the everything environment for agents, just use the no_llm environment
-- [x] Test Harness: Add some "bad" agents to see that they crash.
-- [x] Test Harness: Bad agent with error-raising DSL - should genuinely rais
 - [ ] Add MCP testing to the test harness
 - [ ] Raise error if embedding server changes.
 
