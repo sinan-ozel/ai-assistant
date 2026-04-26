@@ -6,7 +6,7 @@ GOALS
 - [x] (0.1.0) YAML Workflows 0.1.0
 - [x] (0.1.0) Python-as-DSL Hackable Chat
 - [x] (0.1.0) RAG
-- [ ] (0..0) Add MCP server
+- [ ] (0.1.0) Add MCP server
 - [x] (0.1.0) Document Ingestion Pipeline
 
 - [x] (0.1.0) Helm Charts
@@ -55,7 +55,7 @@ GOALS
 - [ ] (0.1.0) Create an environment to test quick fails if the environmental variables are set incorrectly, or proper error messages.
 
 - [ ] Add MCP testing to the test harness
-- [ ] Raise error if embedding server changes.
+- [ ] (0.1.1) Raise error if embedding server changes.
 
 - [ ] In the Release (Dev) Check, fail if reformatting is necessary before the tests start. Also fail if there is a stable tag that matches the current version, the current version needs to be larger.
 

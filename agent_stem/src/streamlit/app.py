@@ -407,6 +407,11 @@ def main():
             all_workflows = workflows_data.get("workflows", [])
 
             if all_workflows:
+                if not any(w.get("has_evaluation") for w in all_workflows):
+                    st.caption(
+                        "None of these workflows have evaluations defined. "
+                        "Add an `evaluation:` section to a workflow YAML to enable testing."
+                    )
                 for workflow in all_workflows:
                     with st.expander(f"📊 {workflow['name']}", expanded=False):
                         st.markdown(f"**Path:** `{workflow['path']}`")
@@ -624,7 +629,10 @@ def main():
                                         f"Could not fetch results: {str(e)}"
                                     )
             else:
-                st.info("No workflows found.")
+                st.info(
+                    "No workflows defined yet. "
+                    "Add YAML files to `cortex/workflows/`."
+                )
         else:
             st.warning("Could not fetch workflows list")
     except Exception as e:
