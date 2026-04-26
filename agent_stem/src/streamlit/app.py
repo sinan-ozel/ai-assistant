@@ -70,6 +70,17 @@ def main():
         initial_sidebar_state="expanded",
     )
 
+    st.markdown(
+        """
+        <style>
+        #MainMenu {visibility: hidden;}
+        header [data-testid="stToolbar"] {display: none;}
+        .stDeployButton {display: none;}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
     initialize_session_state()
 
     # Sidebar for chat
@@ -125,36 +136,7 @@ def main():
             st.rerun()
 
     # Main content area
-    st.title("Agent Chat Interface")
-    st.markdown("### Welcome to the Agent Chat")
-    st.markdown("""
-    Use the sidebar on the left to chat with the agent. The \
-conversation is stateful, so the agent will remember your previous \
-messages within the same conversation.
-
-    **Features:**
-    - 💬 Persistent conversation memory
-    - 🔄 Start new conversations anytime
-    - 📝 Full chat history
-    """)
-
-    # Display some stats if there are messages
-    if st.session_state.messages:
-        st.divider()
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Messages", len(st.session_state.messages))
-        with col2:
-            user_msgs = sum(
-                1 for m in st.session_state.messages if m["role"] == "user"
-            )
-            st.metric("Your Messages", user_msgs)
-        with col3:
-            assistant_msgs = sum(
-                1 for m in st.session_state.messages if m["role"] == "assistant"
-            )
-            st.metric("Agent Responses", assistant_msgs)
-
+    st.title("Private Interface")
     # Agent Evaluation DSL Section
     st.divider()
     st.markdown("## 🧪 Agent Evaluation")

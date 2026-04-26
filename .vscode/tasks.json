@@ -33,6 +33,24 @@
             },
         },
         {
+            "label": "Run Example Agent",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/agent_stem/docker-compose.default.yaml",
+                "up"
+            ],
+            "dependsOn": ["Build Container"],
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/examples/${input:example_agent}/cortex",
+                    "DEV_DATA_FOLDER": "${workspaceFolder}/examples/${input:example_agent}/dev-data"
+                }
+            },
+        },
+        {
             "label": "Run Agent (without Redis)",
             "type": "shell",
             "command": "docker",

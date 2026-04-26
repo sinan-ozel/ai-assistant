@@ -14,6 +14,8 @@ services:
       - EMBEDDING_SERVER=http://embedding:11434
       # - CONVERSATION_WINDOW_LIMIT=4096
       # - LOG_LEVEL=DEBUG
+    env_file:
+      - .env
     networks:
       - agent-dev-network
     depends_on:
