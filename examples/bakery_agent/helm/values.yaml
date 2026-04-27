@@ -1,0 +1,16 @@
+# Helm values for the bakery_agent example.
+#
+# Prerequisites:
+#   kubectl create secret generic llm-secrets --from-literal=MISTRAL_API_KEY=sk-...
+#
+# Deploy:
+#   helm upgrade --install bakery ./helm/ai-assistant \
+#     -f examples/bakery_agent/helm/values.yaml \
+#     --wait
+#
+# Forward ports:
+#   kubectl port-forward svc/bakery-ai-assistant 8000:8000
+
+replicaCount: 1
+
+extraEnvFromSecret: llm-secrets

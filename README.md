@@ -20,96 +20,127 @@ The `cortex/` directory is not configuration — it **is** the application. Choo
 
 This means the cortex travels with the code, not with the cluster. Docker Compose mounts it as a local directory; Kubernetes delivers it as a ConfigMap. The container image, Redis, Qdrant, and the model servers are infrastructure — interchangeable and replaceable. The cortex is what makes your agent *your* agent.
 
+---
 
-## This is how you configure your agent
+## Quick start — a working agent in two minutes
 
-Your agent is configured by mounting a `cortex/` directory into the container.
-The minimum setup is a single provider YAML file:
-
-```
-cortex/
-  providers/
-    default.yaml
-  chat/
-    prompt.py       ← optional: system message + DSL
-  library/          ← optional: documents for RAG
-  workflows/        ← optional: workflow endpoint definitions
-```
-
-**`cortex/providers/default.yaml`** — pick your LLM backend:
+Create one file:
 
 ```yaml
-# Mistral cloud
+# cortex/providers/default.yaml
 api_base: https://api.mistral.ai
 model: mistral/mistral-large-2512
 api_key: ${MISTRAL_API_KEY}
 ```
 
+Then run:
+
+```bash
+MISTRAL_API_KEY=your-key-here \
+  docker compose -f agent_stem/docker-compose.default.yaml up
+```
+
+Your agent is live. The API is at `http://localhost:8000` and interactive docs at `http://localhost:8000/docs`.
+
+Send a message:
+
+```bash
+curl -X POST http://localhost:8000/v1/agent/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hello!"}'
+```
+
+Other supported LLM backends — swap into `default.yaml`:
+
 ```yaml
-# Ollama (local)
+# Anthropic
+model: anthropic/claude-haiku-4-5-20251001
+api_key: ${ANTHROPIC_API_KEY}
+```
+
+```yaml
+# Local Ollama
 api_base: http://ollama:11434
 model: ollama/gemma3:270m
 ```
 
 ```yaml
-# Anthropic
-model: anthropic/claude-sonnet-4-5
-api_key: ${ANTHROPIC_API_KEY}
+# Local llama.cpp (OpenAI-compatible server)
+api_base: http://localhost:8080/v1
+model: openai/gemma4:e2b
+api_key: dummy
+timeout: 150
 ```
 
-**`cortex/chat/prompt.py`** — the module-level docstring becomes the system message:
+Anything [LiteLLM supports](https://docs.litellm.ai/docs/providers) works here — just set `model` and `api_base` accordingly.
+
+---
+
+## Give your agent a personality
+
+Add `cortex/chat/prompt.py`. The module-level docstring becomes the system message:
 
 ```python
+# cortex/chat/prompt.py
 """
-You are a helpful assistant called "Son of Anton".
-You specialize in debugging code and finding low-cost hamburgers.
+You are a helpful assistant called "Aria".
+You are friendly and concise. When you don't know something, say so.
 """
 
-# DSL: inject retrieval results into context
-with Search(input())
-    print(input())
+print(input_text)
 ```
 
-## This is where you put your documents
+That's all you need. The `print(input_text)` passes the user's message through unchanged. Restart the container and the new system message is active.
 
-Place PDFs or Markdown files under `cortex/library/`. They are automatically
-converted, chunked, embedded, and stored in the vector database at startup.
-Use subfolders to organise documents into named collections:
+---
+
+## Talk to your documents (RAG)
+
+Drop PDF or Markdown files into `cortex/library/`. They are automatically converted, chunked, embedded, and indexed into the vector database. Use subfolders as collection names:
 
 ```
 cortex/
   library/
-    shelf1/
-      my-book.pdf
-    shelf2/
-      another-document.pdf
+    product-docs/
+      manual.pdf
+    policies/
+      handbook.pdf
 ```
 
-Files in `shelf1/` become collection `shelf1` in the vector store.
-Search them from `prompt.py`:
+Then in `prompt.py`, inject the relevant chunks into the conversation:
 
 ```python
-# Search all collections
-with Search(input())
-    print(input())
+"""
+You are a support assistant. Answer using the provided documentation.
+If the answer is not in the documents, say so.
+"""
 
-# Search a specific collection
-results = Search(input(), "shelf1")
-
-with Search(input(), "shelf1")
-    print(input())
+with search(input()):
+    print("User question: " + input())
 ```
 
-## If desired, create basic "workflows"
+`search(input())` runs a vector search and prints the matching chunks into the user message before the question. The LLM sees both.
 
-Workflows are streaming POST endpoints that do a specific task using an LLM.
-Each YAML file under `cortex/workflows/` becomes a registered endpoint at startup:
+To restrict search to one collection:
+
+```python
+with search(input(), collection="product-docs", top_k=3):
+    print("User question: " + input())
+```
+
+No code changes needed when you add new documents — the pipeline picks them up automatically on the next poll cycle.
+
+---
+
+## Create typed API endpoints (Workflows)
+
+Each YAML file in `cortex/workflows/` becomes a `POST` endpoint at startup:
 
 ```yaml
-# cortex/workflows/summarize_text.yaml
-name: summarize_text
-path: /v1/summarize-text
-description: Summarizes the given text into a concise summary.
+# cortex/workflows/summarize.yaml
+name: summarize
+path: /v1/summarize
+description: Summarize text in under 50 words.
 
 output_schema:
   type: string
@@ -117,15 +148,16 @@ output_schema:
 execution:
   type: prompt
   prompt: |
-    Clean up and summarize the user message in less than 50 words.
+    Summarize the following text in under 50 words.
 ```
 
 For structured JSON output:
 
 ```yaml
+# cortex/workflows/extract-book.yaml
 name: extract_book_metadata
 path: /v1/extract-book-metadata
-description: Extracts book metadata from a cover image.
+description: Extract book title and author from a cover image.
 provider: vision
 
 input_requirements:
@@ -143,162 +175,124 @@ output_schema:
 execution:
   type: prompt
   prompt: |
-    Extract the book metadata from this cover image.
+    Extract the book title and author from this cover image.
 ```
 
-Note that this one would require you to place a provider called vision under the folder providers, i.e. `/cortex/
+The endpoint validates the LLM's JSON response against the schema before returning it.
 
-## This is how you run your assistant (locally, for testing or for personal use)
+---
 
-```yaml
-# docker-compose.yaml
-services:
-  agent:
-    image: sinanozel/agent-stem:latest
-    volumes:
-      - ./cortex:/app/cortex
-    ports:
-      - "8000:8000"
-    environment:
-      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
-    depends_on:
-      - redis
-      - qdrant
+## Architecture
 
-  redis:
-    image: redis:7-alpine
+This section is for developers who want to understand or contribute to the framework.
 
-  qdrant:
-    image: qdrant/qdrant:v1.12.1
+### Directory layout
 
-  embedding:
-    image: sinanozel/ollama.0.12.11:all-minilm-33m
+```
+agent_stem/              ← the container image source
+  default/endpoints/     ← auto-discovered HTTP endpoint modules
+  src/
+    common/              ← shared logic (search, DSL, chunking)
+    startup/             ← provider, workflow, and pipeline startup code
+test_agents/             ← integration test fixtures (one cortex per agent)
+test_environments/       ← docker-compose files for each test scenario
+examples/                ← runnable examples with helm values
+docs/                    ← user documentation (MkDocs)
 ```
 
-```bash
-docker compose up
-# Agent is available at http://localhost:8000
-# Interactive API docs at http://localhost:8000/docs
+### HTTP endpoints
+
+Three public endpoints are registered out of the box:
+
+| Endpoint | Standard | Description |
+|---|---|---|
+| `POST /v1/chat/completions` | OpenAI Chat API | Stateless LLM proxy, OpenAI-compatible |
+| `POST /v1/api/generate` | Ollama Generate API | Stateless LLM proxy, Ollama-compatible |
+| `POST /v1/agent/chat` | Custom | Stateful conversation with Redis history |
+
+Private endpoints (path starts with `/private/`) are for internal use: health, search, books list, provider status, evaluation.
+
+All endpoints are auto-discovered from Python files under `default/endpoints/`. Each file exports a `handler` async function and a `spec` dict describing the route in OpenAPI terms. Adding a new endpoint is as simple as dropping a file.
+
+### LLM providers
+
+Provider YAML files in `cortex/providers/` are loaded at startup. Every key in the file is passed as a keyword argument to LiteLLM's `acompletion()`. Environment variables are substituted with `${VAR_NAME}` syntax.
+
+Selection priority at startup:
+1. `cortex/providers/default.yaml` (crashes on failure)
+2. `DEFAULT_PROVIDER` env var matching a file in `cortex/providers/` (crashes on failure)
+3. The only file in `cortex/providers/` if exactly one exists
+4. Built-in Mistral fallback requiring `MISTRAL_API_KEY` (runs in no-LLM mode if key is absent)
+
+Named providers (non-default) are referenced by name from workflow YAML files using the `provider:` key. They are validated at request time, not startup.
+
+### Prompt DSL
+
+`cortex/chat/prompt.py` is executed on every `/v1/agent/chat` request. The runtime injects these globals without any imports:
+
+| Name | Description |
+|---|---|
+| `input_text` | The current user message |
+| `message_history` | Mutable conversation history list |
+| `agent` | Config object for overriding model, temperature, streaming, etc. |
+| `search` | Context manager for vector search (RAG) |
+
+The module docstring becomes the system prompt. Everything `print()`-ed becomes the user message sent to the LLM (blank lines split output into multiple user message objects).
+
+### Document pipeline
+
+Two background processes run concurrently at startup:
+
+**Stage 1 — PDF pipeline** (polls every 5 s): detects new or changed PDFs under `cortex/library/` by SHA-256 hash, converts them to Markdown using `pymupdf4llm` (with Tesseract OCR fallback for image-based PDFs), and prepends YAML front matter with file metadata and tags derived from the folder path.
+
+**Stage 2 — Chunking pipeline** (polls every 10 s): reads Markdown files, segments them by ATX heading, embeds each chunk via an Ollama-compatible embedding server, and writes chunks to Qdrant (preferred) or LanceDB (fallback). The top-level subfolder under `library/` becomes the collection name.
+
+Both pipelines track state in Redis. A missing Redis connection causes them to silently skip, keeping the API available.
+
+### Context management
+
+On each `/v1/agent/chat` request, the full conversation history is read from Redis, then trimmed to fit the provider's context window before the LLM call. The context window size is queried from LiteLLM at startup (`get_model_info()`), then cached. `CONVERSATION_WINDOW_LIMIT` can cap it below the model's theoretical maximum (useful for VRAM-constrained deployments). The full history is always preserved in Redis — only the LLM call is trimmed.
+
+### Evaluation
+
+Two evaluation mechanisms are available:
+
+**Agent eval DSL** (`cortex/chat/eval.py`): write test cases as plain Python functions. Triggered via `POST /private/v1/agent/evaluate`. Supports regexp checks, embedding similarity, LLM-as-judge, and multi-turn scenarios.
+
+**Workflow evaluation**: inline `evaluation:` blocks in workflow YAML files. Triggered via `POST /private/evaluate{path}`.
+
+---
+
+## Development & Contribution
+
+To contribute:
+
+1. Clone the repo and branch out.
+2. Under `test_agents/`, write an agent (a `cortex/` directory) that demonstrates the behaviour you want to test.
+3. Under `test_environments/`, select or create a `docker-compose.yaml` for the test scenario.
+4. Write integration tests in the test agent's `tests/` directory. Tests call HTTP endpoints — no direct Redis or Qdrant access.
+5. Run **Run the Pipeline** from VS Code tasks (lint → unit tests → integration tests).
+6. After all tests pass, push and open a pull request.
+
+See `TESTING.md` for the full test matrix.
+
+Do not use `print()` — use the existing logging patterns. Do not install packages outside Docker — all dependencies are managed through the container build. Do not add `try/except` except around HTTP endpoint handlers or to enrich a log message before re-raising.
+
+---
+
+## Future Plans
+
+**MCP / Tools** — tool support is planned. The interface will follow the cortex convention:
+
+```python
+"""You are an agent with tools."""
+
+with Toolbox("my-tools"):
+    print("Use the tools to answer this: " + input_text)
 ```
 
-## This is how you run the same assistant in production
+**Extended DSL** — multi-LLM-call flows within a single `prompt.py`, enabling sequential reasoning or routing between models.
 
-```yaml
-# values.yaml (Helm)
-replicaCount: 3
+**Better memory** — automated summarization of older conversation turns when the context window is full, rather than simple truncation.
 
-image:
-  repository: sinanozel/agent-stem
-  tag: "0.1.0"
-
-env:
-  - name: MISTRAL_API_KEY
-    valueFrom:
-      secretKeyRef:
-        name: llm-secrets
-        key: mistral-api-key
-
-cortex:
-  # Mount your cortex as a ConfigMap or PVC
-  configMapName: my-agent-cortex
-```
-
-```bash
-helm install my-agent ./charts/agent-stem -f values.yaml
-```
-
-
-# Features
-
-## Workflows
-
-Declarative YAML-defined POST endpoints. Each file in `cortex/workflows/` is auto-discovered
-and registered as an endpoint. Supports text and structured JSON output, image input, streaming,
-and built-in evaluation cases. See `agent_stem/src/startup/WORKFLOWS.md` for full reference.
-
-## Agent Chat
-
-Stateful conversation endpoint at `POST /v1/agent/chat`. Maintains per-user, per-conversation
-message history in Redis. Context is automatically trimmed to fit the provider's context window.
-Customize via `cortex/chat/prompt.py`. See `agent_stem/default/endpoints/public/README.md`.
-
-## Retrieval (RAG)
-
-Drop PDFs or Markdown into `cortex/library/`. Two background pipelines run automatically:
-PDF → Markdown (with OCR fallback), then Markdown → chunks → embeddings → vector store.
-Supports Qdrant (default) and LanceDB (fallback). Search from `prompt.py` using the `Search()`
-DSL function. See `agent_stem/src/startup/DOCUMENT_PIPELINE.md` and `SEARCH.md`.
-
-## Tools
-
-This is in planning. It will implement tools as MCP with streaming HTTP with newline-delimited JSON.
-I may include some other format as well, such as OpenAPI.
-
-# Bug Reports
-
-You do not need development experience to make a bug report! I aimed this at
-both hobbyists and professionals.
-
-Feel free to go to GitHub and open an issue. Here is what I am expecting:
-1. Your `cortex/` folder, with its contents - or at least, the relevant part.
-2. What you expected to see.
-3. What you got instead.
-This would allow me to replicate the issue and fix.
-
-# Developement & Contribution
-
-To contribute, you need github, docker and an LLM.
-1. Clone
-2. Branch out
-3. Under `test_agents`, write an agent that will test the outcome you want.
-4. Note that this agent will need to call an LLM to be tested. Consider Mistral, Anthropic, or locally-hosted LLMS, examples exist.
-5. If you want to use Claude to write, commands are included, plase use them. Please review your test agent thoroughly before prompting Claude Code.
-6. After all tests are passing, use the VS Code tasks to reformat and lint. (You do not actually need to use VS Code, the commands are all docker)
-7. Push and open a pull request.
-
-You probably can pull this off with a Windows computer, too, but you do need Docker.
-
-## Testing Harness
-
-Integration tests are run via VS Code tasks in `.vscode/tasks.json`. Each test pairs a
-**test agent** (a `cortex/` configuration under `test_agents/`) with a **test environment**
-(a `docker-compose.yaml` under `test_environments/`). Run **Run the Pipeline** from the VS Code
-task menu to execute lint + unit tests + all integration tests in sequence.
-
-See `TESTING.md` for the full matrix of test agents, environments, and what each covers.
-
-# Future Plans
-
-## MCP Support
-
-I am looking into how I want to develop this. I could give a way for
-MCP servers to be registered, or I could put a folder called `tools/` under
-`cortex/`, or I could register "workflows" as MCP tools, or a combination of both
-
-No matter which direction I go, the interface is going to be intuitive,
-something like the following:
-```
-"""You are an amazing agent. <3"""
-
-with Toolbox("toolbox_a"):
-      print("Use the tools to respond to the questions.")
-```
-
-I am also thinking of separating the tools into a two-stage
-
-## More complex structure under `agent/`
-
-Right now, `agent/chat.py` works almost like a DSL: You manage the prompt,
-passively inject RAG, and that's it. (Under the hood, there is conversation
-memory, but not much more.)
-
-I am planing to extend the DSL to include multiple LLM calls.
-
-## Better Memory and Context Management
-Currently, conversation memory is fitted in the most basic way possible.
-The plan is to automate summarization, triggered by how long the context window
-is set.
-
-## Loops
-Get the agent to work on a trigger, something like `cronjob`, and run
-a few tasks - maybe even a task list.
+**Scheduled triggers** — cron-style agent runs from a `cortex/` task definition.

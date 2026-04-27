@@ -1,0 +1,23 @@
+services:
+  agent:
+    image: sinanozel/agent-stem:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./cortex:/app/cortex
+    environment:
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    depends_on:
+      - redis
+      - qdrant
+      - embedding
+
+  redis:
+    image: redis:7-alpine
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.1
+
+  embedding:
+    image: sinanozel/ollama.0.12.11:all-minilm-33m

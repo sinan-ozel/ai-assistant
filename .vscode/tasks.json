@@ -824,10 +824,12 @@
             "type": "pickString",
             "description": "Choose the example to deploy",
             "options": [
+                "bakery_agent",
+                "hello_world",
                 "basic_example",
                 "mistral_example"
             ],
-            "default": "basic_example"
+            "default": "bakery_agent"
         }
     ]
 }

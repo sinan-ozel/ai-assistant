@@ -1,0 +1,13 @@
+# Helm values for the hello_world example.
+# No special model infrastructure required — uses a cloud API key.
+#
+# Deploy:
+#   kubectl create secret generic llm-secrets --from-literal=MISTRAL_API_KEY=sk-...
+#   helm upgrade --install my-agent ./helm/ai-assistant -f examples/hello_world/helm/values.yaml
+#
+# Then forward the port:
+#   kubectl port-forward svc/my-agent-ai-assistant 8000:8000
+
+replicaCount: 1
+
+extraEnvFromSecret: llm-secrets

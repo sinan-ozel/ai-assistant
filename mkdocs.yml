@@ -43,26 +43,10 @@ extra:
     provider: mike
 
 nav:
-  - Home: index.md
-  - Getting Started:
-    - Quick Start: getting-started/quickstart.md
-    - Docker Compose: getting-started/docker-compose.md
-    - Kubernetes & Helm: getting-started/kubernetes.md
-  - Configuration:
-    - Cortex Overview: configuration/cortex.md
-    - Model Providers: model_providers.md
-    - Agent Prompt (DSL): configuration/prompt-dsl.md
-    - Workflows: configuration/workflows.md
-    - Document Library (RAG): configuration/library.md
-  - API Reference:
-    - Endpoints: api/endpoints.md
-  - Evaluation:
-    - Agent Eval DSL: eval_dsl.md
-    - Workflow Evaluation: configuration/workflows.md
-  - Development:
-    - Testing: development/testing.md
-    - Contributing: development/contributing.md
-    - Releasing: development/releasing.md
+  - Quick Start: index.md
+  - Model Providers: model_providers.md
+  - Evaluation DSL: eval_dsl.md
+  - For the DevOps: for-devops.md
 
 markdown_extensions:
   - admonition
