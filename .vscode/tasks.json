@@ -681,6 +681,15 @@
             "problemMatcher": []
         },
         {
+            "label": "Check Examples",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "${workspaceFolder}/scripts/check-examples.sh"
+            ],
+            "problemMatcher": []
+        },
+        {
             "label": "Check Docs Build",
             "type": "shell",
             "command": "docker",
