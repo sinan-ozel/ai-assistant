@@ -16,27 +16,14 @@ GOALS
 
 
 - [ ] Add some sort of agent_id and use as a prefix. agent:short-term-memory:<user_id>:<convo_id>
-- [x] Think about how loops work
 - [ ] (0.2.0) Markdown ingestion: may have an issue, it may rewrite the same file in deployments with multiple pods.
 - [ ] (0.1.1) Update the chunking pipeline to delete files if the md does not exist, same for PDF. (Think on this: I want the markdown files to be the source of truth, but there will be a race condition if this is implemented.)
-- [x] (0.1.0) Markdown ingestion: Markdown to chunking.
-- [x] (0.1.0) Add `evaluation` to workflows.
 - [ ] (0.1.0) Add an endpoint GET /private/v1/agent/system-prompt
 - [ ] (0.1.0) Add an endpoint POST /private/v1/agent/conversation/{}/summary (Streaming Response)
-- [x] (0.1.0) Starting documentation: providers
-- [x] (0.1.0) Starting documentation: workflows
-- [x] (0.1.0) Starting documentation: agent chat
-- [x] (0.1.0) Starting documentation: quickstart
-- [x] (0.1.0) Starting documentation: examples: Talk to your documents
 - [ ] (0.1.1) Add thinking in the agent chat view
-- [x] (0.1.0) Add a test for LanceDB chunking.
 - [ ] (0.1.0) Add a test for conversation memory in non-redis environments.
 - [ ] (0.1.0) Add a test for setting a keyword differently in the agent chat if it is not set.
-- [x] (0.1.0) Add a test for Antropic.
-- [x] (0.1.0) Simplify the Mistral environment and add it to the local tests.
 - [ ] Refactor: move the env and constant assignments to one place under common
-- [x] (0.1.0) Add the ability to search within specific collections. search('shelf2')
-- [x] (0.1.0) Add the method library as an alias for search. Also make Search and Library aliases.
 - [ ] (0.1.0) Add ability to upload image to the chat on streamlit
 - [ ] (0.3.0) In workflows, if a description does not exist, fill it in from the prompt.
 - [ ] (0.1.1) Add conversation summarization feature.
@@ -45,13 +32,8 @@ GOALS
 - [ ] (0.1.0) Test chat evaluation in no_redis environment
 - [ ] (0.1.0) Test conversation in no_redis environment
 - [ ] (0.1.0) Test workflow evaluation in no_redis environment
-- [x] Refactor: clean up the tests, remove unnecessary fixtures.
 - [ ] (0.1.0) If there is no eval.py, disable the button on the frontend, and change the message.
-- [x] (0.1.0) Remove "deploy" from streamlit
-- [x] (0.1.0) Add links to OpenAPI documentation: http://localhost:8000/docs
-- [x] (0.1.0) Use the books endpoint to pot something on the frontend
 - [ ] (0.2.0) Extend the books endpoint, implement v2 where we see everything in the pipeline.
-- [x] (0.1.0) On the OpenAPI, categorize the endpoints as Private, Public and Workflows
 - [ ] (0.1.0) Create an environment to test quick fails if the environmental variables are set incorrectly, or proper error messages.
 - [ ] (0.1.1) Ability to add books and create shelves on the interface.
 
@@ -64,11 +46,9 @@ GOALS
 - [ ] In the Release Check, fail if reformatting is necessary before the tests start. If the version is not greater than the last tag, fail.
 
 - [ ] (0.1.0) Show the system prompt in streamlit
-- [x] (0.1.0) Show evaluation button & results in streamlit.
 - [ ] (0.1.0) Show all workflows in streamlit - Maybe a link to the OpenAPI ?
 
 - [ ] (0.1.0) Make sure that the evaluation function is using redis-memory for storage.
-- [x] (0.1.0) Remove the "Agent Chat Interface" title on the main screen on streamlit.
 
 - [ ] (0.3.0) Add L1 and cosine distance as metrics.
 - [ ] Refactor: move default_providers global from under api.py to somewher reasonable under common
@@ -89,7 +69,6 @@ tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet im
 - [ ] (0.2.0) Force workflows to be streaming ndjson only.
 - [ ] (0.2.0) Register workflows as MCP tools
 - [ ] Give a better way to develop edit the system message dependgin on context.
-- [ ] (?) Divvy-up chat.py into 01.understand_the_context.py, 02.act_on_the_problem, 03.show_the_result.
 - [ ] (0.4.0) Add `ocr` as a provider, use this for OCR.
 - [ ] (0.1.0) Something is weird with the tests. The conversations sizes seem to keep growing: (1) add some additinal info lines abouth the last message, and a median message. (2) Are the tests using the same conversation id? (3) How does conversation ids work?
 - [ ] (0.1.0) Make sure that different conversations work on the streamlit
