@@ -1,7 +1,7 @@
 - [x] Publish to Docker Hub (Local pipeline: reformat, lint, test, publish)
 - [x] Rename the Repo
 - [ ] Write a script to make sure: (1) not print in prod code (2) no imports below the top.
-- [ ] Check out how orchestration works at Claude Code.
+- [x] Check out how orchestration works at Claude Code.
 
 GOALS
 - [x] (0.1.0) YAML Workflows 0.1.0
@@ -12,11 +12,11 @@ GOALS
 
 - [x] (0.1.0) Helm Charts
 - [x] (0.1.0) Testing for Helm Charts
-- [ ] (0.1.0) Local Run docker-compose examples
+- [x] (0.1.0) Local Run docker-compose examples
 
 
 - [ ] Add some sort of agent_id and use as a prefix. agent:short-term-memory:<user_id>:<convo_id>
-- [ ] Think about how loops work
+- [x] Think about how loops work
 - [ ] (0.2.0) Markdown ingestion: may have an issue, it may rewrite the same file in deployments with multiple pods.
 - [ ] (0.1.1) Update the chunking pipeline to delete files if the md does not exist, same for PDF. (Think on this: I want the markdown files to be the source of truth, but there will be a race condition if this is implemented.)
 - [x] (0.1.0) Markdown ingestion: Markdown to chunking.
