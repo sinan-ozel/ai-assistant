@@ -1,0 +1,23 @@
+# Default LLM provider for Docker Compose development.
+# Uncomment and configure exactly one block, then remove or comment the rest.
+# See agent_stem/src/startup/PROVIDERS.md for all options.
+
+# ── Ollama (local via OLLAMA_HOST in .env) ───────────────────────────────────
+# api_base: http://${OLLAMA_HOST}
+# model: ollama/gemma3:1b
+# timeout: 150
+
+# ── llama.cpp (local via LLAMA_CPP_HOST in .env) ────────────────────────────
+api_base: ${LLAMA_CPP_HOST}
+model: openai/gemma4:e2b
+api_key: dummy
+timeout: 150
+
+# ── Mistral API (cloud) ──────────────────────────────────────────────────────
+# api_base: https://api.mistral.ai
+# model: mistral/mistral-large-2512
+# api_key: ${MISTRAL_API_KEY}
+
+# ── Anthropic (cloud) ────────────────────────────────────────────────────────
+# model: anthropic/claude-haiku-4-5-20251001
+# api_key: ${ANTHROPIC_API_KEY}

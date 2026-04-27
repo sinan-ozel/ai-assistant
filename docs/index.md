@@ -89,6 +89,8 @@ MISTRAL_API_KEY=your-key-here docker compose up
 
 Open `http://localhost:8000/docs` in a browser to explore the API interactively.
 
+![Screenshot of the Agent, showing the conversation interface on the left and admin interface on the right.](bakery-screenshot-1.png)
+
 Or, if you are the programming type, go full-on bash:
 ```bash
 curl -X POST http://localhost:8000/v1/agent/chat \

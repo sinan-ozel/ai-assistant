@@ -31,6 +31,24 @@ You can run as many agent replicas as you need behind a load balancer. All repli
 
 The cortex is mounted into pods via a Kubernetes ConfigMap or PersistentVolume. The container image is on Docker Hub as `sinanozel/agent-stem`.
 
+### Public vs private endpoints
+
+All endpoints whose path starts with `/private` are intended for internal use only — the Streamlit UI, monitoring, and operator tooling. They are not authenticated and must not be reachable from the public internet.
+
+The expected deployment model is an ingress or reverse proxy that forwards only the public paths (`/v1/`, `/health`, `/docs`) and blocks everything under `/private`. For example, with an nginx ingress:
+
+```yaml
+# Only forward public paths — drop /private/* at the ingress
+nginx.ingress.kubernetes.io/configuration-snippet: |
+  location /private/ {
+    return 403;
+  }
+```
+
+Or with a path-based rule in your Ingress resource — route `/v1/` and `/health` to the service, and define no rule for `/private/` so it never reaches the pods from outside the cluster.
+
+The Streamlit UI (port 8501) is also internal-only. Expose it only within the cluster or over a VPN — never directly to the internet.
+
 ---
 
 ## Helm chart

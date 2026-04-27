@@ -1,0 +1,15 @@
+# Helm values for the basic_example cortex.
+# Passed to `helm upgrade --install` via -f when deploying to Kubernetes.
+# Declare here whatever cluster infrastructure this cortex needs.
+
+llamacpp:
+  enabled: true
+  image:
+    tag: gemma4-e2b
+  model: "openai/gemma4:e2b"
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+
+ollama:
+  enabled: false

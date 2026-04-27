@@ -599,6 +599,7 @@
         {
             "label": "Run Quick & Costless Agent Integration Tests",
             "dependsOn": [
+                "Check Examples",
                 "Reformat Code",
                 "Lint",
                 "Run Integration Tests: talk_to_your_documents @ no_qdrant",

@@ -64,6 +64,15 @@ def reset_conversation():
     st.session_state.messages = []
 
 
+def _api_ready() -> bool:
+    """Return True if the agent API is up and accepting requests."""
+    try:
+        r = requests.get(f"{API_BASE_URL}/health", timeout=1)
+        return r.status_code == 200
+    except Exception:
+        return False
+
+
 def main():
     """Main Streamlit application."""
     st.set_page_config(
@@ -85,6 +94,13 @@ def main():
     )
 
     initialize_session_state()
+
+    if not _api_ready():
+        st.title("Agent Chat")
+        with st.spinner("Agent is starting up…"):
+            time.sleep(2)
+        st.rerun()
+        return
 
     # Sidebar for chat
     with st.sidebar:
