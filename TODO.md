@@ -24,7 +24,7 @@ GOALS
 - [ ] (0.1.0) Add a test for conversation memory in non-redis environments.
 - [ ] (0.1.0) Add a test for setting a keyword differently in the agent chat if it is not set.
 - [ ] Refactor: move the env and constant assignments to one place under common
-- [ ] (0.1.0) Add ability to upload image to the chat on streamlit
+- [x] (0.1.0) Add ability to upload image to the chat on streamlit
 - [ ] (0.3.0) In workflows, if a description does not exist, fill it in from the prompt.
 - [ ] (0.1.1) Add conversation summarization feature.
 - [ ] Add something for either calling an LLM, or using a workflow, or both to /cortex/chat (generate? run? call? execute?)
