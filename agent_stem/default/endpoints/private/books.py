@@ -5,7 +5,7 @@ import time
 
 from fastapi import HTTPException
 
-QDRANT_HOST = os.environ.get("QDRANT_HOST")
+QDRANT_HOST = os.environ.get("QDRANT_HOST", "qdrant")
 QDRANT_PORT = int(os.environ.get("QDRANT_PORT", "6333"))
 LANCEDB_PATH = os.environ.get("LANCEDB_PATH", "/app/data/lancedb")
 _QDRANT_TIMEOUT = 1.0

@@ -191,7 +191,7 @@ def main():
             books = books_response.json()
             if not books:
                 st.info(
-                    "No books indexed yet. Add PDFs to `cortex/library/`."
+                    "No books indexed yet. Add PDFs or Markdown files to `cortex/library/`."
                 )
             else:
                 # Group by shelf (first path component before '/')
