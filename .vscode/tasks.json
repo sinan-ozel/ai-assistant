@@ -647,9 +647,6 @@
         {
             "label": "Run Quick & Costless Agent Integration Tests",
             "dependsOn": [
-                "Check Examples",
-                "Reformat Code",
-                "Lint",
                 "Run Integration Tests: talk_to_your_documents @ no_qdrant",
                 "Run Integration Tests: agent_with_only_a_system_message @ default",
                 "Run Integration Tests: agent_with_only_a_system_message @ no_qdrant",
@@ -724,12 +721,12 @@
             "problemMatcher": []
         },
         {
-            "label": "(!) Run All Tests",
+            "label": "Run Checks",
             "dependsOn": [
+                "Check Examples",
                 "Reformat Code",
                 "Lint",
-                "Run Unit Tests: self_hosted_llm",
-                "Run All Agent Integration Tests"
+                "Check Docs Build"
             ],
             "dependsOrder": "sequence",
             "problemMatcher": []
@@ -777,7 +774,8 @@
                 "--dev"
             ],
             "dependsOn": [
-                "Assert main branch",
+                "Assert Main Branch",
+                "Run Checks",
                 "Assert Head is Clean",
                 "Run Quick & Costless Agent Integration Tests"
             ],
@@ -825,7 +823,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Assert main branch",
+            "label": "Assert Main Branch",
             "type": "shell",
             "command": "[ \"$(git -C \"${workspaceFolder}\" branch --show-current)\" = \"main\" ] || (echo 'ERROR: Must be on main to release.' && exit 1)",
             "group": "none",
