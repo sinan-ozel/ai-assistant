@@ -1,9 +1,9 @@
 """Library books endpoint."""
 
+import logging
 import os
-import time
 
-from fastapi import HTTPException
+logger = logging.getLogger(__name__)
 
 QDRANT_HOST = os.environ.get("QDRANT_HOST", "qdrant")
 QDRANT_PORT = int(os.environ.get("QDRANT_PORT", "6333"))
@@ -90,19 +90,14 @@ def _books_from_lancedb() -> list[dict]:
 async def handler():
     """Return the list of books indexed by the chunking pipeline."""
     if QDRANT_HOST:
-        start = time.time()
         try:
             return _books_from_qdrant()
         except Exception as e:
-            elapsed = time.time() - start
-            raise HTTPException(
-                status_code=503,
-                detail=(
-                    f"Cannot reach Qdrant — QDRANT_HOST is set to "
-                    f"'{QDRANT_HOST}:{QDRANT_PORT}' but the server did not respond "
-                    f"(elapsed: {elapsed:.2f}s, error: {e}). "
-                    f"Check that QDRANT_HOST points to the correct host."
-                ),
+            logger.warning(
+                "Qdrant unreachable at %s:%s (%s); falling back to LanceDB.",
+                QDRANT_HOST,
+                QDRANT_PORT,
+                e,
             )
     return _books_from_lancedb()
 
