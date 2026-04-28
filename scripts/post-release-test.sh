@@ -34,34 +34,24 @@ CHART_DIR="$WORKSPACE/helm/ai-assistant"
 TEST_DIR="$WORKSPACE/test_environments/helm_test"
 RELEASE="ai-assistant"
 TEST_IMAGE="ai-assistant-helm-test"
-REPO="sinanozel/ai-assistant"
 
 PF_PID=""
 
 # ---------------------------------------------------------------------------
-# Resolve IMAGE_TAG from pyproject.toml + DockerHub
+# Resolve IMAGE_TAG from the latest git tag
 # ---------------------------------------------------------------------------
 
 resolve_image_tag() {
-    local version
-    version="$(grep -m1 '^version' "$WORKSPACE/pyproject.toml" | sed 's/.*= *"\(.*\)"/\1/')"
-
-    local tags_json
-    tags_json="$(curl -fsSL "https://hub.docker.com/v2/repositories/${REPO}/tags/?page_size=100" 2>/dev/null || echo '{}')"
-
-    local latest_build
-    latest_build="$(echo "$tags_json" \
-        | grep -o "\"name\":\"${version}-dev\.[0-9]*\"" \
-        | grep -o '[0-9]*"$' \
-        | tr -d '"' \
-        | sort -n \
-        | tail -1)"
-
-    if [[ -n "$latest_build" ]]; then
-        echo "${version}-dev.${latest_build}"
-    else
-        echo "${version}"
+    local latest_tag
+    latest_tag="$(git -C "$WORKSPACE" tag --sort=-version:refname \
+        | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' \
+        | head -1)"
+    if [[ -n "$latest_tag" ]]; then
+        echo "${latest_tag#v}"
+        return
     fi
+    # Fallback: bare version from pyproject.toml
+    grep -m1 '^version' "$WORKSPACE/pyproject.toml" | sed 's/.*= *"\(.*\)"/\1/'
 }
 
 IMAGE_TAG="${IMAGE_TAG:-$(resolve_image_tag)}"

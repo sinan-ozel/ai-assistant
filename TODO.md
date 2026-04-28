@@ -38,10 +38,14 @@ GOALS
 - [ ] (0.1.1) Ability to add books and create shelves on the interface.
 
 
+- [ ] (0.2.0) Switch to synced-memory
+- [ ] (0.1.0) Add eval to bakery example
+
+
 - [ ] Add MCP testing to the test harness
 - [ ] (0.1.1) Raise error if embedding server changes.
 
-- [ ] In the Release (Dev) Check, fail if reformatting is necessary before the tests start. Also fail if there is a stable tag that matches the current version, the current version needs to be larger.
+- [x] In the Release (Dev) Check, fail if reformatting is necessary before the tests start. Also fail if there is a stable tag that matches the current version, the current version needs to be larger.
 
 - [ ] In the Release Check, fail if reformatting is necessary before the tests start. If the version is not greater than the last tag, fail.
 
