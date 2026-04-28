@@ -133,9 +133,20 @@ if [[ "$DEV_RELEASE" == "true" ]]; then
     git add "$BUILD_NUMBER_FILE"
     git commit -m "chore: bump build number to ${NEW_BUILD_NUMBER} after dev release ${DEV_VERSION}"
 
+    DEV_TAG="v${DEV_VERSION}"
+    echo ">>> Tagging git commit as ${DEV_TAG} ..."
+    git tag -a "${DEV_TAG}" -m "Dev release ${DEV_VERSION}"
+
+    echo ">>> Pushing branch main ..."
+    git push origin main
+
+    echo ">>> Pushing git tag ${DEV_TAG} ..."
+    git push origin "${DEV_TAG}"
+
     echo ""
     echo "Dev release ${DEV_VERSION} complete."
     echo "  Docker: ${DOCKER_IMAGE}:${DEV_VERSION}"
+    echo "  Git tag: ${DEV_TAG}"
     echo "  Build number incremented to ${NEW_BUILD_NUMBER} and committed."
     echo ""
     exit 0

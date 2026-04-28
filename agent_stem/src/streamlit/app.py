@@ -254,9 +254,7 @@ def main():
                 + books_response.json().get("detail", "")
             )
         else:
-            st.warning(
-                f"Could not fetch books: {books_response.status_code}"
-            )
+            st.warning(f"Could not fetch books: {books_response.status_code}")
     except Exception as e:
         st.warning(f"Could not reach books API: {e}")
 
@@ -529,7 +527,9 @@ def main():
                                             try:
                                                 started_at = (
                                                     datetime.fromisoformat(
-                                                        results_data["started_at"]
+                                                        results_data[
+                                                            "started_at"
+                                                        ]
                                                     )
                                                 )
                                                 st.markdown(
@@ -609,10 +609,14 @@ def main():
                                                             if not run.get(
                                                                 "passed"
                                                             ):
-                                                                for step in run.get(
+                                                                for (
+                                                                    step
+                                                                ) in run.get(
                                                                     "steps", []
                                                                 ):
-                                                                    for exp in step.get(
+                                                                    for (
+                                                                        exp
+                                                                    ) in step.get(
                                                                         "expectations",
                                                                         [],
                                                                     ):

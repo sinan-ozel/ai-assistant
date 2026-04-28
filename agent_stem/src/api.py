@@ -6,7 +6,7 @@ import signal
 from typing import Any, Dict
 
 from common.state import providers_state, workflows_state
-from fastapi import Body, FastAPI
+from fastapi import Body, FastAPI, Request
 from startup.chunking_pipeline import run_chunking_pipeline
 from startup.endpoints import discover_endpoints
 from startup.pdf_pipeline import run_pdf_pipeline
@@ -150,6 +150,7 @@ async def startup_event():
                 content = request_spec.get("content", {})
                 json_content = content.get("application/json", {})
                 example = json_content.get("example")
+                needs_headers = "headers" in handler_params
 
                 async def wrapper(
                     request: Dict[str, Any] = Body(
@@ -158,21 +159,34 @@ async def startup_event():
                             {"example": {"value": example}} if example else None
                         ),
                     ),
+                    fastapi_request: Request = None,
                     **path_params,
                 ):
                     kwargs = {"request": request}
+                    if needs_headers:
+                        kwargs["headers"] = (
+                            dict(fastapi_request.headers)
+                            if fastapi_request
+                            else {}
+                        )
                     kwargs.update(path_params)
                     return await original_handler(**kwargs)
 
+                excluded = {"request", "headers"}
                 new_params = [
-                    p for p in sig.parameters.values() if p.name != "request"
+                    p for p in sig.parameters.values() if p.name not in excluded
                 ]
                 body_param = inspect.Parameter(
                     "request",
                     inspect.Parameter.POSITIONAL_OR_KEYWORD,
                     annotation=Dict[str, Any],
                 )
-                new_params = [body_param] + new_params
+                fastapi_request_param = inspect.Parameter(
+                    "fastapi_request",
+                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                    annotation=Request,
+                )
+                new_params = [body_param, fastapi_request_param] + new_params
 
                 wrapper.__signature__ = inspect.Signature(parameters=new_params)
                 wrapper.__name__ = original_handler.__name__
@@ -212,11 +226,7 @@ async def startup_event():
                 if success_codes:
                     status_code = success_codes[0]
 
-            tag = (
-                "private"
-                if spec["path"].startswith("/private")
-                else "public"
-            )
+            tag = "private" if spec["path"].startswith("/private") else "public"
             app.add_api_route(
                 spec["path"],
                 route_handler,

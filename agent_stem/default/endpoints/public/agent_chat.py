@@ -53,6 +53,35 @@ def get_conversation_key(user_id: str, conversation_id: str) -> str:
     return f"{user_id}:{conversation_id}"
 
 
+def resolve_user_id(
+    body_user_id: str | None,
+    header_user_id: str | None,
+) -> str:
+    """Resolve the effective user_id from body and User-Id header.
+
+    The proxy/ingress is the trusted authority for user identity and should
+    inject User-Id. If both the body and the header supply a value they must
+    agree (after stripping whitespace), otherwise the request is rejected.
+
+    Returns "default-user" when neither source provides a value.
+    """
+    body = (body_user_id or "").strip()
+    header = (header_user_id or "").strip()
+
+    if body and header:
+        if body != header:
+            msg = (
+                f"Conflicting user identity: 'user_id' in the request body "
+                f"({body!r}) does not match the 'User-Id' header ({header!r}). "
+                "Supply only one, or ensure both values are identical."
+            )
+            logger.error(msg)
+            raise HTTPException(status_code=400, detail=msg)
+        return body
+
+    return body or header or "default-user"
+
+
 _TOKENS_PER_IMAGE = 384  # Based on llama.cpp KV cache usage per image
 
 
@@ -376,7 +405,7 @@ async def handle_streaming(
 
 
 # TODO: Completely get rid of this and stop support for non-streaming.
-async def handler(request: dict):
+async def handler(request: dict, headers: dict = None):
     """Agent chat endpoint with stateful conversation memory.
 
     Features:
@@ -399,7 +428,10 @@ async def handler(request: dict):
     message = request.get("message")
     media = request.get("media", [])
     conversation_id = request.get("conversation_id")
-    user_id = request.get("user_id", "default-user")
+    user_id = resolve_user_id(
+        body_user_id=request.get("user_id"),
+        header_user_id=(headers or {}).get("user-id"),
+    )
     stream = request.get("stream", False)
     stream_format = request.get("stream_format", STREAM_FORMAT_SSE)
     timeout = request.get("timeout", 180)
@@ -653,6 +685,10 @@ async def handler(request: dict):
             f"Agent chat: First message (system): "
             f"{prompt_messages[0] if prompt_messages else 'N/A'}"
         )
+        logger.info(
+            f"Agent chat: Last message (user): "
+            f"{prompt_messages[-1] if prompt_messages else 'N/A'}"
+        )
         try:
             response = await call_llm_by_model(
                 messages=prompt_messages,
@@ -784,8 +820,12 @@ spec = {
                         "user_id": {
                             "type": "string",
                             "description": (
-                                "User identifier for isolation (optional, "
-                                "defaults to 'default-user')"
+                                "User identifier for conversation isolation. "
+                                "Optional — the proxy/ingress should instead "
+                                "inject the 'User-Id' request header, which "
+                                "takes precedence. If both are supplied they "
+                                "must match. Defaults to 'default-user' when "
+                                "neither is provided."
                             ),
                         },
                         "stream": {

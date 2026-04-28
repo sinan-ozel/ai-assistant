@@ -182,6 +182,57 @@ readinessProbe:
 
 ---
 
+## Multi-tenancy
+
+agent-stem is not a full multi-tenant SaaS platform. The design assumption is that it runs behind a trusted proxy or ingress that handles authentication and user identity, then injects that identity into each request. The agent service itself does no authentication.
+
+### How user isolation works
+
+Every conversation is stored in Redis under the key `user_id:conversation_id`. Two callers using the same `conversation_id` string but different `user_id` values get completely separate conversation histories and will never see each other's messages.
+
+When `user_id` is not supplied the service falls back to `"default-user"`, which means all unauthenticated callers share a single namespace — only suitable for single-user or development deployments.
+
+### Injecting user identity from the proxy
+
+The proxy should set the `User-Id` request header on every forwarded request. The agent reads it and uses it as the effective user ID:
+
+```
+POST /v1/agent/chat
+User-Id: alice@example.com
+Content-Type: application/json
+
+{"message": "Hello"}
+```
+
+The `user_id` field in the JSON body is also accepted for cases where the client controls its own identity (e.g. during development). If both are present they must match after whitespace trimming; a mismatch returns `400 Bad Request`.
+
+```nginx
+# nginx: inject the authenticated user from upstream auth
+proxy_set_header User-Id $authenticated_user;
+```
+
+```yaml
+# Kubernetes ingress-nginx: inject from an auth sub-request result
+nginx.ingress.kubernetes.io/auth-url: "https://auth.internal/validate"
+nginx.ingress.kubernetes.io/auth-response-headers: "X-Auth-User"
+nginx.ingress.kubernetes.io/configuration-snippet: |
+  proxy_set_header User-Id $http_x_auth_user;
+  location /private/ {
+    return 403;
+  }
+```
+
+### What the proxy must enforce
+
+| Responsibility | Where it belongs |
+|---|---|
+| Authentication (login, tokens, sessions) | Proxy / ingress |
+| Injecting `User-Id` header | Proxy / ingress |
+| Blocking `/private/*` from the public internet | Proxy / ingress |
+| Conversation isolation between users | agent-stem (automatic once `User-Id` is set) |
+
+---
+
 ## Checking provider status
 
 ```bash
