@@ -47,7 +47,7 @@ app-test-no-qdrant        | INFO:endpoints.agent_chat:Agent chat: Last message (
 - [ ] Introspect execute_prompt_script in agent_stem/src/common/prompt_dsl.py and make sure that docstring has all the core primitives. Then also check the docstring against the documentation and find out if anything is missing.
 
 - [ ] (0.2.0) Switch to synced-memory
-- [ ] (0.1.0) Add eval to bakery example
+- [x] (0.1.0) Add eval to bakery example
 
 - [ ] (0.1.1) Add chunk information to the interface.
 
