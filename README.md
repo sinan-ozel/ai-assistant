@@ -236,8 +236,30 @@ Named providers (non-default) are referenced by name from workflow YAML files us
 | `message_history` | Mutable conversation history list |
 | `agent` | Config object for overriding model, temperature, streaming, etc. |
 | `search` | Context manager for vector search (RAG) |
+| `llm()` | Call the LLM explicitly; returns the response as a string (interactive mode) |
+| `notify(text)` | Stream text to the client immediately (interactive mode) |
+| `McpServer(url)` | Context manager connecting to an MCP tool server (interactive mode) |
 
-The module docstring becomes the system prompt. Everything `print()`-ed becomes the user message sent to the LLM (blank lines split output into multiple user message objects).
+The module docstring becomes the system prompt. Everything `print()`-ed becomes the user message sent to the LLM. When `llm`, `notify`, or `McpServer` appear in the script, the runtime switches to **interactive mode**: the script drives all LLM calls and tool invocations explicitly.
+
+### Process model
+
+Each container runs two processes under supervisord:
+
+| Process | Role | Restart policy |
+|---|---|---|
+| **FastAPI** (port 8000) | Production backend | No restart — container exits when it exits |
+| **Streamlit** (port 8501) | Dev/test UI | Restarts automatically on crash |
+
+FastAPI is the only process that matters in production. Any fatal condition at startup — unreachable MCP server, missing provider, misconfigured cortex — exits the container immediately with a non-zero exit code. Kubernetes will show `Reason: Error` and stop the restart loop rather than silently spinning up a broken agent.
+
+Streamlit is a convenience tool for local development and evaluation. It should never be exposed in production (block port 8501 at the ingress or network policy). Its crash-and-restart behavior is intentional: a failed Streamlit process does not indicate a backend problem.
+
+### Image conventions
+
+`agent_stem/` and `test_environments/` docker-compose files use `build:` directly — no registry image for the app container. Docker Compose builds from `agent_stem/Dockerfile` using the local source.
+
+`examples/` and the Helm chart always pull `sinanozel/ai-assistant:<TAG>` from Docker Hub. Post-release tests resolve the tag from `pyproject.toml` + `build_number.txt` (`VERSION-dev.(BUILD_NUMBER-1)` for dev releases).
 
 ### Document pipeline
 
@@ -281,15 +303,6 @@ Do not use `print()` — use the existing logging patterns. Do not install packa
 ---
 
 ## Future Plans
-
-**MCP / Tools** — tool support is planned. The interface will follow the cortex convention:
-
-```python
-"""You are an agent with tools."""
-
-with Toolbox("my-tools"):
-    print("Use the tools to answer this: " + input_text)
-```
 
 **Extended DSL** — multi-LLM-call flows within a single `prompt.py`, enabling sequential reasoning or routing between models.
 

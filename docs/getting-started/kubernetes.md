@@ -14,16 +14,16 @@ you can run multiple agents in parallel — each with its own Deployment and mou
 Each agent is an independent Deployment:
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  Namespace: my-agent                                │
-│                                                     │
-│  Deployment: agent-stem    ← image: sinanozel/agent-stem:1.0.0
-│    Volume: cortex-config   ← ConfigMap or PVC       │
-│                                                     │
-│  StatefulSet: redis                                 │
-│  StatefulSet: qdrant                                │
-│  Deployment: embedding (Ollama)                     │
-└─────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│  Namespace: my-agent                                             │
+│                                                                  │
+│  Deployment: agent-stem    ← image: sinanozel/ai-assistant:0.1.0 │
+│    Volume: cortex-config   ← Volume                              │
+│                                                                  │
+│  StatefulSet: redis                                              │
+│  StatefulSet: qdrant                                             │
+│  Deployment: embedding (Ollama)                                  │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ## Minimal manifest
@@ -46,7 +46,7 @@ spec:
     spec:
       containers:
         - name: agent
-          image: sinanozel/agent-stem:latest
+          image: sinanozel/ai-assistant:0.1.0
           ports:
             - containerPort: 8000
           env:

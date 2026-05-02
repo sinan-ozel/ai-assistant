@@ -7,12 +7,15 @@ GOALS
 - [x] (0.1.0) YAML Workflows 0.1.0
 - [x] (0.1.0) Python-as-DSL Hackable Chat
 - [x] (0.1.0) RAG
-- [ ] (0.1.0) Add MCP server
+- [x] (0.1.0) Add MCP server
 - [x] (0.1.0) Document Ingestion Pipeline
 
 - [x] (0.1.0) Helm Charts
 - [x] (0.1.0) Testing for Helm Charts
 - [x] (0.1.0) Local Run docker-compose examples
+
+
+- [ ] (0.1.0) Add eval to the bakery example
 
 
 - [ ] Add some sort of agent_id and use as a prefix. agent:short-term-memory:<user_id>:<convo_id>
@@ -21,7 +24,6 @@ GOALS
 - [ ] (0.1.0) Add an endpoint GET /private/v1/agent/system-prompt
 - [ ] (0.1.0) Add an endpoint POST /private/v1/agent/conversation/{}/summary (Streaming Response)
 - [ ] (0.1.1) Add thinking in the agent chat view
-- [ ] (0.1.0) Add a test for conversation memory in non-redis environments.
 - [ ] (0.1.0) Add a test for setting a keyword differently in the agent chat if it is not set.
 - [ ] Refactor: move the env and constant assignments to one place under common
 - [x] (0.1.0) Add ability to upload image to the chat on streamlit
@@ -36,11 +38,19 @@ GOALS
 - [ ] (0.2.0) Extend the books endpoint, implement v2 where we see everything in the pipeline.
 - [ ] (0.1.0) Create an environment to test quick fails if the environmental variables are set incorrectly, or proper error messages.
 - [ ] (0.1.1) Ability to add books and create shelves on the interface.
+- [ ] (0.1.0) Make sure that execute_prompt_script in agent_stem/src/common/prompt_dsl.py is removing duplicate messages, if `message_history` becomes editable.
 
+
+
+- [ ] (0.1.0) Log a warning every time the context window is not enough. Add to /metrics
+- [ ] Introspect execute_prompt_script in agent_stem/src/common/prompt_dsl.py and make sure that docstring has all the core primitives. Then also check the docstring against the documentation and find out if anything is missing.
 
 - [ ] (0.2.0) Switch to synced-memory
 - [ ] (0.1.0) Add eval to bakery example
 
+- [ ] (0.1.1) Add chunk information to the interface.
+
+- [ ] Refactor: under each agent, write the tests that they need to run with each environment: tests/ --> tests/default, tests/no_qdrant, tests/no_mcp
 
 - [ ] Add MCP testing to the test harness
 - [ ] (0.1.1) Raise error if embedding server changes.
@@ -50,7 +60,7 @@ GOALS
 - [ ] In the Release Check, fail if reformatting is necessary before the tests start. If the version is not greater than the last tag, fail.
 
 - [ ] (0.1.0) Show the system prompt in streamlit
-- [ ] (0.1.0) Show all workflows in streamlit - Maybe a link to the OpenAPI ?
+- [x] (0.1.0) Show all workflows in streamlit - Maybe a link to the OpenAPI ?
 
 - [ ] (0.1.0) Make sure that the evaluation function is using redis-memory for storage.
 

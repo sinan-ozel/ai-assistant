@@ -1,6 +1,6 @@
 services:
   agent:
-    image: sinanozel/agent-stem:latest
+    image: sinanozel/ai-assistent:0.1.0
     ports:
       - "8000:8000"
     volumes:

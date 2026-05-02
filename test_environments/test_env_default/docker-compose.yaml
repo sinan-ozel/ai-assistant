@@ -52,6 +52,18 @@ services:
       timeout: 5s
       retries: 5
 
+  eberron-mcp-server:
+    image: sinanozel/eberron-mcp-server:0.1.2
+    container_name: eberron-mcp-server-default
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
   # Application under test
   app:
     build:

@@ -20,7 +20,7 @@
 #   bash scripts/post-release-test.sh
 #
 # Environment:
-#   IMAGE_TAG     Docker image tag to deploy (resolved from pyproject.toml + DockerHub if unset)
+#   IMAGE_TAG     Docker image tag to deploy (computed from pyproject.toml + build_number.txt if unset)
 #   KEEP_RELEASE  Set to "1" to keep the last Helm release after a successful test run
 
 set -euo pipefail
@@ -38,20 +38,27 @@ TEST_IMAGE="ai-assistant-helm-test"
 PF_PID=""
 
 # ---------------------------------------------------------------------------
-# Resolve IMAGE_TAG from the latest git tag
+# Resolve IMAGE_TAG from pyproject.toml + build_number.txt
+#
+# After a dev release the build number is incremented, so the last released
+# dev tag is VERSION-dev.(BUILD_NUMBER-1).  If no dev release has happened
+# yet (build_number <= 1) the bare VERSION is used (production release).
+# Override by setting IMAGE_TAG in the environment.
 # ---------------------------------------------------------------------------
 
 resolve_image_tag() {
-    local latest_tag
-    latest_tag="$(git -C "$WORKSPACE" tag --sort=-version:refname \
-        | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' \
-        | head -1)"
-    if [[ -n "$latest_tag" ]]; then
-        echo "${latest_tag#v}"
-        return
+    local version build_number
+    version="$(grep -m1 '^version' "$WORKSPACE/pyproject.toml" \
+        | sed 's/.*= *"\(.*\)"/\1/')"
+
+    if [[ -f "$WORKSPACE/build_number.txt" ]]; then
+        build_number="$(tr -d '[:space:]' < "$WORKSPACE/build_number.txt")"
+        if [[ "$build_number" =~ ^[0-9]+$ ]] && (( build_number > 1 )); then
+            echo "${version}-dev.$((build_number - 1))"
+            return
+        fi
     fi
-    # Fallback: bare version from pyproject.toml
-    grep -m1 '^version' "$WORKSPACE/pyproject.toml" | sed 's/.*= *"\(.*\)"/\1/'
+    echo "$version"
 }
 
 IMAGE_TAG="${IMAGE_TAG:-$(resolve_image_tag)}"

@@ -10,6 +10,9 @@ DSL Contract:
 - input()           → returns the current user's message text
 - agent object      → model / parameter configuration
 - message_history   → mutable conversation list
+- llm()             → explicit LLM call; returns response text
+- notify(text)      → send text to frontend (no effect on LLM messages)
+- McpServer(url)    → MCP tool context manager (interactive mode only)
 
 Minimal example (``cortex/chat/prompt.py``)::
 
@@ -37,8 +40,20 @@ RAG example — inline formatting::
 
     with Search(input()) as results:
         print("Search results:\\n" + results + "\\n\\nUser question: " + input())
+
+MCP tools example (interactive mode)::
+
+    \"\"\"You are a helpful assistant.\"\"\"
+
+    with McpServer("http://tools:8000") as tools:
+        tools.call_read_only()
+        tools.wait()
+        response = llm()
+
+    notify(response)
 """
 
+import asyncio
 import contextlib
 import io
 import logging
@@ -90,6 +105,11 @@ class PromptResult:
         agent_config: Agent configuration set by the script.
         full_override: Structured override dict (set via ``_override``).
         message_history: Conversation history, possibly mutated by the script.
+        interactive: True when the script used ``llm()``, ``notify()``, or
+            ``McpServer`` (interactive execution mode).
+        llm_called: True when ``llm()`` was called explicitly by the script.
+        final_response: Last response returned by ``llm()``, when called.
+        accumulated_messages: Final messages list after interactive execution.
     """
 
     system_message: Optional[str] = None
@@ -97,6 +117,10 @@ class PromptResult:
     agent_config: AgentConfig = field(default_factory=AgentConfig)
     full_override: Optional[dict] = None
     message_history: Optional[list[dict]] = None
+    interactive: bool = False
+    llm_called: bool = False
+    final_response: Optional[str] = None
+    accumulated_messages: Optional[list[dict]] = None
 
 
 class Search:
@@ -227,6 +251,23 @@ def _make_input(input_text: str):
     return input
 
 
+_INTERACTIVE_MARKERS = ("McpServer", "mcp(", "notify(", "llm(")
+
+
+def is_interactive_dsl(script_path: Path) -> bool:
+    """Return True if *script_path* uses interactive DSL primitives.
+
+    Checks for the presence of ``McpServer``, ``mcp(``, ``notify(``, or
+    ``llm(`` in the source.  When any of these appear the script must be
+    executed in interactive mode.
+    """
+    try:
+        source = script_path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    return any(marker in source for marker in _INTERACTIVE_MARKERS)
+
+
 def find_prompt_script(cortex_path: str) -> Optional[Path]:
     """Return the path to the prompt DSL script, or ``None`` if not found.
 
@@ -323,6 +364,128 @@ def execute_prompt_script(
         full_override=return_value if isinstance(return_value, dict) else None,
         message_history=script_history,
     )
+
+
+def _run_interactive_script(
+    script_path: Path,
+    input_text: str,
+    init_messages: list[dict],
+    providers_state: dict,
+    event_loop: Any,
+    notify_fn: Any,
+) -> PromptResult:
+    """Execute an interactive DSL script in the current (executor) thread.
+
+    Called from ``execute_prompt_script_interactive`` inside a thread-pool
+    executor so that blocking sync I/O (MCP HTTP calls, LLM bridge) does not
+    stall the event loop.
+
+    Parameters
+    ----------
+    script_path:
+        Path to the prompt DSL script.
+    input_text:
+        Current user message.
+    init_messages:
+        Pre-built message list (system + history + user turn).
+    providers_state:
+        Provider state dict for LLM calls.
+    event_loop:
+        Running asyncio event loop; used to bridge async LLM calls.
+    notify_fn:
+        Thread-safe callable that forwards notifications to the frontend.
+    """
+    from common.tools_dsl import (
+        DslRunContext,
+        make_llm_fn,
+        make_mcp_server_class,
+        make_notify_fn,
+    )
+
+    ctx = DslRunContext(
+        messages=list(init_messages),
+        providers_state=providers_state,
+        event_loop=event_loop,
+        notify_fn=notify_fn,
+    )
+
+    McpServerClass = make_mcp_server_class(ctx)
+    llm_fn = make_llm_fn(ctx)
+    notify_dsl_fn = make_notify_fn(ctx)
+
+    captured_output = io.StringIO()
+    with contextlib.redirect_stdout(captured_output):
+        module_globals = runpy.run_path(
+            str(script_path),
+            init_globals={
+                "input_text": input_text,
+                "user_message": input_text,
+                "input": _make_input(input_text),
+                "message_history": [],
+                "agent": AgentConfig(),
+                "search": Search,
+                "Search": Search,
+                "library": Search,
+                "Library": Search,
+                "McpServer": McpServerClass,
+                "mcp": McpServerClass,
+                "llm": llm_fn,
+                "notify": notify_dsl_fn,
+            },
+        )
+
+    docstring = module_globals.get("__doc__")
+    return PromptResult(
+        system_message=docstring,
+        interactive=True,
+        llm_called=ctx.llm_called,
+        final_response=ctx.final_response,
+        accumulated_messages=ctx.messages,
+    )
+
+
+async def execute_prompt_script_interactive(
+    script_path: Path,
+    input_text: str,
+    init_messages: list[dict],
+    providers_state: dict,
+    notify_fn: Any,
+) -> PromptResult:
+    """Execute an interactive DSL script (uses llm() / notify() / McpServer).
+
+    Runs the script in a thread-pool executor so blocking MCP HTTP calls and
+    sync-to-async LLM bridges do not stall the event loop.
+
+    Parameters
+    ----------
+    script_path:
+        Path to the prompt DSL script.
+    input_text:
+        Current user message.
+    init_messages:
+        Pre-built message list (system + history + user turn).
+    providers_state:
+        Provider state dict for LLM calls.
+    notify_fn:
+        Thread-safe callable for forwarding notifications to the frontend.
+
+    Returns
+    -------
+    PromptResult
+        Result with ``interactive=True`` and populated ``accumulated_messages``.
+    """
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(
+        None,
+        _run_interactive_script,
+        script_path,
+        input_text,
+        init_messages,
+        providers_state,
+        loop,
+        notify_fn,
+    )
+    return result
 
 
 def load_prompt_dsl(

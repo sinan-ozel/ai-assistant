@@ -156,6 +156,91 @@ if message_history and message_history[-1]["role"] == "assistant":
 
 ---
 
+## Interactive mode — `llm()`, `notify()`, `McpServer`
+
+When `prompt.py` contains any of the names `llm`, `notify`, `McpServer`, or
+`mcp`, the runtime switches to **interactive mode**.  In this mode the script
+drives the conversation explicitly: it decides when to call the LLM, which
+tools to invoke, and what to stream back to the frontend.
+
+> **Implicit vs explicit**: a docstring-only script still uses the original
+> implicit behaviour (single LLM call, no tools).  As soon as any of the
+> interactive primitives appear the designer takes full control.
+
+### `llm()`
+
+Call the LLM with the current message history and any pending tool results.
+Returns the assistant reply as a string.  May be called multiple times within
+one request to implement multi-turn or multi-phase reasoning.
+
+```python
+response = llm()
+```
+
+### `notify(text)`
+
+Send `text` to the frontend immediately.  When streaming is enabled each
+`notify()` call emits one chunk to the SSE / NDJSON stream.  When streaming
+is disabled all notified strings are collected; only the last `notify()` call
+is used as the final response.
+
+```python
+notify("Thinking…")
+response = llm()
+notify(response)
+```
+
+### `McpServer(url)` — MCP tool context manager
+
+`McpServer` is a context manager that connects to an MCP-compatible tool server.
+The URL must be reachable at startup; the agent will refuse to start if the
+server is unreachable or returns zero tools.
+
+| Method             | Description                                                          |
+|--------------------|----------------------------------------------------------------------|
+| `call_read_only()` | Submit all tools marked `readOnlyHint=true` concurrently            |
+| `call_all()`       | Submit every available tool concurrently                            |
+| `wait()`           | Block until all submitted tool calls complete; appends results to history |
+
+```python
+with McpServer("http://tool-server:8000") as tools:
+    tools.call_read_only()
+    tools.wait()
+    response = llm()
+notify(response)
+```
+
+`mcp` is an alias for `McpServer`.
+
+### Multi-phase example
+
+```python
+"""You are a knowledgeable guide."""
+
+with McpServer("http://tool-server:8000") as tools:
+    tools.call_read_only()
+    notify("Consulting read-only tools…")
+    tools.wait()
+    response = llm()
+    notify(response)
+
+    tools.call_all()
+    notify("Running write tools…")
+    tools.wait()
+    response = llm()
+
+notify(response)
+```
+
+### Startup validation
+
+At startup the agent scans `prompt.py` for `McpServer(...)` calls, extracts
+every URL, connects to each server, lists its tools, and stores the results in
+Redis.  If a server is unreachable or returns zero tools the process exits
+immediately.  The Streamlit UI displays discovered tools under "External Tools".
+
+---
+
 ## Examples
 
 ### Minimal — system prompt only
@@ -211,14 +296,33 @@ _override = {
 
 The DSL runtime lives in `agent_stem/src/common/prompt_dsl.py`.
 
-| Symbol                  | Description                                               |
-|-------------------------|-----------------------------------------------------------|
-| `AgentConfig`           | Dataclass for LLM parameter overrides                     |
-| `PromptResult`          | Return type of `execute_prompt_script`                    |
-| `Search`                | Context manager class injected as `search`                |
-| `find_prompt_script()`  | Locates `prompt.py` / `agent.py` under `cortex/chat/`     |
-| `execute_prompt_script()`| Runs a script and returns a `PromptResult`               |
-| `load_prompt_dsl()`     | Entry point called by `agent_chat.py` on each request     |
+| Symbol                              | Description                                                     |
+|-------------------------------------|-----------------------------------------------------------------|
+| `AgentConfig`                       | Dataclass for LLM parameter overrides                           |
+| `PromptResult`                      | Return type of `execute_prompt_script`                          |
+| `Search`                            | Context manager class injected as `search`                      |
+| `find_prompt_script()`              | Locates `prompt.py` / `agent.py` under `cortex/chat/`           |
+| `execute_prompt_script()`           | Runs a script and returns a `PromptResult`                      |
+| `is_interactive_dsl()`              | Returns `True` if the script uses interactive primitives        |
+| `execute_prompt_script_interactive()`| Runs an interactive script; returns final response string       |
+| `load_prompt_dsl()`                 | Entry point called by `agent_chat.py` on each request           |
+
+Interactive-mode symbols live in `agent_stem/src/common/tools_dsl.py`:
+
+| Symbol                  | Description                                                    |
+|-------------------------|----------------------------------------------------------------|
+| `DslRunContext`         | Mutable context passed to all DSL objects during one execution |
+| `Tools`                 | Base class; `call_read_only()`, `call_all()`, `wait()`         |
+| `McpServer`             | Subclass of `Tools`; connects to an MCP JSON-RPC server        |
+| `make_mcp_server_class()` | Factory that binds `McpServer` to a `DslRunContext`          |
+| `make_llm_fn()`         | Creates the `llm()` callable for a `DslRunContext`             |
+| `make_notify_fn()`      | Creates the `notify()` callable for a `DslRunContext`          |
+
+Startup logic lives in `agent_stem/src/startup/mcp_startup.py`:
+
+| Symbol                   | Description                                                |
+|--------------------------|------------------------------------------------------------|
+| `discover_mcp_servers()` | Scans `prompt.py`, connects to MCP servers, dies on error  |
 
 ---
 

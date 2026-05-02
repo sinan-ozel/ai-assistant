@@ -51,6 +51,58 @@ The Streamlit UI (port 8501) is also internal-only. Expose it only within the cl
 
 ---
 
+## Process model and container lifecycle
+
+Each container runs two processes managed by supervisord:
+
+| Process | Port | Role | Restart policy |
+|---|---|---|---|
+| **FastAPI** | 8000 | Production backend | None — container exits when it exits |
+| **Streamlit** | 8501 | Dev/test UI | Automatic restart on crash |
+
+### Fail-fast backend
+
+FastAPI is the only process that matters in production. If it encounters a fatal condition at startup — an unreachable MCP tool server, a missing or invalid provider, a misconfigured cortex — it exits immediately. A supervisord event listener detects the exit and shuts down the entire container.
+
+The exit code is propagated correctly:
+- **Non-zero exit** (startup error, fatal condition) → container exits with code **1** → Kubernetes reports `Reason: Error`
+- **Normal shutdown** (`docker stop`, SIGTERM from Kubernetes) → container exits with code **0** → Kubernetes reports `Reason: Completed`
+
+This means your liveness and readiness probes, restart policies, and alerting all behave as expected without any special configuration.
+
+### Streamlit is not a production component
+
+Streamlit is a personal development and testing UI. Its crash-and-restart behavior is intentional — a failed Streamlit process does not indicate a backend problem and does not affect the container's exit code. In production deployments you should:
+
+- Block port 8501 at the ingress or with a Kubernetes NetworkPolicy
+- Not define a liveness probe on port 8501
+- Ignore Streamlit restarts in your alerting rules
+
+### Kubernetes probe guidance
+
+Because FastAPI fails fast on startup errors, `initialDelaySeconds` can be kept short. There is no value in a long startup grace period — a broken agent will exit cleanly rather than sitting unhealthy indefinitely.
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  failureThreshold: 3
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  failureThreshold: 3
+```
+
+Provider discovery runs in the background after startup, so the `/health` endpoint returns 200 before all providers are confirmed available. If you need to gate traffic until providers are ready, poll `GET /private/v1/providers` and check that `loading` is `false` in the response.
+
+---
+
 ## Helm chart
 
 A Helm chart ships with the repository at `helm/ai-assistant`. Basic install:

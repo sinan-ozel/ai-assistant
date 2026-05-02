@@ -60,6 +60,8 @@ Each agent lives under `test_agents/<name>/` with a `cortex/` configuration and 
 | `incorrect_agent` | `providers/bad_vision.yaml`, a broken workflow | health, providers, evaluation_error | Error handling: bad provider config, evaluation failure paths. |
 | `agent_with_eval` | `chat/prompt.py`, `chat/eval.py`, `providers/default.yaml` | evaluate | Python eval DSL: `POST`/`GET`/`DELETE /private/v1/agent/evaluate`. |
 | `agent_with_incorrect_eval` | `chat/prompt.py`, `chat/eval.py` (with `expekt()` typo), `providers/default.yaml` | evaluate_error | Verifies that a NameError in a case is caught per-case, recorded as `status: "error"`, and does not prevent other cases from running. |
+| `agent_with_tools` | `chat/prompt.py`, `providers/default.yaml` | health, agent_with_tools | Single-phase MCP agent. Calls `call_read_only()` + `wait()` + `llm()` against the `eberron-mcp-server`. Tests health, basic response, tool context, and NDJSON streaming. Requires `test_env_default` (includes `eberron-mcp-server`). |
+| `agent_with_tools_advanced` | `chat/prompt.py`, `providers/default.yaml` | health, agent_with_tools_advanced | Two-phase MCP agent. Calls read-only tools first, then all tools, with `notify()` between phases. Tests multi-phase response and that streaming yields multiple intermediate chunks. Requires `test_env_default`. |
 | `agent_with_a_system_message_and_prompt_template` | *(no tests yet)* | — | — |
 | `agent_with_model_control` | *(no tests yet)* | — | — |
 
@@ -82,9 +84,14 @@ Tasks defined in `.vscode/tasks.json` under **Run All Agent Integration Tests**:
 | Run Integration Tests: agent_with_collection_search @ default | `agent_with_collection_search` | `test_env_default` |
 | Run Integration Tests: agent_with_eval @ default | `agent_with_eval` | `test_env_default` |
 | Run Integration Tests: agent_with_incorrect_eval @ default | `agent_with_incorrect_eval` | `test_env_default` |
+| Run Integration Tests: agent_with_tools @ default | `agent_with_tools` | `test_env_default` |
+| Run Integration Tests: agent_with_tools_advanced @ default | `agent_with_tools_advanced` | `test_env_default` |
 
 `talk_to_your_documents` is run against two environments to verify that the search layer falls
 back correctly from Qdrant to LanceDB when Qdrant is unavailable.
+
+`agent_with_tools` and `agent_with_tools_advanced` both require `test_env_default` because that
+environment includes the `eberron-mcp-server` sidecar that the agents connect to via `McpServer`.
 
 ---
 

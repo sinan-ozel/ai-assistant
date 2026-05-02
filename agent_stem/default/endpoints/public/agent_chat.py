@@ -14,7 +14,12 @@ from common.llm import (
     connect_llm_streaming,
     iterate_llm_stream,
 )
-from common.prompt_dsl import load_prompt_dsl
+from common.prompt_dsl import (
+    execute_prompt_script_interactive,
+    find_prompt_script,
+    is_interactive_dsl,
+    load_prompt_dsl,
+)
 from common.search import EmbeddingUnavailableError
 from common.state import providers_state
 from fastapi import HTTPException
@@ -186,6 +191,117 @@ def fit_messages_to_context(
 # Supported streaming formats
 STREAM_FORMAT_SSE = "sse"
 STREAM_FORMAT_NDJSON = "ndjson"
+
+
+def _encode_notify_chunk(
+    text: str,
+    conversation_id: str,
+    user_id: str,
+    created: int,
+    stream_format: str,
+) -> str:
+    """Format a notification text as a streaming chunk."""
+    chunk_data = {
+        "conversation_id": conversation_id,
+        "user_id": user_id,
+        "role": "assistant",
+        "created": created,
+        "delta": {"content": text},
+        "finish_reason": None,
+    }
+    if stream_format == STREAM_FORMAT_SSE:
+        return f"data: {json.dumps(chunk_data)}\n\n"
+    return json.dumps(chunk_data) + "\n"
+
+
+async def handle_interactive_streaming(
+    script_path,
+    input_text: str,
+    init_messages: list,
+    providers_state_ref: dict,
+    conversation_id: str,
+    user_id: str,
+    message: str,
+    conv_key: str,
+    stream_format: str = STREAM_FORMAT_SSE,
+):
+    """Run an interactive DSL script and stream its notify() output.
+
+    The DSL runs in a thread-pool executor.  Calls to ``notify()`` inside
+    the script are forwarded through a queue and yielded as SSE/NDJSON
+    chunks.  If the script called ``llm()`` the final response is already
+    in ``accumulated_messages``; otherwise we skip saving (the DSL is
+    responsible for the full response).
+    """
+    import queue as _queue
+
+    notify_queue: _queue.SimpleQueue = _queue.SimpleQueue()
+    loop = asyncio.get_event_loop()
+    created = int(time.time())
+
+    def _notify_fn(text: str) -> None:
+        notify_queue.put(text)
+
+    dsl_task = asyncio.ensure_future(
+        execute_prompt_script_interactive(
+            script_path=script_path,
+            input_text=input_text,
+            init_messages=init_messages,
+            providers_state=providers_state_ref,
+            notify_fn=_notify_fn,
+        )
+    )
+
+    def _on_dsl_done(_task):
+        notify_queue.put(None)
+
+    dsl_task.add_done_callback(_on_dsl_done)
+
+    media_type = (
+        "text/event-stream"
+        if stream_format == STREAM_FORMAT_SSE
+        else "application/x-ndjson"
+    )
+
+    async def generate_chunks():
+        while True:
+            item = await loop.run_in_executor(None, notify_queue.get)
+            if item is None:
+                break
+            yield _encode_notify_chunk(
+                item, conversation_id, user_id, created, stream_format
+            )
+
+        dsl_result = await dsl_task
+
+        if dsl_result.llm_called and dsl_result.accumulated_messages:
+            assistant_text = dsl_result.final_response or ""
+            from redis_memory import ConversationMemory
+
+            with ConversationMemory(conversation_id=conv_key) as memory:
+                if not hasattr(memory, "messages") or not isinstance(
+                    memory.messages, list
+                ):
+                    memory.messages = []
+                memory.messages.append({"role": "user", "content": message})
+                memory.messages.append(
+                    {"role": "assistant", "content": assistant_text}
+                )
+
+        if stream_format == STREAM_FORMAT_SSE:
+            yield "data: [DONE]\n\n"
+        else:
+            yield json.dumps({"done": True}) + "\n"
+
+    return StreamingResponse(
+        generate_chunks(),
+        media_type=media_type,
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 async def handle_streaming(
@@ -521,6 +637,69 @@ async def handler(request: dict, headers: dict = None):
             messages = []
             memory.messages = messages
 
+        # --- Interactive DSL path (McpServer / llm() / notify()) ---
+        _script_path = find_prompt_script("/app/cortex")
+        if _script_path and is_interactive_dsl(_script_path):
+            import ast as _ast
+
+            try:
+                _source = _script_path.read_text(encoding="utf-8")
+                _tree = _ast.parse(_source)
+                _system_msg = (
+                    _ast.get_docstring(_tree) or DEFAULT_SYSTEM_MESSAGE
+                )
+            except Exception:
+                _system_msg = DEFAULT_SYSTEM_MESSAGE
+
+            _fitted = fit_messages_to_context(
+                messages, max_context_window, _system_msg
+            )
+            _init_msgs: list = [{"role": "system", "content": _system_msg}]
+            _init_msgs.extend(_fitted)
+            _init_msgs.append({"role": "user", "content": message})
+
+            if stream:
+                return await handle_interactive_streaming(
+                    script_path=_script_path,
+                    input_text=message,
+                    init_messages=_init_msgs,
+                    providers_state_ref=providers_state,
+                    conversation_id=conversation_id,
+                    user_id=user_id,
+                    message=message,
+                    conv_key=conv_key,
+                    stream_format=stream_format,
+                )
+
+            _notifications: list = []
+            _dsl_result = await execute_prompt_script_interactive(
+                script_path=_script_path,
+                input_text=message,
+                init_messages=_init_msgs,
+                providers_state=providers_state,
+                notify_fn=_notifications.append,
+            )
+            _assistant_msg = (
+                _dsl_result.final_response or "\n".join(_notifications) or ""
+            )
+            memory.messages.append({"role": "user", "content": message})
+            memory.messages.append(
+                {"role": "assistant", "content": _assistant_msg}
+            )
+            return {
+                "conversation_id": conversation_id,
+                "user_id": user_id,
+                "message": _assistant_msg,
+                "role": "assistant",
+                "created": int(time.time()),
+                "usage": {
+                    "prompt_tokens": 0,
+                    "completion_tokens": 0,
+                    "total_tokens": 0,
+                },
+            }
+
+        # --- Standard (non-interactive) DSL path ---
         # Try to load prompt DSL from cortex folder
         try:
             dsl_result = load_prompt_dsl(

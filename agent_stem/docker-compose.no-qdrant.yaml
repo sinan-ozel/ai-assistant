@@ -1,6 +1,8 @@
 services:
   agent-stem-dev:
-    image: agent-stem:latest
+    build:
+      context: ..
+      dockerfile: agent_stem/Dockerfile
     container_name: agent-stem-dev
     volumes:
       - ..:/workspace

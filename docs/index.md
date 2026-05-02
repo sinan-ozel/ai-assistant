@@ -56,7 +56,7 @@ The text between the triple quotes is the system message — the instructions th
 ```yaml
 services:
   agent:
-    image: sinanozel/agent-stem:latest
+    image: sinanozel/ai-assistant:latest
     ports:
       - "8000:8000"
     volumes:

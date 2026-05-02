@@ -35,7 +35,7 @@ cortex/
     ```yaml
     services:
       agent:
-        image: sinanozel/agent-stem:latest
+        image: sinanozel/ai-assistant:0.1.0
         volumes:
           - ./cortex:/app/cortex
     ```
@@ -43,7 +43,7 @@ cortex/
 === "Docker run"
 
     ```bash
-    docker run -v "$(pwd)/cortex:/app/cortex" sinanozel/agent-stem:latest
+    docker run -v "$(pwd)/cortex:/app/cortex" sinanozel/ai-assistant:0.1.0
     ```
 
 === "Kubernetes"

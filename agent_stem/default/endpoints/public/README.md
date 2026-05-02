@@ -134,6 +134,46 @@ If `cortex/chat/prompt.py` is absent, the endpoint uses a built-in default syste
 
 The `DEFAULT_SYSTEM_MESSAGE` environment variable can also override the default without creating a file.
 
+#### Interactive mode — MCP tools
+
+When `prompt.py` contains any of `llm`, `notify`, `McpServer`, or `mcp`, the
+endpoint runs in **interactive mode**.  The script drives the LLM calls and
+tool invocations explicitly.
+
+```python
+# cortex/chat/prompt.py
+
+"""You are a guide to the world of Eberron."""
+
+with McpServer("http://tool-server:8000") as tools:
+    tools.call_read_only()
+    tools.wait()
+    response = llm()
+
+notify(response)
+```
+
+Injected globals available only in interactive mode:
+
+| Name         | Description                                                         |
+|--------------|---------------------------------------------------------------------|
+| `llm()`      | Call the LLM; returns the assistant response as a string            |
+| `notify(text)`| Stream `text` to the client immediately; last call sets final response |
+| `McpServer(url)` | Context manager; connects to an MCP server and manages tool calls |
+| `mcp`        | Alias for `McpServer`                                               |
+
+`McpServer` methods:
+
+| Method             | Description                                                          |
+|--------------------|----------------------------------------------------------------------|
+| `call_read_only()` | Submit tools annotated `readOnlyHint=true` concurrently             |
+| `call_all()`       | Submit all available tools concurrently                              |
+| `wait()`           | Wait for pending tool calls; appends results to message history      |
+
+The agent validates all `McpServer` URLs at startup and refuses to start if
+any are unreachable or return zero tools.  Discovered tools are listed in the
+Streamlit UI under "External Tools".
+
 ---
 
 ## Format compatibility summary

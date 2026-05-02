@@ -2,13 +2,13 @@ import asyncio
 import inspect
 import logging
 import os
-import signal
 from typing import Any, Dict
 
 from common.state import providers_state, workflows_state
 from fastapi import Body, FastAPI, Request
 from startup.chunking_pipeline import run_chunking_pipeline
 from startup.endpoints import discover_endpoints
+from startup.mcp_startup import discover_mcp_servers
 from startup.pdf_pipeline import run_pdf_pipeline
 from startup.providers import discover_context_windows, discover_providers
 from startup.workflows import discover_workflows
@@ -107,16 +107,27 @@ async def startup_event():
         logger.debug("Provider discovery task called the callback.")
         if task.cancelled():
             logger.error("Provider discovery task was cancelled.")
-            os.kill(1, signal.SIGKILL)
             os._exit(1)
         exc = task.exception()
         if exc:
             logger.error("Provider discovery failed: %s", exc, exc_info=exc)
-            os.kill(1, signal.SIGKILL)
             os._exit(1)
         logger.info("Provider discovery task completed successfully.")
 
     provider_discovery_task.add_done_callback(_on_provider_discovery_done)
+
+    # Discover and validate MCP servers declared in prompt.py.
+    # Run synchronously before FastAPI signals readiness so that a
+    # misconfigured or unreachable server is caught immediately.
+    # On failure, kill PID 1 (supervisord) to stop the restart loop.
+    loop = asyncio.get_event_loop()
+    try:
+        mcp_result = await loop.run_in_executor(None, discover_mcp_servers)
+    except Exception as exc:
+        logger.error("MCP startup failed: %s", exc, exc_info=exc)
+        os._exit(1)
+    if mcp_result:
+        logger.info("MCP startup: %d server(s) registered.", len(mcp_result))
 
     # Start PDF-to-Markdown pipeline in background
     asyncio.create_task(run_pdf_pipeline())
@@ -128,7 +139,6 @@ async def startup_event():
         exc = task.exception() if not task.cancelled() else None
         if exc:
             logger.error("Chunking pipeline task failed: %s", exc, exc_info=exc)
-            os.kill(1, signal.SIGKILL)
             os._exit(1)
 
     chunking_task.add_done_callback(_on_chunking_pipeline_done)

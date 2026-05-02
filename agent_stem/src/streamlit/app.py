@@ -258,6 +258,60 @@ def main():
     except Exception as e:
         st.warning(f"Could not reach books API: {e}")
 
+    # External Tools Section
+    st.divider()
+    st.markdown("## 🔧 External Tools")
+    st.markdown("MCP tool servers registered by this agent.")
+
+    try:
+        from redis_memory import Memory
+
+        with Memory() as _mem:
+            _mcp_tools = _mem.mcp_tools if hasattr(_mem, "mcp_tools") else []
+        if not isinstance(_mcp_tools, list) or not _mcp_tools:
+            st.info(
+                "No external tools registered. "
+                "Add a `McpServer(...)` call to `cortex/chat/prompt.py` to enable tools."
+            )
+        else:
+            for _server in _mcp_tools:
+                _url = _server.get("server_url", "unknown")
+                _tools = _server.get("tools", [])
+                st.markdown(f"**🌐 {_url}** — {len(_tools)} tool(s)")
+                for _tool in _tools:
+                    _name = _tool.get("name", "")
+                    _desc = _tool.get("description", "")
+                    _ro = _tool.get("read_only", False)
+                    _badge = "🟢 read-only" if _ro else "🔴 write"
+                    _annotation_icons = [
+                        ("read_only", "👁️", "Read-only: does not modify state"),
+                        ("destructive", "💥", "Destructive: may delete or overwrite data"),
+                        ("idempotent", "🔁", "Idempotent: safe to retry with the same arguments"),
+                        ("open_world", "🌐", "Open world: interacts with external systems"),
+                    ]
+                    _label_icons = " ".join(
+                        icon
+                        for key, icon, _ in _annotation_icons
+                        if _tool.get(key, False)
+                    )
+                    _label = f"`{_name}` {_badge}"
+                    if _label_icons:
+                        _label += f"  {_label_icons}"
+                    with st.expander(_label, expanded=False):
+                        _tooltip_icons = [
+                            f'<span title="{tip}">{icon}</span>'
+                            for key, icon, tip in _annotation_icons
+                            if _tool.get(key, False)
+                        ]
+                        if _tooltip_icons:
+                            st.markdown(
+                                " ".join(_tooltip_icons), unsafe_allow_html=True
+                            )
+                        if _desc:
+                            st.caption(_desc)
+    except Exception as _e:
+        st.info(f"External tools unavailable: {_e}")
+
     # Agent Evaluation DSL Section
     st.divider()
     st.markdown("## 🧪 Agent Evaluation")

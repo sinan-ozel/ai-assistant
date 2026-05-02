@@ -27,7 +27,7 @@ bash release/release.sh 1.2.3
 5. Verifies the current branch is `main`
 6. Builds the Docker image with OCI annotations (`version`, `revision`, `created`)
 7. Tags the git commit as `v<version>`
-8. Pushes the Docker image as both `sinanozel/agent-stem:<version>` and `sinanozel/agent-stem:latest`
+8. Pushes the Docker image as both `sinanozel/ai-assistant:<version>` and `sinanozel/ai-assistant:latest`
 9. Pushes the git tag
 
 ## Versioning

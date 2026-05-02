@@ -46,5 +46,11 @@ EXPOSE 8501
 # FastAPI
 EXPOSE 8000
 
-# Run supervisor to manage all services
-CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Entrypoint: run supervisord and propagate exit code 1 on fatal errors.
+# supervisord exits 0 on SIGTERM; if a fatal-error sentinel was written first
+# (by api.py before sending SIGTERM), exit 1 so Kubernetes shows "Error" not
+# "Completed" in kubectl describe pod.
+COPY agent_stem/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+CMD ["/entrypoint.sh"]

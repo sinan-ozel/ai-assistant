@@ -9,7 +9,7 @@ No local GPU required. Uses a cloud LLM and a pre-built embedding model.
 ```yaml
 services:
   agent:
-    image: sinanozel/agent-stem:latest
+    image: sinanozel/ai-assistant:latest
     volumes:
       - ./cortex:/app/cortex
     ports:
@@ -38,7 +38,7 @@ Adds a local Ollama container. The model is baked into the image — no separate
 ```yaml
 services:
   agent:
-    image: sinanozel/agent-stem:latest
+    image: sinanozel/ai-assistant:latest
     volumes:
       - ./cortex:/app/cortex
     ports:

@@ -1,6 +1,24 @@
 Do NOT install anything, and do not run python directly. Always run and test
 through `docker compose`, based on `tasks.json`.
 
+# Docker image conventions
+
+**`agent_stem/` and `test_environments/`** use `build:` in docker-compose — no
+`image:` field for the app container. Docker Compose builds the image locally
+from `agent_stem/Dockerfile`. Never add `image: <local-name>` to these files;
+it causes Docker to try to pull a non-existent registry image.
+
+The "Run Agent" tasks in `tasks.json` pass `--build` to `docker compose up` so
+the image is always rebuilt from the current source. The standalone "Build
+Container" task tags the image as `ai-assistant-dev:latest` for inspection or
+sharing; it is not a prerequisite for running the agent.
+
+**`examples/`** always pull from Docker Hub:
+`image: sinanozel/ai-assistant:<TAG>`. The Helm charts do the same. Tag
+resolution for post-release tests is computed from `pyproject.toml` +
+`build_number.txt`: `VERSION-dev.(BUILD_NUMBER-1)` for dev releases, bare
+`VERSION` for production releases.
+
 # Coding Practices
 
 Do not use try ... catch except (1) in small blocks around endpoints, where

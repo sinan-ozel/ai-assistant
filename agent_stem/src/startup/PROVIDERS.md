@@ -93,20 +93,12 @@ model: ollama/gemma3:270m
 
 No `api_key` needed. The `ollama/` prefix tells LiteLLM to use Ollama's API format. The model name after the slash must match the model tag loaded in Ollama (`ollama pull gemma3:270m`).
 
-### Ollama over a VPN / remote host
-
-```yaml
-api_base: http://localhost:11434
-model: ollama/gemma3:1b
-timeout: 150
-```
-
 ### llama.cpp (OpenAI-compatible server)
 
 llama.cpp exposes an OpenAI-compatible API. Use the `openai/` prefix and provide a dummy key (llama.cpp ignores it):
 
 ```yaml
-api_base: http://localhost:8080/v1
+api_base: http://llama-cpp-test:8080/v1
 model: openai/gemma4:e2b
 api_key: dummy
 timeout: 150
