@@ -33,6 +33,7 @@ def _parse_mcp_response(response: httpx.Response) -> dict:
         raise RuntimeError("MCP SSE response contained no data line")
     return response.json()
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -270,7 +271,12 @@ class McpServer(Tools):
             self._initialize_session(base_url)
         response = self._client.post(
             f"{base_url}/mcp",
-            json={"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}},
+            json={
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "tools/list",
+                "params": {},
+            },
             headers=self._session_headers(base_url),
         )
         response.raise_for_status()

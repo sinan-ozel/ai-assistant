@@ -555,10 +555,7 @@ def _load_and_validate_provider(
                 provider_data["available"] = True
             else:
                 if "APIConnectionError" in error:
-                    error = (
-                        f"{error} "
-                        f"(api_base={config.get('api_base')!r})"
-                    )
+                    error = f"{error} " f"(api_base={config.get('api_base')!r})"
                 provider_data["error"] = error
                 logger.warning(
                     f"Provider {provider_name} validation failed: {error}"

@@ -29,7 +29,7 @@ GOALS
 - [x] (0.1.0) Add ability to upload image to the chat on streamlit
 - [ ] (0.3.0) In workflows, if a description does not exist, fill it in from the prompt.
 - [ ] (0.1.1) Add conversation summarization feature.
-- [ ] Add something for either calling an LLM, or using a workflow, or both to /cortex/chat (generate? run? call? execute?)
+- [x] Add something for either calling an LLM, or using a workflow, or both to /cortex/chat (generate? run? call? execute?)
 - [ ] Add the thinking messages to /cortex/chat/prompt.py. (update_user)
 - [ ] (0.1.0) Test chat evaluation in no_redis environment
 - [ ] (0.1.0) Test conversation in no_redis environment

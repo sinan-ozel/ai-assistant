@@ -76,7 +76,12 @@ def _list_tools(base_url: str) -> list:
 
         response = client.post(
             url,
-            json={"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}},
+            json={
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "tools/list",
+                "params": {},
+            },
             headers=headers,
         )
         response.raise_for_status()
@@ -106,10 +111,14 @@ def _save_tools_to_memory(server_url: str, tools: list) -> None:
                             t.get("annotations", {}).get("readOnlyHint", False)
                         ),
                         "destructive": bool(
-                            t.get("annotations", {}).get("destructiveHint", False)
+                            t.get("annotations", {}).get(
+                                "destructiveHint", False
+                            )
                         ),
                         "idempotent": bool(
-                            t.get("annotations", {}).get("idempotentHint", False)
+                            t.get("annotations", {}).get(
+                                "idempotentHint", False
+                            )
                         ),
                         "open_world": bool(
                             t.get("annotations", {}).get("openWorldHint", False)

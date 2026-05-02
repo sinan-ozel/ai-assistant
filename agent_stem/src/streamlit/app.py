@@ -285,9 +285,21 @@ def main():
                     _badge = "🟢 read-only" if _ro else "🔴 write"
                     _annotation_icons = [
                         ("read_only", "👁️", "Read-only: does not modify state"),
-                        ("destructive", "💥", "Destructive: may delete or overwrite data"),
-                        ("idempotent", "🔁", "Idempotent: safe to retry with the same arguments"),
-                        ("open_world", "🌐", "Open world: interacts with external systems"),
+                        (
+                            "destructive",
+                            "💥",
+                            "Destructive: may delete or overwrite data",
+                        ),
+                        (
+                            "idempotent",
+                            "🔁",
+                            "Idempotent: safe to retry with the same arguments",
+                        ),
+                        (
+                            "open_world",
+                            "🌐",
+                            "Open world: interacts with external systems",
+                        ),
                     ]
                     _label_icons = " ".join(
                         icon
