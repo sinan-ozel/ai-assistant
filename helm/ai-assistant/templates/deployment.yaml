@@ -70,6 +70,10 @@ spec:
             - name: LLAMA_CPP_HOST
               value: "http://{{ include "ai-assistant.llamacppHost" . }}:8080/v1"
             {{- end }}
+            {{- range .Values.mcpServers }}
+            - name: MCP_{{ .name | upper | replace "-" "_" }}_URL
+              value: "http://{{ include "ai-assistant.fullname" $ }}-{{ .name }}:{{ .port | default 8000 }}"
+            {{- end }}
             - name: LOG_LEVEL
               value: {{ .Values.env.logLevel | quote }}
             {{- if .Values.env.conversationWindowLimit }}

@@ -7,10 +7,24 @@ services:
       - ./cortex:/app/cortex
     environment:
       - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - MCP_BUSINESS_HOURS_URL=http://business-hours:8000
     depends_on:
       - redis
       - qdrant
       - embedding
+      - business-hours
+
+  business-hours:
+    image: sinanozel/business-hours-mcp:0.1.0
+    environment:
+      - TIMEZONE=America/New_York
+      - HOURS_MON=closed
+      - HOURS_TUE=08:00-18:00
+      - HOURS_WED=08:00-18:00
+      - HOURS_THU=08:00-18:00
+      - HOURS_FRI=08:00-18:00
+      - HOURS_SAT=08:00-18:00
+      - HOURS_SUN=08:00-18:00
 
   redis:
     image: redis:7-alpine

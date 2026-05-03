@@ -8,5 +8,14 @@ Location: 42 Flour Street.
 Phone: (555) 012-3456
 """
 
+import os
+
+with McpServer(os.environ["MCP_BUSINESS_HOURS_URL"]) as tools:
+    tools.call_read_only()
+    tools.wait()
+
 with search(input()):
     print("Customer question: " + input())
+
+response = llm()
+notify(response)

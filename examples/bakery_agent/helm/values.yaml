@@ -14,3 +14,17 @@
 replicaCount: 1
 
 extraEnvFromSecret: llm-secrets
+
+mcpServers:
+  - name: business-hours
+    image: sinanozel/business-hours-mcp:0.1.0
+    port: 8000
+    env:
+      TIMEZONE: America/New_York
+      HOURS_MON: closed
+      HOURS_TUE: "08:00-18:00"
+      HOURS_WED: "08:00-18:00"
+      HOURS_THU: "08:00-18:00"
+      HOURS_FRI: "08:00-18:00"
+      HOURS_SAT: "08:00-18:00"
+      HOURS_SUN: "08:00-18:00"

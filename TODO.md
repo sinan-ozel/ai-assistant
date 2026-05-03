@@ -15,7 +15,7 @@ GOALS
 - [x] (0.1.0) Local Run docker-compose examples
 
 
-- [ ] (0.1.0) Add eval to the bakery example
+- [x] (0.1.0) Add eval to the bakery example
 
 
 - [ ] Add some sort of agent_id and use as a prefix. agent:short-term-memory:<user_id>:<convo_id>

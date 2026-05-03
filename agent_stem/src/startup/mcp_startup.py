@@ -9,9 +9,11 @@ Discovered tools are persisted in Redis memory so the Streamlit UI can
 display them under "External Tools".
 """
 
+import ast
 import json
 import logging
-import re
+import os
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -21,15 +23,86 @@ logger = logging.getLogger(__name__)
 
 _CORTEX_PATH = "/app/cortex"
 
-_MCP_SERVER_PATTERN = re.compile(
-    r"""McpServer\(\s*(?:\[)?["\']([^"\']+)["\']""",
-    re.MULTILINE,
-)
+_MCP_CONNECT_RETRIES = 5
+_MCP_CONNECT_RETRY_DELAY = 3.0
+_MCP_CONNECT_TIMEOUT = 10.0
+
+
+def _resolve_mcp_arg(arg: ast.expr) -> str:
+    """Resolve a McpServer() argument node to a URL string.
+
+    Supported forms:
+      McpServer("http://host:port")
+      McpServer(os.environ["VAR"])
+      McpServer(os.environ.get("VAR"))
+
+    Raises RuntimeError if an env var reference is found but not set.
+    """
+    # McpServer("http://...")
+    if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+        return arg.value
+
+    # McpServer(os.environ["VAR"])
+    if (
+        isinstance(arg, ast.Subscript)
+        and isinstance(arg.value, ast.Attribute)
+        and arg.value.attr == "environ"
+        and isinstance(arg.value.value, ast.Name)
+        and arg.value.value.id == "os"
+        and isinstance(arg.slice, ast.Constant)
+        and isinstance(arg.slice.value, str)
+    ):
+        var_name = arg.slice.value
+        value = os.environ.get(var_name)
+        if not value:
+            raise RuntimeError(
+                f"MCP startup: prompt.py references os.environ[{var_name!r}] "
+                "but the environment variable is not set."
+            )
+        return value
+
+    # McpServer(os.environ.get("VAR"))
+    if (
+        isinstance(arg, ast.Call)
+        and isinstance(arg.func, ast.Attribute)
+        and arg.func.attr == "get"
+        and isinstance(arg.func.value, ast.Attribute)
+        and arg.func.value.attr == "environ"
+        and isinstance(arg.func.value.value, ast.Name)
+        and arg.func.value.value.id == "os"
+        and arg.args
+        and isinstance(arg.args[0], ast.Constant)
+        and isinstance(arg.args[0].value, str)
+    ):
+        var_name = arg.args[0].value
+        value = os.environ.get(var_name)
+        if not value:
+            raise RuntimeError(
+                f"MCP startup: prompt.py references os.environ.get({var_name!r}) "
+                "but the environment variable is not set."
+            )
+        return value
+
+    raise RuntimeError(
+        f"MCP startup: unsupported McpServer() argument at line "
+        f"{getattr(arg, 'lineno', '?')} — only string literals and "
+        "os.environ lookups are supported."
+    )
 
 
 def _extract_mcp_urls(source: str) -> list:
-    """Return all MCP server URL string literals found in *source*."""
-    return _MCP_SERVER_PATTERN.findall(source)
+    """Walk the AST of *source* and return all McpServer() URLs."""
+    tree = ast.parse(source)
+    urls = []
+    for node in ast.walk(tree):
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "McpServer"
+            and node.args
+        ):
+            urls.append(_resolve_mcp_arg(node.args[0]))
+    return urls
 
 
 def _parse_mcp_response(response: httpx.Response) -> dict:
@@ -48,7 +121,7 @@ def _list_tools(base_url: str) -> list:
     url = base_url.rstrip("/") + "/mcp"
     headers = {"Accept": "application/json, text/event-stream"}
 
-    with httpx.Client(timeout=30.0) as client:
+    with httpx.Client(timeout=_MCP_CONNECT_TIMEOUT) as client:
         init_response = client.post(
             url,
             json={
@@ -177,12 +250,47 @@ def discover_mcp_servers() -> Optional[list]:
     results = []
     for url in urls:
         logger.info("MCP startup: connecting to %s …", url)
-        tools = _list_tools(url)
+        tools = None
+        last_exc: Optional[Exception] = None
+
+        for attempt in range(1, _MCP_CONNECT_RETRIES + 1):
+            try:
+                tools = _list_tools(url)
+                break
+            except Exception as exc:
+                last_exc = exc
+                logger.warning(
+                    "MCP startup: attempt %d/%d — could not reach %s: %s",
+                    attempt,
+                    _MCP_CONNECT_RETRIES,
+                    url,
+                    exc,
+                )
+                if attempt < _MCP_CONNECT_RETRIES:
+                    time.sleep(_MCP_CONNECT_RETRY_DELAY)
+
+        if tools is None:
+            logger.error(
+                "MCP startup: giving up on %s after %d attempts. Last error: %s",
+                url,
+                _MCP_CONNECT_RETRIES,
+                last_exc,
+            )
+            raise RuntimeError(
+                f"MCP startup: server at {url!r} unreachable after "
+                f"{_MCP_CONNECT_RETRIES} attempts."
+            )
+
         if not tools:
+            logger.error(
+                "MCP startup: server at %s is reachable but returned zero tools.",
+                url,
+            )
             raise RuntimeError(
                 f"MCP startup: server at {url!r} returned zero tools. "
                 "Check the server configuration."
             )
+
         logger.info(
             "MCP startup: %s — %d tool(s) registered: %s",
             url,

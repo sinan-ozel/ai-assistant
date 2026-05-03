@@ -137,6 +137,22 @@ cortex:
 
     print(input_text)
 
+# ── MCP tool servers (optional) ──────────────────────────────────────────────
+# List of MCP-compatible tool servers to deploy alongside the agent.
+# Each entry creates a Deployment and a ClusterIP Service.
+# The agent's prompt.py references them via McpServer("http://<release>-<name>:<port>").
+#
+# Example:
+#   mcpServers:
+#     - name: business-hours
+#       image: sinanozel/business-hours-mcp:0.1.0
+#       port: 8000
+#       env:
+#         TIMEZONE: America/New_York
+#         HOURS_MON: closed
+#         HOURS_TUE: "08:00-18:00"
+mcpServers: []
+
 # ── Extra environment variables from existing Secrets ────────────────────────
 # Reference any Kubernetes Secret by name to inject all its keys as env vars
 # into the application container. Use this to supply API keys for providers
