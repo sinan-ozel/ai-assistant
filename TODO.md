@@ -4,12 +4,28 @@
 0.1.0
 - [ ] Chat window: multple conversations, also increases in height as the browser window changes?
 
+
+0.1.1
+- [ ] Add chunk information to the interface.
+- [ ] Raise error if embedding server changes.
+
+
+
 0.2.0
 - [ ] Multiple conversations (Need conversations endpoint and )
 - [ ] Local MCP tools
 - [ ] Add conversation summarization feature, and memory support in cortex
-- [ ] Switch
 - [ ] Ability to add books and create shelves on the interface.
+- [ ] Wider MCP Support
+- [ ] OpenAPI as tools
+- [ ] Local search as tool
+- [ ] Extend the books endpoint, implement v2 where we see everything in the pipeline.
+
+0.4.0
+- [ ] Use a language model to get a PDF language rather than OCR_LANGUAGE environmental variable
+- [ ] Make chunking hackable (?)
+- [ ] (0.4.0) Add `ocr` as a provider, use this for OCR.
+
 
 Anytime
 - [ ] Refactor: move the env and constant assignments to one place under common
@@ -19,6 +35,8 @@ Anytime
   - [ ] On Mistral, I need to run a test to make sure that 429 rate limit exceeded errors are passed properly.
 - [ ] Up arrow repeats the last message, or rolls back the conversation?
 - [ ] Make sure that execute_prompt_script in agent_stem/src/common/prompt_dsl.py is removing duplicate messages, if `message_history` becomes editable.
+- [ ] Create an environment to test quick fails if the environmental variables are set incorrectly, or proper error messages.
+- [ ] Switch to synced-memory
 
 
 
@@ -32,23 +50,12 @@ In Consideration
 - [ ] (0.1.0) Add a test for setting a keyword differently in the agent chat if it is not set.
 - [ ] (0.3.0) In workflows, if a description does not exist, fill it in from the prompt.
 
-- [ ] (0.2.0) Extend the books endpoint, implement v2 where we see everything in the pipeline.
-- [ ] (0.1.0) Create an environment to test quick fails if the environmental variables are set incorrectly, or proper error messages.
-- [ ] (0.1.1)
-
 - [ ] In the logs, make sure that this kind of message is being truncated properly:
 app-test-no-qdrant        | INFO:endpoints.agent_chat:Agent chat: Last message (user): {'role': 'user', 'content': [{'type': 'text', 'text': 'Describe what you see in this image in one sentence.'}, {'type': 'image_url', 'image_url': {'url': 'data:image/jpeg;base64,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
 
 - [ ] (0.1.0) Log a warning every time the context window is not enough. Add to /metrics
 - [ ] Introspect execute_prompt_script in agent_stem/src/common/prompt_dsl.py and make sure that docstring has all the core primitives. Then also check the docstring against the documentation and find out if anything is missing.
 
-- [ ] (0.2.0) Switch to synced-memory
-- [x] (0.1.0) Add eval to bakery example
-
-- [ ] (0.1.1) Add chunk information to the interface.
-
-- [ ] Add MCP testing to the test harness
-- [ ] (0.1.1) Raise error if embedding server changes.
 
 - [x] In the Release (Dev) Check, fail if reformatting is necessary before the tests start. Also fail if there is a stable tag that matches the current version, the current version needs to be larger.
 
@@ -67,8 +74,6 @@ tests-runner-self-hosted-llm  |   Expected [200]: {"model": "gemma3:4b", "create
 tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet implemented"}
 
 - [ ] Grafana integration
-- [ ] Use a language model to get a PDF language rather than OCR_LANGUAGE environmental variable
-- [ ] Make chunking hackable (?)
 - [ ] Compare the chunk sizes, warn about largest chunks, suggest model and VRAM size.
 - [ ] Improve chunking: detect tables, refactor the chunking library, place tests.
 - [ ] (0.3.0) Add custom embedding provider. Remove EMBEDDING_HOST from env in the test environments, and remove the servers.
@@ -78,9 +83,7 @@ tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet im
 - [ ] (0.2.0) Force workflows to be streaming ndjson only.
 - [ ] (0.2.0) Register workflows as MCP tools
 - [ ] Give a better way to develop edit the system message dependgin on context.
-- [ ] (0.4.0) Add `ocr` as a provider, use this for OCR.
 - [ ] (0.1.0) Something is weird with the tests. The conversations sizes seem to keep growing: (1) add some additinal info lines abouth the last message, and a median message. (2) Are the tests using the same conversation id? (3) How does conversation ids work?
-- [ ] (0.1.0) Make sure that different conversations work on the streamlit
 - [ ] (0.1.0) Make sure that different tenants work on the streamlit interface
 - [ ] If the embedding server or mode changes, rerun the chunking, log a warning.
 
