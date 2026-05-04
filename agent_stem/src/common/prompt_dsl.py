@@ -373,6 +373,7 @@ def _run_interactive_script(
     providers_state: dict,
     event_loop: Any,
     notify_fn: Any,
+    retry_on_rate_limit: bool = False,
 ) -> PromptResult:
     """Execute an interactive DSL script in the current (executor) thread.
 
@@ -407,7 +408,10 @@ def _run_interactive_script(
         providers_state=providers_state,
         event_loop=event_loop,
         notify_fn=notify_fn,
+        retry_on_rate_limit=retry_on_rate_limit,
     )
+
+    import time as _time
 
     McpServerClass = make_mcp_server_class(ctx)
     llm_fn = make_llm_fn(ctx)
@@ -431,6 +435,7 @@ def _run_interactive_script(
                 "mcp": McpServerClass,
                 "llm": llm_fn,
                 "notify": notify_dsl_fn,
+                "delay": _time.sleep,
             },
         )
 
@@ -450,6 +455,7 @@ async def execute_prompt_script_interactive(
     init_messages: list[dict],
     providers_state: dict,
     notify_fn: Any,
+    retry_on_rate_limit: bool = False,
 ) -> PromptResult:
     """Execute an interactive DSL script (uses llm() / notify() / McpServer).
 
@@ -484,6 +490,7 @@ async def execute_prompt_script_interactive(
         providers_state,
         loop,
         notify_fn,
+        retry_on_rate_limit,
     )
     return result
 

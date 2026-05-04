@@ -1,6 +1,6 @@
 """Flower & Flour Bakery — evaluation suite."""
 
-eval(repeat=3, threshold=1)
+eval(repeat=3, threshold=1, delay=10.0)
 
 
 def sourdough_price():

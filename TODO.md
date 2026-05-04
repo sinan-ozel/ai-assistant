@@ -1,44 +1,40 @@
-- [x] Publish to Docker Hub (Local pipeline: reformat, lint, test, publish)
-- [x] Rename the Repo
 - [ ] Write a script to make sure: (1) not print in prod code (2) no imports below the top.
-- [x] Check out how orchestration works at Claude Code.
-
-GOALS
-- [x] (0.1.0) YAML Workflows 0.1.0
-- [x] (0.1.0) Python-as-DSL Hackable Chat
-- [x] (0.1.0) RAG
-- [x] (0.1.0) Add MCP server
-- [x] (0.1.0) Document Ingestion Pipeline
-
-- [x] (0.1.0) Helm Charts
-- [x] (0.1.0) Testing for Helm Charts
-- [x] (0.1.0) Local Run docker-compose examples
 
 
-- [x] (0.1.0) Add eval to the bakery example
+0.1.0
+- [ ] Chat window: multple conversations, also increases in height as the browser window changes?
 
+0.2.0
+- [ ] Multiple conversations (Need conversations endpoint and )
+- [ ] Local MCP tools
+- [ ] Add conversation summarization feature, and memory support in cortex
+- [ ] Switch
+- [ ] Ability to add books and create shelves on the interface.
 
-- [ ] Add some sort of agent_id and use as a prefix. agent:short-term-memory:<user_id>:<convo_id>
-- [ ] (0.2.0) Markdown ingestion: may have an issue, it may rewrite the same file in deployments with multiple pods.
-- [ ] (0.1.1) Update the chunking pipeline to delete files if the md does not exist, same for PDF. (Think on this: I want the markdown files to be the source of truth, but there will be a race condition if this is implemented.)
-- [ ] (0.1.0) Add an endpoint GET /private/v1/agent/system-prompt
-- [ ] (0.1.0) Add an endpoint POST /private/v1/agent/conversation/{}/summary (Streaming Response)
-- [ ] (0.1.1) Add thinking in the agent chat view
-- [ ] (0.1.0) Add a test for setting a keyword differently in the agent chat if it is not set.
+Anytime
 - [ ] Refactor: move the env and constant assignments to one place under common
-- [x] (0.1.0) Add ability to upload image to the chat on streamlit
+- [ ] Refactor: under each agent, write the tests that they need to run with each environment: tests/ --> tests/default, tests/no_qdrant, tests/no_mcp
+  - [ ] test_agents/agent_with_tools, also needs to run in Mistral, because of (test_agent_succeeds_when_llm_skips_tools)
+  - [ ] test_agents/agent_with_eval, also needs to run in Mistral, and make sure that the eval passes, even with rate limiting.
+  - [ ] On Mistral, I need to run a test to make sure that 429 rate limit exceeded errors are passed properly.
+- [ ] Up arrow repeats the last message, or rolls back the conversation?
+- [ ] Make sure that execute_prompt_script in agent_stem/src/common/prompt_dsl.py is removing duplicate messages, if `message_history` becomes editable.
+
+
+
+In Consideration
+- [ ] Add thinking in the agent chat view
+- [ ] Add some sort of agent_id and use as a prefix. agent:short-term-memory:<user_id>:<convo_id>
+- [ ] Markdown ingestion: may have an issue, it may rewrite the same file in deployments with multiple pods.
+- [ ] Update the chunking pipeline to delete files if the md does not exist, same for PDF. (Think on this: I want the markdown files to be the source of truth, but there will be a race condition if this is implemented.)
+
+
+- [ ] (0.1.0) Add a test for setting a keyword differently in the agent chat if it is not set.
 - [ ] (0.3.0) In workflows, if a description does not exist, fill it in from the prompt.
-- [ ] (0.1.1) Add conversation summarization feature.
-- [x] Add something for either calling an LLM, or using a workflow, or both to /cortex/chat (generate? run? call? execute?)
-- [ ] Add the thinking messages to /cortex/chat/prompt.py. (update_user)
-- [ ] (0.1.0) Test chat evaluation in no_redis environment
-- [ ] (0.1.0) Test conversation in no_redis environment
-- [ ] (0.1.0) Test workflow evaluation in no_redis environment
-- [ ] (0.1.0) If there is no eval.py, disable the button on the frontend, and change the message.
+
 - [ ] (0.2.0) Extend the books endpoint, implement v2 where we see everything in the pipeline.
 - [ ] (0.1.0) Create an environment to test quick fails if the environmental variables are set incorrectly, or proper error messages.
-- [ ] (0.1.1) Ability to add books and create shelves on the interface.
-- [ ] (0.1.0) Make sure that execute_prompt_script in agent_stem/src/common/prompt_dsl.py is removing duplicate messages, if `message_history` becomes editable.
+- [ ] (0.1.1)
 
 - [ ] In the logs, make sure that this kind of message is being truncated properly:
 app-test-no-qdrant        | INFO:endpoints.agent_chat:Agent chat: Last message (user): {'role': 'user', 'content': [{'type': 'text', 'text': 'Describe what you see in this image in one sentence.'}, {'type': 'image_url', 'image_url': {'url': 'data:image/jpeg;base64,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
@@ -50,8 +46,6 @@ app-test-no-qdrant        | INFO:endpoints.agent_chat:Agent chat: Last message (
 - [x] (0.1.0) Add eval to bakery example
 
 - [ ] (0.1.1) Add chunk information to the interface.
-
-- [ ] Refactor: under each agent, write the tests that they need to run with each environment: tests/ --> tests/default, tests/no_qdrant, tests/no_mcp
 
 - [ ] Add MCP testing to the test harness
 - [ ] (0.1.1) Raise error if embedding server changes.

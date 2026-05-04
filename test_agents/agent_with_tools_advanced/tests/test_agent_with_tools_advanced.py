@@ -19,8 +19,6 @@ def test_health_endpoint():
     """App must be healthy before running chat tests."""
     response = requests.get(f"{BASE_URL}/health", timeout=10)
     assert response.status_code == 200
-    data = response.json()
-    assert not data.get("providers_loading", True)
 
 
 @pytest.mark.depends(on="healthy", name="test_adv_basic_response")

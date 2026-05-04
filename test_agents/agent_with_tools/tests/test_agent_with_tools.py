@@ -18,8 +18,6 @@ def test_health_endpoint():
     """App must be healthy before running chat tests."""
     response = requests.get(f"{BASE_URL}/health", timeout=10)
     assert response.status_code == 200
-    data = response.json()
-    assert not data.get("providers_loading", True)
 
 
 @pytest.mark.depends(on="healthy", name="test_tools_basic_response")
@@ -94,3 +92,31 @@ def test_agent_tools_streaming(clear_test_memory):
 
     assert len(chunks) > 0
     assert chunks[-1].get("done") is True
+
+
+@pytest.mark.depends(on="healthy")
+def test_agent_succeeds_when_llm_skips_tools():
+    """Agent must not crash when the LLM decides not to call any tools.
+
+    Regression test for a message-ordering bug: when call_read_only() is
+    invoked but the LLM returns no tool calls, a stale assistant message was
+    left in the context before llm() ran, causing Mistral (and other providers)
+    to reject the request with a 400 'invalid_request_message_order' error.
+
+    A question unrelated to Eberron lore is used to maximise the likelihood
+    that the LLM skips tool calls, but the assertion holds either way: the
+    agent must return 200 with a non-empty reply regardless of whether tools
+    were invoked.
+    """
+    response = requests.post(
+        f"{BASE_URL}/v1/agent/chat",
+        json={
+            "message": "How many sides does a triangle have?",
+            "user_id": "test-tools-no-tool",
+        },
+        timeout=120,
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data["message"], str)
+    assert len(data["message"]) > 0

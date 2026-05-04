@@ -14,6 +14,8 @@ services:
       - "11434:11434"
     environment:
       - EMBEDDING_SERVER=http://embedding:11434
+      - EMBEDDING_TIMEOUT=3.0
+      - MCP_BUSINESS_HOURS_URL=http://business-hours:8000
       # - CONVERSATION_WINDOW_LIMIT=4096
       # - LOG_LEVEL=DEBUG
     env_file:
@@ -24,6 +26,7 @@ services:
       - redis
       - qdrant
       - embedding
+      - business-hours
 
   redis:
     image: redis:7.4.2-alpine
@@ -95,6 +98,20 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+
+  business-hours:
+    image: sinanozel/business-hours-mcp:0.1.0
+    environment:
+      - TIMEZONE=America/New_York
+      - HOURS_MON=closed
+      - HOURS_TUE=08:00-18:00
+      - HOURS_WED=08:00-18:00
+      - HOURS_THU=08:00-18:00
+      - HOURS_FRI=08:00-18:00
+      - HOURS_SAT=08:00-18:00
+      - HOURS_SUN=08:00-18:00
+    networks:
+      - agent-dev-network
 
 
 networks:

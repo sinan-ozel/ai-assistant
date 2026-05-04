@@ -272,7 +272,15 @@ async def handle_interactive_streaming(
                 item, conversation_id, user_id, created, stream_format
             )
 
-        dsl_result = await dsl_task
+        try:
+            dsl_result = await dsl_task
+        except litellm.RateLimitError:
+            if stream_format == STREAM_FORMAT_SSE:
+                yield 'data: {"error": "rate_limit_exceeded"}\n\n'
+                yield "data: [DONE]\n\n"
+            else:
+                yield json.dumps({"error": "rate_limit_exceeded"}) + "\n"
+            return
 
         if dsl_result.llm_called and dsl_result.accumulated_messages:
             assistant_text = dsl_result.final_response or ""
@@ -339,6 +347,12 @@ async def handle_streaming(
                 max_tokens=max_tokens,
                 temperature=temperature,
             )
+        )
+    except litellm.RateLimitError as e:
+        logger.error("Streaming chat: rate limit hit: %s", e)
+        raise HTTPException(
+            status_code=429,
+            detail="Rate limit exceeded — try again later.",
         )
     except (litellm.Timeout, asyncio.TimeoutError):
         raise HTTPException(
@@ -672,13 +686,26 @@ async def handler(request: dict, headers: dict = None):
                 )
 
             _notifications: list = []
-            _dsl_result = await execute_prompt_script_interactive(
-                script_path=_script_path,
-                input_text=message,
-                init_messages=_init_msgs,
-                providers_state=providers_state,
-                notify_fn=_notifications.append,
-            )
+            try:
+                _dsl_result = await execute_prompt_script_interactive(
+                    script_path=_script_path,
+                    input_text=message,
+                    init_messages=_init_msgs,
+                    providers_state=providers_state,
+                    notify_fn=_notifications.append,
+                    retry_on_rate_limit=(user_id == "__eval__"),
+                )
+            except litellm.RateLimitError as e:
+                logger.error(
+                    "Agent chat (interactive): rate limit hit for user=%s conversation=%s: %s",
+                    user_id,
+                    conversation_id,
+                    e,
+                )
+                raise HTTPException(
+                    status_code=429,
+                    detail="Rate limit exceeded — try again later.",
+                )
             _assistant_msg = (
                 _dsl_result.final_response or "\n".join(_notifications) or ""
             )
@@ -876,6 +903,17 @@ async def handler(request: dict, headers: dict = None):
                 timeout=timeout,
                 max_tokens=max_tokens,
                 temperature=temperature,
+            )
+        except litellm.RateLimitError as e:
+            logger.error(
+                "Agent chat: rate limit hit for user=%s conversation=%s: %s",
+                user_id,
+                conversation_id,
+                e,
+            )
+            raise HTTPException(
+                status_code=429,
+                detail="Rate limit exceeded — try again later.",
             )
         except litellm.Timeout as e:
             logger.error(

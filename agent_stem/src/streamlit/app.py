@@ -21,6 +21,8 @@ def initialize_session_state():
         st.session_state.user_id = "streamlit-user"
     if "messages" not in st.session_state:
         st.session_state.messages = []
+    if "chat_warning" not in st.session_state:
+        st.session_state.chat_warning = None
 
 
 def send_message(message: str, media: list | None = None):
@@ -39,6 +41,11 @@ def send_message(message: str, media: list | None = None):
         response = requests.post(
             CHAT_ENDPOINT, json=payload, timeout=60, stream=True
         )
+        if response.status_code == 429:
+            st.session_state.chat_warning = (
+                "⚠️ Rate limit exceeded — please wait a moment and try again."
+            )
+            return
         response.raise_for_status()
 
         # Stream the response chunks
@@ -49,6 +56,11 @@ def send_message(message: str, media: list | None = None):
                     break
                 else:
                     chunk = json.loads(data)
+                    if chunk.get("error") == "rate_limit_exceeded":
+                        st.session_state.chat_warning = (
+                            "⚠️ Rate limit exceeded — please wait a moment and try again."
+                        )
+                        return
                     # Extract content from delta
                     if "delta" in chunk and "content" in chunk["delta"]:
                         yield chunk["delta"]["content"]
@@ -146,10 +158,21 @@ def main():
             label_visibility="collapsed",
         )
 
+        # Persistent rate-limit warning — survives eval polling reruns
+        if st.session_state.chat_warning:
+            w_col, x_col = st.columns([9, 1])
+            with w_col:
+                st.warning(st.session_state.chat_warning)
+            with x_col:
+                if st.button("✕", key="dismiss_chat_warning"):
+                    st.session_state.chat_warning = None
+                    st.rerun()
+
         # Chat input at bottom of sidebar
         user_input = st.chat_input("Type your message here...")
 
         if user_input:
+            st.session_state.chat_warning = None  # clear on new attempt
             # Build media list from any uploaded images
             media = []
             for f in uploaded_files or []:
@@ -365,26 +388,33 @@ def main():
             st.info("No completed evaluation run yet.")
 
         elif eval_resp.status_code == 202:
-            # Running
+            # Running (or cancellation in progress)
             data = eval_resp.json()
-            with col_cancel:
-                if st.button("❌ Cancel", key="agent_eval_cancel"):
-                    try:
-                        cr = requests.delete(EVAL_URL, timeout=5)
-                        if cr.status_code == 200:
-                            st.warning("Cancellation requested.")
-                            st.rerun()
-                        else:
-                            st.error(f"Could not cancel: {cr.status_code}")
-                    except Exception as e:
-                        st.error(f"Error: {e}")
 
-            st.info(
-                f"🟡 **Running** — "
-                f"case {data.get('completed_cases', 0) + 1} of "
-                f"{data.get('total_cases', '?')} "
-                f"(`{data.get('current_case') or 'starting…'}`)"
-            )
+            if data.get("cancelled"):
+                st.warning(
+                    "⚪ Cancellation requested — waiting for the current step to finish…"
+                )
+            else:
+                with col_cancel:
+                    if st.button("❌ Cancel", key="agent_eval_cancel"):
+                        try:
+                            cr = requests.delete(EVAL_URL, timeout=5)
+                            if cr.status_code == 200:
+                                st.warning("Cancellation requested.")
+                                st.rerun()
+                            else:
+                                st.error(f"Could not cancel: {cr.status_code}")
+                        except Exception as e:
+                            st.error(f"Error: {e}")
+
+                st.info(
+                    f"🟡 **Running** — "
+                    f"case {data.get('completed_cases', 0) + 1} of "
+                    f"{data.get('total_cases', '?')} "
+                    f"(`{data.get('current_case') or 'starting…'}`)"
+                )
+
             if data.get("started_at"):
                 from datetime import datetime
 
@@ -401,102 +431,107 @@ def main():
             # Completed — show results
             data = eval_resp.json()
 
-            from datetime import datetime
+            if data.get("status") == "error":
+                st.error(f"Evaluation failed: {data.get('error', 'Unknown error')}")
+            else:
+                from datetime import datetime
 
-            def _fmt_ts(iso: str) -> str:
-                try:
-                    dt = datetime.fromisoformat(iso)
-                    return dt.strftime("%Y-%m-%d %H:%M:%S")
-                except Exception:
-                    return iso
+                def _fmt_ts(iso: str) -> str:
+                    try:
+                        dt = datetime.fromisoformat(iso)
+                        return dt.strftime("%Y-%m-%d %H:%M:%S")
+                    except Exception:
+                        return iso
 
-            # Header row: suite name + timestamps
-            suite_name = data.get("suite") or "Evaluation suite"
-            started = data.get("started_at")
-            completed = data.get("completed_at")
+                # Header row: suite name + timestamps
+                suite_name = data.get("suite") or "Evaluation suite"
+                started = data.get("started_at")
+                completed = data.get("completed_at")
 
-            st.markdown(f"### {suite_name}")
+                st.markdown(f"### {suite_name}")
 
-            ts_parts = []
-            if started:
-                ts_parts.append(f"**Run:** {_fmt_ts(started)}")
-            if completed:
-                ts_parts.append(f"**Completed:** {_fmt_ts(completed)}")
-            if started and completed:
-                try:
-                    dur = (
-                        datetime.fromisoformat(completed)
-                        - datetime.fromisoformat(started)
-                    ).total_seconds()
-                    ts_parts.append(f"**Duration:** {dur:.1f}s")
-                except Exception:
-                    pass
-            if ts_parts:
-                st.caption("   ·   ".join(ts_parts))
+                ts_parts = []
+                if started:
+                    ts_parts.append(f"**Run:** {_fmt_ts(started)}")
+                if completed:
+                    ts_parts.append(f"**Completed:** {_fmt_ts(completed)}")
+                if started and completed:
+                    try:
+                        dur = (
+                            datetime.fromisoformat(completed)
+                            - datetime.fromisoformat(started)
+                        ).total_seconds()
+                        ts_parts.append(f"**Duration:** {dur:.1f}s")
+                    except Exception:
+                        pass
+                if ts_parts:
+                    st.caption("   ·   ".join(ts_parts))
 
-            # Summary metrics
-            total = data.get("total", 0)
-            passed = data.get("passed", 0)
-            failed = data.get("failed", 0)
-            m1, m2, m3 = st.columns(3)
-            m1.metric("Total cases", total)
-            m2.metric("Passed", passed, delta=None)
-            m3.metric("Failed", failed, delta=None)
+                # Summary metrics
+                total = data.get("total", 0)
+                passed = data.get("passed", 0)
+                failed = data.get("failed", 0)
+                m1, m2, m3 = st.columns(3)
+                m1.metric("Total cases", total)
+                m2.metric("Passed", passed, delta=None)
+                m3.metric("Failed", failed, delta=None)
 
-            # Per-case results
-            cases = data.get("cases", [])
-            if cases:
-                st.markdown("#### Cases")
-                for case in cases:
-                    case_id = case.get("id", "?")
-                    passing_runs = case.get("passing_runs", 0)
-                    threshold = case.get("threshold", 1)
-                    total_runs = len(case.get("runs", []))
-                    status = case.get("status", "fail")
-                    icon = "✅" if status == "pass" else "❌"
+                # Per-case results
+                cases = data.get("cases", [])
+                if cases:
+                    st.markdown("#### Cases")
+                    for case in cases:
+                        case_id = case.get("id", "?")
+                        passing_runs = case.get("passing_runs", 0)
+                        threshold = case.get("threshold", 1)
+                        total_runs = len(case.get("runs", []))
+                        status = case.get("status", "fail")
+                        icon = "✅" if status == "pass" else "❌"
 
-                    with st.expander(
-                        f"{icon} **{case_id}**   "
-                        f"({passing_runs}/{total_runs} runs passed, "
-                        f"threshold {threshold})",
-                        expanded=(status == "fail"),
-                    ):
-                        for run in case.get("runs", []):
-                            run_num = run.get("run", "?")
-                            checks = run.get("checks", [])
-                            run_passed = all(
-                                c.get("passed", False) for c in checks
-                            )
-                            run_icon = "✅" if run_passed else "❌"
-                            st.markdown(f"**{run_icon} Run {run_num}**")
-                            for chk in checks:
-                                chk_passed = chk.get("passed", False)
-                                chk_icon = "✓" if chk_passed else "✗"
-                                chk_type = chk.get("type", "?")
-                                detail = ""
-                                if chk_type == "regexp":
-                                    detail = f"`{chk.get('pattern', '')}`"
-                                elif chk_type == "judge":
-                                    detail = (
-                                        f"judge: _{chk.get('prompt', '')[:60]}_"
-                                    )
-                                elif chk_type == "similar_to":
-                                    sim = chk.get("similarity")
-                                    thr = chk.get("threshold")
-                                    detail = (
-                                        f"similarity {sim:.3f} "
-                                        f"(threshold {thr})"
-                                        if sim is not None
-                                        else ""
-                                    )
-                                elif chk_type == "callable":
-                                    detail = "callable"
-                                line = f"  {chk_icon} {chk_type}"
-                                if detail:
-                                    line += f" — {detail}"
-                                if not chk_passed and chk.get("reason"):
-                                    line += f"\n  > {chk['reason']}"
-                                st.markdown(line)
+                        with st.expander(
+                            f"{icon} **{case_id}**   "
+                            f"({passing_runs}/{total_runs} runs passed, "
+                            f"threshold {threshold})",
+                            expanded=(status in ("fail", "error")),
+                        ):
+                            if status == "error" and case.get("error"):
+                                st.error(case["error"])
+                            for run in case.get("runs", []):
+                                run_num = run.get("run", "?")
+                                checks = run.get("checks", [])
+                                run_passed = all(
+                                    c.get("passed", False) for c in checks
+                                )
+                                run_icon = "✅" if run_passed else "❌"
+                                st.markdown(f"**{run_icon} Run {run_num}**")
+                                for chk in checks:
+                                    chk_passed = chk.get("passed", False)
+                                    chk_icon = "✓" if chk_passed else "✗"
+                                    chk_type = chk.get("type", "?")
+                                    detail = ""
+                                    if chk_type == "regexp":
+                                        detail = f"`{chk.get('pattern', '')}`"
+                                    elif chk_type == "judge":
+                                        detail = (
+                                            f"judge: _{chk.get('prompt', '')[:60]}_"
+                                        )
+                                    elif chk_type == "similar_to":
+                                        sim = chk.get("similarity")
+                                        thr = chk.get("threshold")
+                                        detail = (
+                                            f"similarity {sim:.3f} "
+                                            f"(threshold {thr})"
+                                            if sim is not None
+                                            else ""
+                                        )
+                                    elif chk_type == "callable":
+                                        detail = "callable"
+                                    line = f"  {chk_icon} {chk_type}"
+                                    if detail:
+                                        line += f" — {detail}"
+                                    if not chk_passed and chk.get("reason"):
+                                        line += f"\n  > {chk['reason']}"
+                                    st.markdown(line)
 
         else:
             st.warning(

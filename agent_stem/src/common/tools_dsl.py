@@ -36,6 +36,13 @@ def _parse_mcp_response(response: httpx.Response) -> dict:
 
 logger = logging.getLogger(__name__)
 
+_LLM_MAX_RETRIES = 3
+_LLM_RETRY_BASE_DELAY = 5.0
+# Hard ceiling on a single LLM call. Must be lower than the eval HTTP timeout
+# (_LLM_TIMEOUT + 10 = 130 s) so the agent can return an error before the
+# eval's requests.post read-timeout fires.
+_LLM_CALL_TIMEOUT = 100.0
+
 
 class DslRunContext:
     """Execution context for interactive DSL scripts.
@@ -51,6 +58,7 @@ class DslRunContext:
         providers_state: dict,
         event_loop: asyncio.AbstractEventLoop,
         notify_fn: Callable[[str], None],
+        retry_on_rate_limit: bool = False,
     ):
         self.messages = messages
         self.providers_state = providers_state
@@ -58,6 +66,7 @@ class DslRunContext:
         self.notify_fn = notify_fn
         self.llm_called: bool = False
         self.final_response: Optional[str] = None
+        self.retry_on_rate_limit: bool = retry_on_rate_limit
 
 
 class Tools:
@@ -102,40 +111,57 @@ class Tools:
         logger.debug(
             "Tools._llm_with_tools: calling LLM with %d tool(s)", len(tools)
         )
-        coro = call_llm_by_model(
-            messages=list(self._ctx.messages),
-            providers_state=self._ctx.providers_state,
-            tools=tools,
-            tool_choice="auto",
-        )
-        response = asyncio.run_coroutine_threadsafe(
-            coro, self._ctx.event_loop
-        ).result()
+        import litellm
+        import time
+
+        for attempt in range(1, _LLM_MAX_RETRIES + 1):
+            coro = call_llm_by_model(
+                messages=list(self._ctx.messages),
+                providers_state=self._ctx.providers_state,
+                tools=tools,
+                tool_choice="auto",
+            )
+            try:
+                response = asyncio.run_coroutine_threadsafe(
+                    asyncio.wait_for(coro, timeout=_LLM_CALL_TIMEOUT),
+                    self._ctx.event_loop,
+                ).result()
+                break
+            except litellm.RateLimitError:
+                if not self._ctx.retry_on_rate_limit or attempt == _LLM_MAX_RETRIES:
+                    raise
+                wait = _LLM_RETRY_BASE_DELAY * (2 ** (attempt - 1))
+                logger.warning(
+                    "Tool LLM rate-limited (attempt %d/%d); retrying in %.0fs.",
+                    attempt, _LLM_MAX_RETRIES, wait,
+                )
+                time.sleep(wait)
 
         choice = response.choices[0]
         raw_tool_calls = getattr(choice.message, "tool_calls", None) or []
 
-        assistant_msg: dict = {
-            "role": "assistant",
-            "content": choice.message.content,
-        }
-        if raw_tool_calls:
-            assistant_msg["tool_calls"] = [
-                {
-                    "id": tc.id,
-                    "type": "function",
-                    "function": {
-                        "name": tc.function.name,
-                        "arguments": tc.function.arguments,
-                    },
-                }
-                for tc in raw_tool_calls
-            ]
-        self._ctx.messages.append(assistant_msg)
         logger.debug(
             "Tools._llm_with_tools: LLM chose %d tool call(s)",
             len(raw_tool_calls),
         )
+
+        if raw_tool_calls:
+            assistant_msg: dict = {
+                "role": "assistant",
+                "content": choice.message.content,
+                "tool_calls": [
+                    {
+                        "id": tc.id,
+                        "type": "function",
+                        "function": {
+                            "name": tc.function.name,
+                            "arguments": tc.function.arguments,
+                        },
+                    }
+                    for tc in raw_tool_calls
+                ],
+            }
+            self._ctx.messages.append(assistant_msg)
 
         for tc in raw_tool_calls:
             try:
@@ -386,15 +412,31 @@ def make_llm_fn(ctx: DslRunContext):
     from common.llm import call_llm_by_model
 
     def llm(input_text: Optional[str] = None) -> str:
+        import litellm
+        import time
+
         if input_text is not None:
             ctx.messages.append({"role": "user", "content": input_text})
-        coro = call_llm_by_model(
-            messages=list(ctx.messages),
-            providers_state=ctx.providers_state,
-        )
-        response = asyncio.run_coroutine_threadsafe(
-            coro, ctx.event_loop
-        ).result()
+        for attempt in range(1, _LLM_MAX_RETRIES + 1):
+            coro = call_llm_by_model(
+                messages=list(ctx.messages),
+                providers_state=ctx.providers_state,
+            )
+            try:
+                response = asyncio.run_coroutine_threadsafe(
+                    asyncio.wait_for(coro, timeout=_LLM_CALL_TIMEOUT),
+                    ctx.event_loop,
+                ).result()
+                break
+            except litellm.RateLimitError:
+                if not ctx.retry_on_rate_limit or attempt == _LLM_MAX_RETRIES:
+                    raise
+                wait = _LLM_RETRY_BASE_DELAY * (2 ** (attempt - 1))
+                logger.warning(
+                    "LLM rate-limited (attempt %d/%d); retrying in %.0fs.",
+                    attempt, _LLM_MAX_RETRIES, wait,
+                )
+                time.sleep(wait)
         assistant_text = response.choices[0].message.content or ""
         ctx.messages.append({"role": "assistant", "content": assistant_text})
         ctx.llm_called = True

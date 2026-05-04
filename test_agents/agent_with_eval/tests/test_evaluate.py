@@ -119,13 +119,27 @@ def test_eval_delete_no_run():
 
 @pytest.mark.depends(on=["test_eval_wait_complete"])
 def test_eval_delete_cancels_run():
-    """Start a run then immediately cancel it."""
+    """Start a run, cancel it, then confirm it exits the running state."""
     start_resp = requests.post(EVAL_URL, json={})
     if start_resp.status_code == 409:
         pytest.skip("Another run is already in progress")
     assert start_resp.status_code == 202, start_resp.text
 
     del_resp = requests.delete(EVAL_URL)
-    # 200 if the run was still running when we hit delete;
-    # 404 if it already completed (fast model).
+    # 200 if the run was still active; 404 if it already finished.
     assert del_resp.status_code in (200, 404), del_resp.text
+
+    # If cancellation was accepted, poll until the run is no longer running.
+    if del_resp.status_code == 200:
+        deadline = time.time() + 120
+        while time.time() < deadline:
+            poll = requests.get(EVAL_URL)
+            if poll.status_code != 202:
+                break
+            time.sleep(3)
+        else:
+            pytest.fail("Evaluation did not stop within 120 s after cancellation")
+        # The run must have ended in a terminal state (cancelled or completed).
+        assert poll.status_code in (200, 404), (
+            f"Unexpected status after cancel: {poll.status_code} {poll.text}"
+        )

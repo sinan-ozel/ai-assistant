@@ -17,5 +17,6 @@ with McpServer(os.environ["MCP_BUSINESS_HOURS_URL"]) as tools:
 with search(input()):
     print("Customer question: " + input())
 
+delay(3)
 response = llm()
 notify(response)

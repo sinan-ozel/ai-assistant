@@ -177,6 +177,28 @@ one request to implement multi-turn or multi-phase reasoning.
 response = llm()
 ```
 
+### `delay(seconds)`
+
+Sleep for *seconds* before the next operation.  Use this to pace LLM calls
+when the provider rate-limits on tokens-per-minute rather than
+requests-per-minute — a short pause between the tool-selection call and the
+final `llm()` call lets the quota window recover.
+
+```python
+with McpServer("http://tool-server:8000") as tools:
+    tools.call_read_only()
+    tools.wait()
+    delay(3)        # breathe before the second LLM call
+    response = llm()
+
+notify(response)
+```
+
+`delay` is a direct alias for `time.sleep`, so fractional seconds are
+accepted.
+
+---
+
 ### `notify(text)`
 
 Send `text` to the frontend immediately.  When streaming is enabled each
@@ -231,6 +253,27 @@ with McpServer("http://tool-server:8000") as tools:
 
 notify(response)
 ```
+
+### Timeouts
+
+Every LLM call made inside interactive mode (`llm()` or the tool-selection
+call inside `call_read_only()` / `call_all()`) is wrapped with
+`asyncio.wait_for(timeout=100 s)`.  If the LLM provider does not respond
+within 100 seconds the coroutine is cancelled in the event loop and an
+`asyncio.TimeoutError` propagates out of the DSL call, which the agent
+endpoint surfaces as a 500 error.
+
+This 100-second ceiling sits intentionally below the evaluation harness's
+outer HTTP read-timeout of 130 seconds.  The layered chain is:
+
+```
+LLM provider
+  ↑ 100 s  asyncio.wait_for  (tools_dsl.py — cancels at event-loop level)
+  ↑ 130 s  requests.post timeout  (eval_dsl.py — eval's HTTP read timeout)
+```
+
+The MCP httpx client has its own independent 30-second timeout per request
+and is unaffected by the above.
 
 ### Startup validation
 

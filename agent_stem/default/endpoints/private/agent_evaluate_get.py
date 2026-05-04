@@ -28,6 +28,7 @@ async def handler():
             status_code=202,
             content={
                 "status": "running",
+                "cancelled": state.get("cancelled", False),
                 "provider": None,
                 "started_at": state.get("started_at"),
                 "current_case": state.get("current_case"),

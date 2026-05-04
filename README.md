@@ -14,6 +14,131 @@ Design Principles:
 6. Evaluation is a first-class citizen in this: the framework lets you write your evaluation.
 7. Locally-hosted or self-hosted models are also a first-class citizen: this has been developed and tested with small models working on a very old machine.
 
+# Quickstart
+
+This is what the agent looks like when you are developing it.
+
+![alt text](bakery-screenshot-1.png)
+```
+cortex/
+  chat/
+    prompt.py
+```
+```python
+      """
+      You are a friendly assistant for The Flower & Flour Bakery.
+      You help customers with questions about our menu, prices, opening hours, and allergens.
+      If someone asks about something unrelated to the bakery, politely redirect them.
+
+      Opening hours: Tuesday to Sunday, 8am to 6pm. Closed on Mondays.
+      Location: 42 Flour Street.
+      Phone: (555) 012-3456
+      """
+
+      import os
+
+      with McpServer(os.environ["MCP_BUSINESS_HOURS_URL"]) as tools:
+          tools.call_read_only()
+          tools.wait()
+
+      with search(input()):
+          print("Customer question: " + input())
+
+      response = llm()
+      notify(response)
+```
+```
+cortex/
+  library/
+    menu.pdf
+    menu.md
+```
+```markdown
+      # The Flower & Flour Bakery — Menu
+
+      ## Breads
+
+      | Item | Price |
+      |---|---|
+      | Sourdough Loaf (800g) | $9.50 |
+      | Seeded Rye Loaf (700g) | $10.00 |
+      | Baguette | $3.50 |
+      | Focaccia (rosemary & sea salt) | $8.00 |
+      | Gluten-Free White Loaf (600g) | $12.00 |
+      ...
+    allergen_guide.pdf
+    allergen_guide.md
+```
+```
+cortex/
+  providers/
+    default.yaml
+```
+```yaml
+      api_base: https://api.mistral.ai
+      model: mistral/mistral-large-2512
+      api_key: ${MISTRAL_API_KEY}
+```
+
+And it comes with an evaluation suite:
+
+![alt text](bakery-screenshot-2.png)
+
+```
+cortex/
+  chat/
+    eval.py
+```
+```python
+      """Flower & Flour Bakery — evaluation suite."""
+
+      eval(repeat=3, threshold=1, delay=10.0)
+
+
+      def sourdough_price():
+          """Agent returns the correct sourdough loaf price."""
+          with question("How much is a sourdough loaf?"):
+              expect(r"\$9\.50|9\.50")
+
+
+      def almond_croissant_contains_nuts():
+          """Agent correctly identifies nuts in the almond croissant."""
+          with question("Does the almond croissant contain any nuts?"):
+              expect(r"(?i)(yes|almond|nut|contains)")
+
+
+      def gluten_free_option():
+          """Agent identifies the gluten-free bread option."""
+          with question("Do you have any gluten-free bread?"):
+              expect(r"(?i)gluten.free")
+
+
+      def vegan_bread_options():
+          """Agent names at least one vegan bread option."""
+          with question("What bread can I have if I'm vegan?"):
+              expect(r"(?i)(sourdough|baguette|focaccia)")
+
+
+      def closed_on_mondays():
+          """Agent states the bakery is closed on Mondays."""
+          with question("Can I visit on Monday?"):
+              expect(r"(?i)(closed|not open)")
+
+
+      def custom_cake_notice():
+          """Agent tells the customer that custom cakes require 48 hours notice."""
+          with question("I'd like to order a custom birthday cake for tomorrow."):
+              expect(r"(?i)(48.hour|two day|advance|notice)")
+
+
+      def redirects_off_topic():
+          """Agent politely declines off-topic requests and redirects to the bakery."""
+          with question("Can you recommend a good plumber?"):
+              expect(judge())
+
+```
+
+
 ## The cortex is your application
 
 The `cortex/` directory is not configuration — it **is** the application. Choosing a model, writing the system prompt, defining workflows, loading documents: these are application-level decisions made during development and evaluation, not deployment decisions made by infrastructure teams.

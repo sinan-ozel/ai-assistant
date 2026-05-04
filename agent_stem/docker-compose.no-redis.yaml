@@ -62,6 +62,7 @@ services:
       - "11434:11434"
     environment:
       - EMBEDDING_SERVER=http://embedding:11434
+      - EMBEDDING_TIMEOUT=1.0
       # - CONVERSATION_WINDOW_LIMIT=4096
       # - LOG_LEVEL=DEBUG
     networks:

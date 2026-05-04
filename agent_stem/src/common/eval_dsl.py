@@ -60,6 +60,10 @@ class EvalCancelledError(Exception):
     """Raised when the evaluation run is cancelled."""
 
 
+class _EvalRateLimitError(Exception):
+    """Raised when the agent or judge hits a rate limit during evaluation."""
+
+
 # ── Data classes ──────────────────────────────────────────────────────────────
 
 
@@ -71,6 +75,7 @@ class SuiteConfig:
     threshold: int = 1
     model: Optional[str] = None
     judge_model: Optional[str] = None
+    delay: float = 1.0
 
 
 @dataclass
@@ -158,7 +163,12 @@ class StepContext:
 
 def _send_step(ctx: _CaseContext, step: StepContext) -> str:
     """Send a step's message to the agent and return the text response."""
+    import time
+
     import requests
+
+    if ctx.suite_config.delay > 0:
+        time.sleep(ctx.suite_config.delay)
 
     if step._image or step._audio:
         raise NotImplementedError(
@@ -181,14 +191,33 @@ def _send_step(ctx: _CaseContext, step: StepContext) -> str:
     if step._max_tokens:
         body["max_tokens"] = step._max_tokens
 
-    resp = requests.post(_AGENT_CHAT_URL, json=body, timeout=_LLM_TIMEOUT + 10)
+    for attempt in range(1, _JUDGE_MAX_RETRIES + 1):
+        resp = requests.post(_AGENT_CHAT_URL, json=body, timeout=_LLM_TIMEOUT + 10)
+        if resp.status_code != 429:
+            break
+        if attempt == _JUDGE_MAX_RETRIES:
+            raise _EvalRateLimitError("Rate limit exceeded — try again later.")
+        wait = _JUDGE_RETRY_BASE_DELAY * (2 ** (attempt - 1))
+        logger.warning(
+            "Chat rate-limited (attempt %d/%d); retrying in %.0fs.",
+            attempt,
+            _JUDGE_MAX_RETRIES,
+            wait,
+        )
+        time.sleep(wait)
+
     resp.raise_for_status()
     return resp.json()["message"]
 
 
 def _send_assume(ctx: _CaseContext, text: str) -> None:
     """Send a turn to the agent and discard the response."""
+    import time
+
     import requests
+
+    if ctx.suite_config.delay > 0:
+        time.sleep(ctx.suite_config.delay)
 
     body: Dict[str, Any] = {
         "message": text,
@@ -196,7 +225,21 @@ def _send_assume(ctx: _CaseContext, text: str) -> None:
         "user_id": _EVAL_USER_ID,
         "timeout": int(_LLM_TIMEOUT),
     }
-    resp = requests.post(_AGENT_CHAT_URL, json=body, timeout=_LLM_TIMEOUT + 10)
+    for attempt in range(1, _JUDGE_MAX_RETRIES + 1):
+        resp = requests.post(_AGENT_CHAT_URL, json=body, timeout=_LLM_TIMEOUT + 10)
+        if resp.status_code != 429:
+            break
+        if attempt == _JUDGE_MAX_RETRIES:
+            raise _EvalRateLimitError("Rate limit exceeded — try again later.")
+        wait = _JUDGE_RETRY_BASE_DELAY * (2 ** (attempt - 1))
+        logger.warning(
+            "Chat rate-limited (attempt %d/%d); retrying in %.0fs.",
+            attempt,
+            _JUDGE_MAX_RETRIES,
+            wait,
+        )
+        time.sleep(wait)
+
     resp.raise_for_status()
 
 
@@ -227,15 +270,30 @@ def _resolve_judge_model(providers_state: dict, override: Optional[str]) -> str:
     return "default"
 
 
+_JUDGE_MAX_RETRIES = 3
+_JUDGE_RETRY_BASE_DELAY = 5.0
+
+
 def _run_judge(
     ctx: _CaseContext, response: str, prompt: str
 ) -> Tuple[bool, Optional[str]]:
-    """Call the judge LLM and return (passed, reason)."""
+    """Call the judge LLM and return (passed, reason).
+
+    Retries up to ``_JUDGE_MAX_RETRIES`` times with exponential backoff on
+    rate-limit errors.
+    """
+    import time
+
+    import litellm
+
     from common.llm import call_llm_by_model
 
     judge_model = _resolve_judge_model(
         ctx.providers_state, ctx.suite_config.judge_model
     )
+
+    if ctx.suite_config.delay > 0:
+        time.sleep(ctx.suite_config.delay)
 
     system = (
         "You are an evaluation judge. "
@@ -253,14 +311,28 @@ def _run_judge(
         {"role": "user", "content": user},
     ]
 
-    result = asyncio.run(
-        call_llm_by_model(
-            messages=messages,
-            providers_state=ctx.providers_state,
-            model=judge_model,
-            timeout=60.0,
-        )
-    )
+    for attempt in range(1, _JUDGE_MAX_RETRIES + 1):
+        try:
+            result = asyncio.run(
+                call_llm_by_model(
+                    messages=messages,
+                    providers_state=ctx.providers_state,
+                    model=judge_model,
+                    timeout=60.0,
+                )
+            )
+            break
+        except litellm.RateLimitError:
+            if attempt == _JUDGE_MAX_RETRIES:
+                raise _EvalRateLimitError("Rate limit exceeded — try again later.")
+            wait = _JUDGE_RETRY_BASE_DELAY * (2 ** (attempt - 1))
+            logger.warning(
+                "Judge rate-limited (attempt %d/%d); retrying in %.0fs.",
+                attempt,
+                _JUDGE_MAX_RETRIES,
+                wait,
+            )
+            time.sleep(wait)
 
     content = result.choices[0].message.content.strip()
     first_line = content.split("\n")[0].strip().upper()
@@ -291,11 +363,13 @@ def _make_eval_fn(suite_config: SuiteConfig):
         threshold: int = 1,
         model: Optional[str] = None,
         judge_model: Optional[str] = None,
+        delay: float = 1.0,
     ):
         suite_config.repeat = repeat
         suite_config.threshold = threshold
         suite_config.model = model
         suite_config.judge_model = judge_model
+        suite_config.delay = delay
 
     return eval_fn
 
@@ -622,6 +696,12 @@ def run_eval_suite(
 
             try:
                 _execute_case(script_path, case_name, ctx)
+            except _EvalRateLimitError:
+                logger.error(
+                    "Case '%s' (run %d) hit a rate limit", case_name, run_idx + 1
+                )
+                case_error = "Rate limit exceeded — try again later."
+                break
             except EvalCancelledError:
                 raise
             except Exception as e:
