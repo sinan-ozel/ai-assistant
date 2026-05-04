@@ -138,8 +138,11 @@ def test_eval_delete_cancels_run():
                 break
             time.sleep(3)
         else:
-            pytest.fail("Evaluation did not stop within 120 s after cancellation")
+            pytest.fail(
+                "Evaluation did not stop within 120 s after cancellation"
+            )
         # The run must have ended in a terminal state (cancelled or completed).
-        assert poll.status_code in (200, 404), (
-            f"Unexpected status after cancel: {poll.status_code} {poll.text}"
-        )
+        assert poll.status_code in (
+            200,
+            404,
+        ), f"Unexpected status after cancel: {poll.status_code} {poll.text}"

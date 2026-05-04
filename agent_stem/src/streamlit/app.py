@@ -57,9 +57,7 @@ def send_message(message: str, media: list | None = None):
                 else:
                     chunk = json.loads(data)
                     if chunk.get("error") == "rate_limit_exceeded":
-                        st.session_state.chat_warning = (
-                            "⚠️ Rate limit exceeded — please wait a moment and try again."
-                        )
+                        st.session_state.chat_warning = "⚠️ Rate limit exceeded — please wait a moment and try again."
                         return
                     # Extract content from delta
                     if "delta" in chunk and "content" in chunk["delta"]:
@@ -432,7 +430,9 @@ def main():
             data = eval_resp.json()
 
             if data.get("status") == "error":
-                st.error(f"Evaluation failed: {data.get('error', 'Unknown error')}")
+                st.error(
+                    f"Evaluation failed: {data.get('error', 'Unknown error')}"
+                )
             else:
                 from datetime import datetime
 
@@ -512,9 +512,7 @@ def main():
                                     if chk_type == "regexp":
                                         detail = f"`{chk.get('pattern', '')}`"
                                     elif chk_type == "judge":
-                                        detail = (
-                                            f"judge: _{chk.get('prompt', '')[:60]}_"
-                                        )
+                                        detail = f"judge: _{chk.get('prompt', '')[:60]}_"
                                     elif chk_type == "similar_to":
                                         sim = chk.get("similarity")
                                         thr = chk.get("threshold")

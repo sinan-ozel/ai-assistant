@@ -111,8 +111,9 @@ class Tools:
         logger.debug(
             "Tools._llm_with_tools: calling LLM with %d tool(s)", len(tools)
         )
-        import litellm
         import time
+
+        import litellm
 
         for attempt in range(1, _LLM_MAX_RETRIES + 1):
             coro = call_llm_by_model(
@@ -128,12 +129,17 @@ class Tools:
                 ).result()
                 break
             except litellm.RateLimitError:
-                if not self._ctx.retry_on_rate_limit or attempt == _LLM_MAX_RETRIES:
+                if (
+                    not self._ctx.retry_on_rate_limit
+                    or attempt == _LLM_MAX_RETRIES
+                ):
                     raise
                 wait = _LLM_RETRY_BASE_DELAY * (2 ** (attempt - 1))
                 logger.warning(
                     "Tool LLM rate-limited (attempt %d/%d); retrying in %.0fs.",
-                    attempt, _LLM_MAX_RETRIES, wait,
+                    attempt,
+                    _LLM_MAX_RETRIES,
+                    wait,
                 )
                 time.sleep(wait)
 
@@ -412,8 +418,9 @@ def make_llm_fn(ctx: DslRunContext):
     from common.llm import call_llm_by_model
 
     def llm(input_text: Optional[str] = None) -> str:
-        import litellm
         import time
+
+        import litellm
 
         if input_text is not None:
             ctx.messages.append({"role": "user", "content": input_text})
@@ -434,7 +441,9 @@ def make_llm_fn(ctx: DslRunContext):
                 wait = _LLM_RETRY_BASE_DELAY * (2 ** (attempt - 1))
                 logger.warning(
                     "LLM rate-limited (attempt %d/%d); retrying in %.0fs.",
-                    attempt, _LLM_MAX_RETRIES, wait,
+                    attempt,
+                    _LLM_MAX_RETRIES,
+                    wait,
                 )
                 time.sleep(wait)
         assistant_text = response.choices[0].message.content or ""

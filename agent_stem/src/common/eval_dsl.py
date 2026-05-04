@@ -192,7 +192,9 @@ def _send_step(ctx: _CaseContext, step: StepContext) -> str:
         body["max_tokens"] = step._max_tokens
 
     for attempt in range(1, _JUDGE_MAX_RETRIES + 1):
-        resp = requests.post(_AGENT_CHAT_URL, json=body, timeout=_LLM_TIMEOUT + 10)
+        resp = requests.post(
+            _AGENT_CHAT_URL, json=body, timeout=_LLM_TIMEOUT + 10
+        )
         if resp.status_code != 429:
             break
         if attempt == _JUDGE_MAX_RETRIES:
@@ -226,7 +228,9 @@ def _send_assume(ctx: _CaseContext, text: str) -> None:
         "timeout": int(_LLM_TIMEOUT),
     }
     for attempt in range(1, _JUDGE_MAX_RETRIES + 1):
-        resp = requests.post(_AGENT_CHAT_URL, json=body, timeout=_LLM_TIMEOUT + 10)
+        resp = requests.post(
+            _AGENT_CHAT_URL, json=body, timeout=_LLM_TIMEOUT + 10
+        )
         if resp.status_code != 429:
             break
         if attempt == _JUDGE_MAX_RETRIES:
@@ -285,7 +289,6 @@ def _run_judge(
     import time
 
     import litellm
-
     from common.llm import call_llm_by_model
 
     judge_model = _resolve_judge_model(
@@ -324,7 +327,9 @@ def _run_judge(
             break
         except litellm.RateLimitError:
             if attempt == _JUDGE_MAX_RETRIES:
-                raise _EvalRateLimitError("Rate limit exceeded — try again later.")
+                raise _EvalRateLimitError(
+                    "Rate limit exceeded — try again later."
+                )
             wait = _JUDGE_RETRY_BASE_DELAY * (2 ** (attempt - 1))
             logger.warning(
                 "Judge rate-limited (attempt %d/%d); retrying in %.0fs.",
@@ -698,7 +703,9 @@ def run_eval_suite(
                 _execute_case(script_path, case_name, ctx)
             except _EvalRateLimitError:
                 logger.error(
-                    "Case '%s' (run %d) hit a rate limit", case_name, run_idx + 1
+                    "Case '%s' (run %d) hit a rate limit",
+                    case_name,
+                    run_idx + 1,
                 )
                 case_error = "Rate limit exceeded — try again later."
                 break
