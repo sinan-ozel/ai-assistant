@@ -30,6 +30,10 @@ spec:
         - name: llamacpp
           image: "{{ .Values.llamacpp.image.repository }}:{{ .Values.llamacpp.image.tag }}"
           imagePullPolicy: IfNotPresent
+          {{- if .Values.llamacpp.args }}
+          args:
+            {{- toYaml .Values.llamacpp.args | nindent 12 }}
+          {{- end }}
           ports:
             - name: http
               containerPort: 8080

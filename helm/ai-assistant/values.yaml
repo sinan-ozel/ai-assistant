@@ -1,7 +1,7 @@
 # ── Main application ────────────────────────────────────────────────────────
 image:
   repository: sinanozel/ai-assistant
-  tag: "0.1.0"
+  tag: ""   # defaults to the chart's appVersion — set explicitly to pin a specific image
   pullPolicy: IfNotPresent
 
 replicaCount: 1
@@ -92,6 +92,9 @@ llamacpp:
     tag: qwen3.5-2b
   model: "openai/qwen3.5-2b"
   timeout: 150
+  # Extra arguments passed to the llama.cpp server binary.
+  # Example: ["--ctx-size", "8192", "--no-cache-prompt", "--parallel", "1"]
+  args: []
   # GPU scheduling — same mechanism as ollama above.
   resources:
     limits:

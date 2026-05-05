@@ -844,6 +844,35 @@
             "problemMatcher": []
         },
         {
+            "label": "Publish Helm Chart",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "${workspaceFolder}/scripts/publish-helm-chart.sh"
+            ],
+            "dependsOn": ["Docker Login"],
+            "dependsOrder": "sequence",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Publish Helm Chart (Dev)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "${workspaceFolder}/scripts/publish-helm-chart.sh",
+                "--dev"
+            ],
+            "dependsOn": ["Docker Login"],
+            "dependsOrder": "sequence",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Export OpenAPI to YAML",
             "type": "shell",
             "command": "bash",
@@ -862,6 +891,20 @@
                 "reveal": "always",
                 "panel": "new"
             },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Create gh-pages Branch",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "${workspaceFolder}/scripts/create-gh-pages.sh"
+            ],
+            "dependsOn": ["Assert Head is Clean"],
+            "dependsOrder": "sequence",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
