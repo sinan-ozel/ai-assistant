@@ -108,7 +108,7 @@ Provider discovery runs in the background after startup, so the `/health` endpoi
 The chart is on Docker Hub. No `helm repo add` required — install directly with:
 
 ```bash
-helm install ai-assistant oci://registry-1.docker.io/sinanozel/ai-assistant \
+helm install ai-assistant oci://registry-1.docker.io/sinanozel/ai-assistant-chart \
   --version 0.1.0 \
   -f my-values.yaml \
   --namespace ai-assistant \
@@ -118,7 +118,7 @@ helm install ai-assistant oci://registry-1.docker.io/sinanozel/ai-assistant \
 To upgrade an existing release:
 
 ```bash
-helm upgrade ai-assistant oci://registry-1.docker.io/sinanozel/ai-assistant \
+helm upgrade ai-assistant oci://registry-1.docker.io/sinanozel/ai-assistant-chart \
   --version 0.1.0 \
   -f my-values.yaml \
   --namespace ai-assistant

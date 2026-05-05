@@ -835,10 +835,10 @@
                 "${workspaceFolder}/release/release.sh"
             ],
             "dependsOn": [
-                "Docker Login",
-                "Check Docs Build",
-                "Lint",
-                "Run All Agent Integration Tests"
+                "Run All Agent Integration Tests",
+                "Release (Dev)",
+                "Publish Helm Chart (Dev)",
+                "Run Post-Release Tests",
             ],
             "dependsOrder": "sequence",
             "problemMatcher": []

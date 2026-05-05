@@ -12,6 +12,6 @@ else
     helm package helm/ai-assistant
 fi
 
-helm push "ai-assistant-${VERSION}.tgz" oci://registry-1.docker.io/sinanozel
+helm push "ai-assistant-${VERSION}.tgz" oci://registry-1.docker.io/sinanozel/ai-assistant-chart
 rm -f "ai-assistant-${VERSION}.tgz"
 echo "Published ai-assistant ${VERSION} to Docker Hub OCI"
