@@ -14,6 +14,11 @@ from litellm import acompletion
 
 logger = logging.getLogger(__name__)
 
+# Fallback used when neither the provider YAML nor the caller specifies a
+# timeout. Without this, asyncio.wait(timeout=None) blocks indefinitely when
+# an LLM backend (e.g. Ollama) accepts the connection but never sends a reply.
+_DEFAULT_TIMEOUT = 30.0
+
 
 def _truncate_value(value: Any, max_length: int = 100) -> Any:
     """Truncate long string values for logging."""
@@ -126,7 +131,6 @@ def get_provider_config(
 
     return model, config
 
-
 async def call_llm_by_model(
     messages: list[Dict[str, str]],
     providers_state: Dict[str, Any],
@@ -168,20 +172,18 @@ async def call_llm_by_model(
         "messages": messages,
     }
 
-    # Add provider-specific config
+    # Apply provider config defaults first
     if provider_config.get("api_base"):
         litellm_kwargs["api_base"] = provider_config["api_base"]
     if provider_config.get("api_key"):
         litellm_kwargs["api_key"] = provider_config["api_key"]
+    for _key in ("temperature", "max_tokens", "top_p", "stop", "timeout"):
+        if provider_config.get(_key) is not None:
+            litellm_kwargs[_key] = provider_config[_key]
 
-    # Add timeout - prioritize request parameter, then provider
-    # config, then no timeout
+    # Explicit call parameters override provider config
     if timeout is not None:
         litellm_kwargs["timeout"] = timeout
-    elif provider_config.get("timeout"):
-        litellm_kwargs["timeout"] = provider_config["timeout"]
-
-    # Add optional parameters if provided
     if temperature is not None:
         litellm_kwargs["temperature"] = temperature
     if max_tokens is not None:
@@ -193,6 +195,11 @@ async def call_llm_by_model(
 
     # Add any extra kwargs
     litellm_kwargs.update(kwargs)
+
+    # Fall back to a default timeout so the call never waits indefinitely
+    # when neither the provider YAML nor the caller specifies one.
+    if litellm_kwargs.get("timeout") is None:
+        litellm_kwargs["timeout"] = _DEFAULT_TIMEOUT
 
     # Debug: Log what we're sending to the LLM
     logger.debug("=" * 80)
@@ -330,6 +337,9 @@ async def connect_llm_streaming(
 
     litellm_kwargs.update(kwargs)
 
+    if litellm_kwargs.get("timeout") is None:
+        litellm_kwargs["timeout"] = _DEFAULT_TIMEOUT
+
     logger.debug("=" * 80)
     logger.debug("LLM Streaming Call Parameters")
     logger.debug("=" * 80)
@@ -455,6 +465,7 @@ async def iterate_llm_stream(
                 model=model,
             ) from e
         yield chunk
+
 
 
 async def call_llm_by_model_streaming(

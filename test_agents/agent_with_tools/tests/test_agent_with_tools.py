@@ -3,6 +3,10 @@
 Tests that the agent successfully calls MCP tools from the eberron-mcp-server
 and incorporates tool results in its response.  All assertions are black-box:
 only HTTP endpoints are used.
+
+The get_capital tool returns deterministic values (e.g. "Wroat" for Breland)
+that a small LLM cannot produce correctly without a successful tool call.
+These are used to verify that tool invocation actually worked end-to-end.
 """
 
 import os
@@ -120,3 +124,28 @@ def test_agent_succeeds_when_llm_skips_tools():
     data = response.json()
     assert isinstance(data["message"], str)
     assert len(data["message"]) > 0
+
+
+@pytest.mark.depends(on="test_tools_basic_response")
+def test_tool_result_in_response(clear_test_memory):
+    """Response must contain the value returned by the get_capital tool.
+
+    "Wroat" is the capital of Breland according to the MCP server's CAPITALS
+    dict.  A model that fails to call the tool correctly (e.g. passes the
+    schema back as the argument) will never receive "Wroat" and cannot include
+    it in its response.  This catches the failure mode where the LLM echoes
+    the tool schema instead of filling in the arguments.
+    """
+    response = requests.post(
+        f"{BASE_URL}/v1/agent/chat",
+        json={
+            "message": "What is the capital city of Breland?",
+            "user_id": "test-tools-tool-result",
+        },
+        timeout=120,
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "wroat" in data["message"].lower(), (
+        f"Expected 'Wroat' (tool result) in response; got: {data['message']}"
+    )

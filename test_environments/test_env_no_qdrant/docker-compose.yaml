@@ -35,7 +35,7 @@ services:
       - REDIS_HOST=redis-test
       - REDIS_PORT=6379
       - EMBEDDING_SERVER=http://embedding-test:11434
-      - EMBEDDING_TIMEOUT=2.0
+      - EMBEDDING_TIMEOUT=3.0
     env_file:
       - .env
     depends_on:

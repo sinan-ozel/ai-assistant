@@ -3,6 +3,10 @@
 Tests the multi-phase DSL prompt with two llm() calls and multiple notify()
 calls.  The advanced agent uses McpServer in two phases: read-only tools first,
 then all tools.  All assertions are black-box: only HTTP endpoints are used.
+
+The get_capital tool returns deterministic values (e.g. "Wroat" for Breland)
+that a small LLM cannot produce correctly without a successful tool call.
+These are used to verify that tool invocation actually worked end-to-end.
 """
 
 import json
@@ -97,3 +101,28 @@ def test_agent_adv_streaming_yields_notifications(clear_test_memory):
     # expect more than one non-done chunk.
     non_done = [c for c in chunks if not c.get("done")]
     assert len(non_done) >= 1
+
+
+@pytest.mark.depends(on="test_adv_basic_response")
+def test_tool_result_in_response(clear_test_memory):
+    """Response must contain the value returned by the get_capital tool.
+
+    "Wroat" is the capital of Breland according to the MCP server's CAPITALS
+    dict.  A model that fails to call the tool correctly (e.g. passes the
+    schema back as the argument) will never receive "Wroat" and cannot include
+    it in its response.  This catches the failure mode where the LLM echoes
+    the tool schema instead of filling in the arguments.
+    """
+    response = requests.post(
+        f"{BASE_URL}/v1/agent/chat",
+        json={
+            "message": "What is the capital city of Breland?",
+            "user_id": "test-adv-tool-result",
+        },
+        timeout=180,
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "wroat" in data["message"].lower(), (
+        f"Expected 'Wroat' (tool result) in response; got: {data['message']}"
+    )

@@ -32,7 +32,12 @@ For all async processes running in the executor, make sure that there is a
 callback to print the errors.
 
 For all classes and objects with inheritance, do not go any levels
-deeper than one parent, one child
+deeper than one parent, one child.
+
+LLM calls should all go through:
+agent_stem/src/common/llm.py call_llm_by_model_streaming
+
+
 
 # Testing
 
@@ -63,3 +68,10 @@ https://github.com/sinan-ozel/redis-memory
 
 Here is the code base: https://github.com/sinan-ozel/redis-memory/blob/main/src/redis_memory/__init__.py
 
+# Environment
+
+There is no python in the development environment, it runs in containers only.
+Do not install python or anything else.
+Use bash whenever possible, jq and yq are also there.
+If something needs to be part of the CI/CD pipeline,
+create containerized scripts.

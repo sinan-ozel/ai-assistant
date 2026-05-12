@@ -1,17 +1,21 @@
 """DSL support for external tool integration via MCP and other protocols.
 
-Provides the Tools base class and McpServer subclass that enable the DSL to
-call external tools, dispatch them concurrently, and incorporate results into
-the LLM conversation.
+Provides the Tools base class, McpServer subclass, and context-manager
+factories (MessageHistory) that enable DSL scripts to call external tools,
+limit conversation history, and incorporate results into the LLM conversation.
+
+``prompt()`` is the **only** function in the DSL that calls an LLM.
+Registering a tool server via ``McpServer`` makes tool schemas available to
+every subsequent ``prompt()`` call; the LLM decides which tools to invoke.
+Tool results are collected automatically when the ``with McpServer(...)``
+block exits.
 
 DSL usage example::
 
-    with McpServer("http://server:8000") as tools:
-        tools.call_read_only()   # LLM picks read-only tools; dispatches them
-        notify("Thinking...")
-        tools.wait()             # wait for results; appended to messages
-        response = llm()         # LLM sees context + tool results
-        notify(response)
+    with McpServer("http://server:8000"):
+        prompt()         # LLM sees tool schemas, selects and dispatches
+    # __exit__ calls wait(); tool results are now in ctx.messages
+    response = prompt()  # LLM sees full context + tool results
 """
 
 import asyncio
@@ -39,17 +43,32 @@ logger = logging.getLogger(__name__)
 _LLM_MAX_RETRIES = 3
 _LLM_RETRY_BASE_DELAY = 5.0
 # Hard ceiling on a single LLM call. Must be lower than the eval HTTP timeout
-# (_LLM_TIMEOUT + 10 = 130 s) so the agent can return an error before the
-# eval's requests.post read-timeout fires.
+# so the agent can return an error before the eval's requests.post read-timeout.
 _LLM_CALL_TIMEOUT = 100.0
 
 
 class DslRunContext:
-    """Execution context for interactive DSL scripts.
+    """Execution context for one DSL script execution.
 
-    Carries the mutable message list, provider state, a reference to the
-    running event loop, and a thread-safe notification callback.  Created once
-    per request and shared among all tool objects created by the DSL.
+    Shared by all Tools objects and the prompt() / notify() callables created
+    for the same request.  Carries:
+
+    ``messages``
+        Transient message list (history + tool turns).  Mutated only when the
+        LLM makes tool calls (assistant tool-call message) and when
+        McpServer.__exit__ flushes pending tool results.  Never mutated by
+        plain ``prompt()`` text responses.
+
+    ``available_tools``
+        Tool schemas registered by active McpServer context managers.
+        Offered to the LLM on every ``prompt()`` call while non-empty.
+
+    ``tool_dispatchers``
+        Live Tools objects that ``prompt()`` can dispatch tool calls through.
+
+    ``final_response``
+        Text of the last ``prompt()`` call, or content of ``print()`` if
+        called — returned as the HTTP response body.
     """
 
     def __init__(
@@ -67,25 +86,36 @@ class DslRunContext:
         self.llm_called: bool = False
         self.final_response: Optional[str] = None
         self.retry_on_rate_limit: bool = retry_on_rate_limit
+        self.available_tools: list[dict] = []
+        self.tool_dispatchers: list["Tools"] = []
 
 
 class Tools:
     """Base class for tool integration in the DSL.
 
     Subclasses connect to a specific backend (MCP, OpenAPI, …) and implement
-    ``_get_tools_for_llm``, ``_is_read_only``, and ``_invoke_tool``.
+    ``_get_tools_for_llm``, ``_can_handle``, and ``_invoke_tool``.
 
-    The methods on *this* class handle the LLM coordination and concurrency:
+    On ``__enter__``:
 
-    * ``call_read_only()`` — LLM call + non-blocking dispatch of read-only tools
-    * ``call_all()``       — LLM call + non-blocking dispatch of all tools
-    * ``wait()``           — block until pending calls finish; append results
+    * Fetches the tool list from the backend.
+    * Registers tool schemas into ``ctx.available_tools`` so that subsequent
+      ``prompt()`` calls offer them to the LLM.
+    * Registers ``self`` into ``ctx.tool_dispatchers`` so that ``prompt()``
+      can dispatch tool calls the LLM requests.
+
+    On ``__exit__``:
+
+    * Unregisters own schemas from ``ctx.available_tools``.
+    * Removes ``self`` from ``ctx.tool_dispatchers``.
+    * Calls ``wait()`` to flush any outstanding tool calls.
     """
 
     def __init__(self, ctx: DslRunContext):
         self._ctx = ctx
         self._pending: list[tuple[str, concurrent.futures.Future]] = []
         self._executor = concurrent.futures.ThreadPoolExecutor()
+        self._registered_tool_names: set[str] = set()
 
     # --- abstract interface for subclasses ---
 
@@ -93,121 +123,23 @@ class Tools:
         """Return all available tools in LiteLLM/OpenAI function format."""
         raise NotImplementedError
 
-    def _is_read_only(self, tool: dict) -> bool:
-        """Return True if tool is safe to run concurrently (read-only)."""
+    def _can_handle(self, tool_name: str) -> bool:
+        """Return True if this dispatcher owns *tool_name*."""
         raise NotImplementedError
 
     def _invoke_tool(self, name: str, arguments: dict) -> str:
         """Invoke the named tool and return its text result."""
         raise NotImplementedError
 
-    # --- internal LLM + dispatch logic ---
+    # --- dispatch ---
 
-    def _llm_with_tools(self, tools: list) -> None:
-        """Call LLM with *tools* and non-blockingly dispatch resulting
-        calls."""
-        from common.llm import call_llm_by_model
-
-        logger.debug(
-            "Tools._llm_with_tools: calling LLM with %d tool(s)", len(tools)
-        )
-        import time
-
-        import litellm
-
-        for attempt in range(1, _LLM_MAX_RETRIES + 1):
-            coro = call_llm_by_model(
-                messages=list(self._ctx.messages),
-                providers_state=self._ctx.providers_state,
-                tools=tools,
-                tool_choice="auto",
-            )
-            try:
-                response = asyncio.run_coroutine_threadsafe(
-                    asyncio.wait_for(coro, timeout=_LLM_CALL_TIMEOUT),
-                    self._ctx.event_loop,
-                ).result()
-                break
-            except litellm.RateLimitError:
-                if (
-                    not self._ctx.retry_on_rate_limit
-                    or attempt == _LLM_MAX_RETRIES
-                ):
-                    raise
-                wait = _LLM_RETRY_BASE_DELAY * (2 ** (attempt - 1))
-                logger.warning(
-                    "Tool LLM rate-limited (attempt %d/%d); retrying in %.0fs.",
-                    attempt,
-                    _LLM_MAX_RETRIES,
-                    wait,
-                )
-                time.sleep(wait)
-
-        choice = response.choices[0]
-        raw_tool_calls = getattr(choice.message, "tool_calls", None) or []
-
-        logger.debug(
-            "Tools._llm_with_tools: LLM chose %d tool call(s)",
-            len(raw_tool_calls),
-        )
-
-        if raw_tool_calls:
-            assistant_msg: dict = {
-                "role": "assistant",
-                "content": choice.message.content,
-                "tool_calls": [
-                    {
-                        "id": tc.id,
-                        "type": "function",
-                        "function": {
-                            "name": tc.function.name,
-                            "arguments": tc.function.arguments,
-                        },
-                    }
-                    for tc in raw_tool_calls
-                ],
-            }
-            self._ctx.messages.append(assistant_msg)
-
-        for tc in raw_tool_calls:
-            try:
-                arguments = json.loads(tc.function.arguments)
-            except Exception:
-                arguments = {}
-            fut = self._executor.submit(
-                self._invoke_tool, tc.function.name, arguments
-            )
-            self._pending.append((tc.id, fut))
-
-    # --- public DSL interface ---
-
-    def call_read_only(self) -> None:
-        """Call LLM with read-only tools; dispatch tool calls non-blocking.
-
-        Only tools whose backend marks them as concurrency-safe (read-only)
-        are included.  For MCP servers this is the ``readOnlyHint``
-        annotation.
-        """
-        all_tools = self._get_tools_for_llm()
-        read_only = [t for t in all_tools if self._is_read_only(t)]
-        if not read_only:
-            logger.info("Tools.call_read_only: no read-only tools available")
-            return
-        logger.debug("Tools.call_read_only: %d tool(s)", len(read_only))
-        self._llm_with_tools(read_only)
-
-    def call_all(self) -> None:
-        """Call LLM with all tools; dispatch tool calls non-blocking."""
-        all_tools = self._get_tools_for_llm()
-        if not all_tools:
-            logger.info("Tools.call_all: no tools available")
-            return
-        logger.debug("Tools.call_all: %d tool(s)", len(all_tools))
-        self._llm_with_tools(all_tools)
+    def _dispatch(self, tool_call_id: str, tool_name: str, arguments: dict) -> None:
+        """Submit *tool_name* to the executor and record the future."""
+        fut = self._executor.submit(self._invoke_tool, tool_name, arguments)
+        self._pending.append((tool_call_id, fut))
 
     def wait(self) -> None:
-        """Block until all pending tool calls finish; append results to
-        messages."""
+        """Block until all pending tool calls finish; append results to ctx.messages."""
         for tool_call_id, fut in self._pending:
             try:
                 result = fut.result()
@@ -226,9 +158,26 @@ class Tools:
         self._pending.clear()
 
     def __enter__(self) -> "Tools":
+        tools = self._get_tools_for_llm()
+        self._registered_tool_names = {t["function"]["name"] for t in tools}
+        self._ctx.available_tools.extend(tools)
+        self._ctx.tool_dispatchers.append(self)
+        logger.debug(
+            "Tools.__enter__: registered %d tool(s): %s",
+            len(tools),
+            sorted(self._registered_tool_names),
+        )
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self._ctx.available_tools = [
+            t
+            for t in self._ctx.available_tools
+            if t["function"]["name"] not in self._registered_tool_names
+        ]
+        self._ctx.tool_dispatchers = [
+            d for d in self._ctx.tool_dispatchers if d is not self
+        ]
         self.wait()
         return False
 
@@ -241,19 +190,15 @@ class McpServer(Tools):
 
     Usage::
 
-        with McpServer("http://server:8000") as tools:
-            tools.call_read_only()
-            tools.wait()
-            response = llm()
-            notify(response)
+        with McpServer("http://server:8000"):
+            prompt()         # LLM sees tool schemas; selects and dispatches
+        # __exit__ flushes pending calls via wait()
+        response = prompt()  # LLM sees full context + tool results
 
     A list of URLs is also accepted::
 
-        with McpServer(["http://server-a:8000", "http://server-b:8000"]) as tools:
+        with McpServer(["http://server-a:8000", "http://server-b:8000"]):
             ...
-
-    Whether a tool is read-only is determined by the MCP ``readOnlyHint``
-    annotation on each tool.
     """
 
     _MCP_HEADERS = {"Accept": "application/json, text/event-stream"}
@@ -264,7 +209,6 @@ class McpServer(Tools):
         self._urls = [u.rstrip("/") for u in urls]
         self._client = httpx.Client(timeout=30.0, headers=self._MCP_HEADERS)
         self._tools_cache: Optional[list] = None
-        self._tool_annotations: dict = {}
         self._tool_url_map: dict = {}
         self._session_ids: dict = {}
 
@@ -325,7 +269,6 @@ class McpServer(Tools):
                 for mt in mcp_tools:
                     name = mt["name"]
                     self._tool_url_map[name] = url
-                    self._tool_annotations[name] = mt.get("annotations", {})
                     self._tools_cache.append(
                         {
                             "type": "function",
@@ -341,11 +284,8 @@ class McpServer(Tools):
                     )
         return self._tools_cache
 
-    def _is_read_only(self, tool: dict) -> bool:
-        name = tool.get("function", {}).get("name", "")
-        return bool(
-            self._tool_annotations.get(name, {}).get("readOnlyHint", False)
-        )
+    def _can_handle(self, tool_name: str) -> bool:
+        return tool_name in self._tool_url_map
 
     def _invoke_tool(self, name: str, arguments: dict) -> str:
         base_url = self._tool_url_map.get(name, self._urls[0])
@@ -380,6 +320,14 @@ class McpServer(Tools):
         return str(content)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self._ctx.available_tools = [
+            t
+            for t in self._ctx.available_tools
+            if t["function"]["name"] not in self._registered_tool_names
+        ]
+        self._ctx.tool_dispatchers = [
+            d for d in self._ctx.tool_dispatchers if d is not self
+        ]
         self.wait()
         self._client.close()
         return False
@@ -390,7 +338,7 @@ def make_mcp_server_class(ctx: DslRunContext):
 
     Injected into DSL globals so the script can write::
 
-        with McpServer("http://server:8000") as tools:
+        with McpServer("http://server:8000"):
             ...
 
     without passing ``ctx`` explicitly.
@@ -405,29 +353,102 @@ def make_mcp_server_class(ctx: DslRunContext):
     return _McpServer
 
 
-def make_llm_fn(ctx: DslRunContext):
-    """Return a ``llm()`` function bound to *ctx*.
+def make_message_history_class(ctx: DslRunContext):
+    """Return a MessageHistory class bound to *ctx*.
 
-    Calling ``llm()`` inside the DSL:
+    Limits the conversation history visible to ``prompt()`` calls inside the
+    block to the last *n* user+assistant turn pairs (2*n messages).  On exit
+    the full history is restored, and any messages appended during the block
+    (e.g. tool call results) are preserved.
 
-    * Uses the current ``ctx.messages`` as conversation context.
-    * Appends the assistant response to ``ctx.messages``.
-    * Records ``ctx.llm_called = True`` and stores ``ctx.final_response``.
-    * Returns the response text.
+    Usage::
+
+        with MessageHistory(3):
+            response = prompt()  # sees only the last 3 turns
+    """
+
+    class _MessageHistory:
+        def __init__(self, n: int):
+            self._n = n
+
+        def __enter__(self):
+            # ctx.messages layout: [system, hist1..histN, user_msg]
+            # We save and replace msgs[1:-1] (the history slice).
+            self._saved_history = ctx.messages[1:-1]
+            limited = self._saved_history[-2 * self._n :] if self._n > 0 else []
+            ctx.messages[1 : 1 + len(self._saved_history)] = limited
+            self._n_limited = len(limited)
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            # Replace only the limited history slice; any messages appended
+            # after the user message during the block (tool calls, etc.) are
+            # preserved because they sit beyond index 1+n_limited.
+            ctx.messages[1 : 1 + self._n_limited] = self._saved_history
+            return False
+
+    _MessageHistory.__name__ = "MessageHistory"
+    _MessageHistory.__qualname__ = "MessageHistory"
+    return _MessageHistory
+
+
+def make_prompt_fn(ctx: DslRunContext):
+    """Return the ``prompt()`` callable bound to *ctx*.
+
+    ``prompt()`` is the **only** function in the DSL that calls an LLM.
+
+    Behaviour
+    ---------
+    * Snapshots ``ctx.messages`` into a local call list.
+    * If ``text`` is given, appends it as a user message for this call only.
+    * If ``ctx.available_tools`` is non-empty, passes tool schemas with
+      ``tool_choice="auto"``.
+    * If the LLM response contains tool calls:
+
+      - Appends the full assistant message (including ``tool_calls``) to
+        ``ctx.messages`` so that McpServer.__exit__ can match IDs.
+      - Dispatches each call through the matching entry in
+        ``ctx.tool_dispatchers``.
+
+    * If the LLM response contains no tool calls, ``ctx.messages`` is not
+      mutated.
+    * Records ``ctx.final_response`` and sets ``ctx.llm_called = True``.
+    * Returns the assistant text as a plain ``str``.
+
+    Signature: ``prompt(text=None, provider="default", **kwargs)``
+
+    *text* defaults to ``None`` (use messages already in ctx).  *provider*
+    selects a named provider; ``"default"`` uses the configured default.
+    Any extra keyword argument is forwarded to LiteLLM as-is (e.g.
+    ``temperature=0.9``, ``max_tokens=512``).
     """
     from common.llm import call_llm_by_model
 
-    def llm(input_text: Optional[str] = None) -> str:
+    def prompt(
+        text: Optional[str] = None,
+        provider: str = "default",
+        **kwargs,
+    ) -> str:
         import time
 
         import litellm
 
-        if input_text is not None:
-            ctx.messages.append({"role": "user", "content": input_text})
+        call_messages = list(ctx.messages)
+        if text is not None:
+            call_messages.append({"role": "user", "content": text})
+
+        requested_model = None if provider == "default" else provider
+        tools = ctx.available_tools if ctx.available_tools else None
+        if tools:
+            kwargs.setdefault("tools", tools)
+            kwargs.setdefault("tool_choice", "auto")
+
         for attempt in range(1, _LLM_MAX_RETRIES + 1):
             coro = call_llm_by_model(
-                messages=list(ctx.messages),
+                messages=call_messages,
                 providers_state=ctx.providers_state,
+                model=requested_model,
+                **kwargs,
             )
             try:
                 response = asyncio.run_coroutine_threadsafe(
@@ -435,6 +456,17 @@ def make_llm_fn(ctx: DslRunContext):
                     ctx.event_loop,
                 ).result()
                 break
+            except TimeoutError:
+                logger.error(
+                    "prompt() timed out after %.0fs (attempt %d/%d, model=%r, provider=%r, tools=%d)",
+                    _LLM_CALL_TIMEOUT,
+                    attempt,
+                    _LLM_MAX_RETRIES,
+                    requested_model,
+                    provider,
+                    len(ctx.available_tools),
+                )
+                raise
             except litellm.RateLimitError:
                 if not ctx.retry_on_rate_limit or attempt == _LLM_MAX_RETRIES:
                     raise
@@ -446,20 +478,59 @@ def make_llm_fn(ctx: DslRunContext):
                     wait,
                 )
                 time.sleep(wait)
-        assistant_text = response.choices[0].message.content or ""
-        ctx.messages.append({"role": "assistant", "content": assistant_text})
+
+        choice = response.choices[0]
+        assistant_text = choice.message.content or ""
+        raw_tool_calls = getattr(choice.message, "tool_calls", None) or []
+
+        if raw_tool_calls:
+            # Persist the full assistant message so McpServer.wait() can match IDs.
+            ctx.messages.append(
+                {
+                    "role": "assistant",
+                    "content": choice.message.content,
+                    "tool_calls": [
+                        {
+                            "id": tc.id,
+                            "type": "function",
+                            "function": {
+                                "name": tc.function.name,
+                                "arguments": tc.function.arguments,
+                            },
+                        }
+                        for tc in raw_tool_calls
+                    ],
+                }
+            )
+            for tc in raw_tool_calls:
+                try:
+                    arguments = json.loads(tc.function.arguments)
+                except Exception:
+                    arguments = {}
+                dispatched = False
+                for dispatcher in ctx.tool_dispatchers:
+                    if dispatcher._can_handle(tc.function.name):
+                        dispatcher._dispatch(tc.id, tc.function.name, arguments)
+                        dispatched = True
+                        break
+                if not dispatched:
+                    logger.warning(
+                        "prompt(): no dispatcher found for tool '%s'",
+                        tc.function.name,
+                    )
+
         ctx.llm_called = True
         ctx.final_response = assistant_text
         return assistant_text
 
-    return llm
+    return prompt
 
 
 def make_notify_fn(ctx: DslRunContext):
-    """Return a ``notify()`` function bound to *ctx*.
+    """Return a ``notify()`` callable bound to *ctx*.
 
-    Calling ``notify(text)`` sends *text* to the frontend without adding it
-    to the LLM message context.
+    Calling ``notify(text)`` sends *text* to the frontend immediately without
+    adding it to the LLM message context.
     """
 
     def notify(text: str) -> None:

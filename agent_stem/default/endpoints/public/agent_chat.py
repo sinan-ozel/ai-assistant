@@ -10,17 +10,15 @@ import uuid
 import litellm
 import tiktoken
 from common.llm import (
+    _truncate_messages,
     call_llm_by_model,
     connect_llm_streaming,
     iterate_llm_stream,
 )
 from common.prompt_dsl import (
-    execute_prompt_script_interactive,
+    execute_prompt_script,
     find_prompt_script,
-    is_interactive_dsl,
-    load_prompt_dsl,
 )
-from common.search import EmbeddingUnavailableError
 from common.state import providers_state
 from fastapi import HTTPException
 from fastapi.responses import StreamingResponse
@@ -185,6 +183,16 @@ def fit_messages_to_context(
             # Can't fit more messages
             break
 
+    dropped = len(messages) - len(fitted_messages)
+    if dropped > 0:
+        logger.warning(
+            "Context window truncation: dropped %d message(s) from history "
+            "(context limit: %d tokens, available after system+buffer: %d tokens).",
+            dropped,
+            max_context_token_count,
+            available_token_count,
+        )
+
     return fitted_messages
 
 
@@ -243,7 +251,7 @@ async def handle_interactive_streaming(
         notify_queue.put(text)
 
     dsl_task = asyncio.ensure_future(
-        execute_prompt_script_interactive(
+        execute_prompt_script(
             script_path=script_path,
             input_text=input_text,
             init_messages=init_messages,
@@ -282,8 +290,8 @@ async def handle_interactive_streaming(
                 yield json.dumps({"error": "rate_limit_exceeded"}) + "\n"
             return
 
-        if dsl_result.llm_called and dsl_result.accumulated_messages:
-            assistant_text = dsl_result.final_response or ""
+        assistant_text = dsl_result.final_response or ""
+        if assistant_text:
             from redis_memory import ConversationMemory
 
             with ConversationMemory(conversation_id=conv_key) as memory:
@@ -651,9 +659,9 @@ async def handler(request: dict, headers: dict = None):
             messages = []
             memory.messages = messages
 
-        # --- Interactive DSL path (McpServer / llm() / notify()) ---
+        # --- DSL path ---
         _script_path = find_prompt_script("/app/cortex")
-        if _script_path and is_interactive_dsl(_script_path):
+        if _script_path:
             import ast as _ast
 
             try:
@@ -687,7 +695,7 @@ async def handler(request: dict, headers: dict = None):
 
             _notifications: list = []
             try:
-                _dsl_result = await execute_prompt_script_interactive(
+                _dsl_result = await execute_prompt_script(
                     script_path=_script_path,
                     input_text=message,
                     init_messages=_init_msgs,
@@ -697,7 +705,7 @@ async def handler(request: dict, headers: dict = None):
                 )
             except litellm.RateLimitError as e:
                 logger.error(
-                    "Agent chat (interactive): rate limit hit for user=%s conversation=%s: %s",
+                    "Agent chat (DSL): rate limit hit for user=%s conversation=%s: %s",
                     user_id,
                     conversation_id,
                     e,
@@ -706,6 +714,60 @@ async def handler(request: dict, headers: dict = None):
                     status_code=429,
                     detail="Rate limit exceeded — try again later.",
                 )
+            except TimeoutError as e:
+                logger.error(
+                    "Agent chat (DSL): LLM call timed out for user=%s conversation=%s: %s",
+                    user_id,
+                    conversation_id,
+                    e,
+                )
+                raise HTTPException(
+                    status_code=504,
+                    detail="LLM call timed out — try again later.",
+                )
+
+            # _override escape hatch: execute messages directly via LLM.
+            if _dsl_result.full_override:
+                _override = _dsl_result.full_override
+                _override_msgs = _override.get("messages") or []
+                _override_model = _override.get("model")
+                if _override_msgs:
+                    try:
+                        _resp = await call_llm_by_model(
+                            messages=_override_msgs,
+                            providers_state=providers_state,
+                            model=_override_model,
+                            max_tokens=max_tokens,
+                        )
+                    except litellm.RateLimitError as e:
+                        raise HTTPException(
+                            status_code=429,
+                            detail="Rate limit exceeded — try again later.",
+                        )
+                    _assistant_msg = _resp.choices[0].message.content or ""
+                    memory.messages.append({"role": "user", "content": message})
+                    memory.messages.append(
+                        {"role": "assistant", "content": _assistant_msg}
+                    )
+                    return {
+                        "conversation_id": conversation_id,
+                        "user_id": user_id,
+                        "message": _assistant_msg,
+                        "role": "assistant",
+                        "created": int(time.time()),
+                        "usage": {
+                            "prompt_tokens": (
+                                _resp.usage.prompt_tokens if _resp.usage else 0
+                            ),
+                            "completion_tokens": (
+                                _resp.usage.completion_tokens if _resp.usage else 0
+                            ),
+                            "total_tokens": (
+                                _resp.usage.total_tokens if _resp.usage else 0
+                            ),
+                        },
+                    }
+
             _assistant_msg = (
                 _dsl_result.final_response or "\n".join(_notifications) or ""
             )
@@ -726,87 +788,11 @@ async def handler(request: dict, headers: dict = None):
                 },
             }
 
-        # --- Standard (non-interactive) DSL path ---
-        # Try to load prompt DSL from cortex folder
-        try:
-            dsl_result = load_prompt_dsl(
-                input_text=message,
-                message_history=messages,
-                default_system_message=DEFAULT_SYSTEM_MESSAGE,
-            )
-        except EmbeddingUnavailableError as e:
-            logger.error(
-                "Agent chat: embedding server did not respond within %s ms "
-                "for user=%s conversation=%s — search unavailable. "
-                "The embedding server may be busy processing documents. "
-                "Error: %s",
-                EMBEDDING_TIMEOUT * 1000,
-                user_id,
-                conversation_id,
-                e,
-            )
-            raise HTTPException(
-                status_code=503,
-                detail=(
-                    "The embedding server did not respond in time. "
-                    "Search is temporarily unavailable — "
-                    "the server may be busy processing documents. "
-                    "Please try again in a moment."
-                ),
-            )
-
-        logger.info(f"Agent chat: DSL result present: {dsl_result is not None}")
-
-        # Apply DSL customizations if available
-        if dsl_result:
-            # Override system message from docstring
-            system_message = dsl_result.system_message or DEFAULT_SYSTEM_MESSAGE
-            logger.info(
-                f"Agent chat: Using DSL system message: "
-                f"{system_message[:100]}..."
-            )
-
-            # Override user message from stdout
-            if dsl_result.user_messages:
-                # If DSL printed output, use that instead of raw message
-                user_message_content = dsl_result.user_messages[0]
-                # Store additional messages if multiple prints
-                extra_user_messages = dsl_result.user_messages[1:]
-            else:
-                # No stdout, use original message
-                user_message_content = message
-                extra_user_messages = []
-
-            # Apply agent config overrides
-            if dsl_result.agent_config.max_tokens is not None:
-                max_tokens = dsl_result.agent_config.max_tokens
-            if dsl_result.agent_config.stream is not None:
-                stream = dsl_result.agent_config.stream
-            if dsl_result.agent_config.stream_format is not None:
-                stream_format = dsl_result.agent_config.stream_format
-
-            # Use modified history if DSL changed it
-            if dsl_result.message_history is not None:
-                messages = dsl_result.message_history
-                memory.messages = messages
-        else:
-            # No DSL, use defaults
-            system_message = DEFAULT_SYSTEM_MESSAGE
-            user_message_content = message
-            extra_user_messages = []
-            logger.info(
-                f"Agent chat: Using default system message: "
-                f"{system_message[:100]}..."
-            )
-
-        # Collect model and temperature overrides from DSL
+        # --- No script found: direct LLM call ---
+        system_message = DEFAULT_SYSTEM_MESSAGE
+        user_message_content = message
         model_override = None
         temperature = None
-        if dsl_result:
-            if dsl_result.agent_config.model:
-                model_override = dsl_result.agent_config.model
-            if dsl_result.agent_config.temperature is not None:
-                temperature = dsl_result.agent_config.temperature
 
         # Fit messages to context window
         fitted_history = fit_messages_to_context(
@@ -817,55 +803,13 @@ async def handler(request: dict, headers: dict = None):
         prompt_messages = [{"role": "system", "content": system_message}]
         prompt_messages.extend(fitted_history)
 
-        # Add current user message(s) to prompt.
-        # If the caller attached images, build a multimodal content list:
-        # [text part, ...media parts].  Images are NOT stored in Redis memory
-        # (only the plain-text message is), so base64 blobs never accumulate
-        # in the conversation history.
+        # Attach images if present (not stored in Redis — plain text only)
         if media:
-            text = (
-                user_message_content
-                if isinstance(user_message_content, str)
-                else str(user_message_content)
-            )
-            user_message_content = [{"type": "text", "text": text}] + media
-        user_msg = {"role": "user", "content": user_message_content}
-        prompt_messages.append(user_msg)
-
-        # Add any extra user messages from DSL (multiple prints)
-        for extra_msg in extra_user_messages:
-            prompt_messages.append({"role": "user", "content": extra_msg})
-
-        # Apply full _override from DSL: replace prompt_messages and/or model
-        if dsl_result and dsl_result.full_override:
-            override = dsl_result.full_override
-            if "messages" in override and override["messages"]:
-                prompt_messages = override["messages"]
-                logger.info(
-                    "Agent chat: Using _override messages " "(%d messages)",
-                    len(prompt_messages),
-                )
-            if "model" in override and override["model"]:
-                model_override = override["model"]
-                logger.info(
-                    "Agent chat: Using _override model: %s", model_override
-                )
+            user_message_content = [{"type": "text", "text": message}] + media
+        prompt_messages.append({"role": "user", "content": user_message_content})
 
         logger.info(
             f"Agent chat: Prompt messages count: {len(prompt_messages)}"
-        )
-        logger.debug(
-            prompt_messages[:3]
-            + [{"role": "...", "content": "..."}]
-            + prompt_messages[-3:]
-            if len(prompt_messages) > 6
-            else prompt_messages
-        )
-        content_preview = (
-            prompt_messages[0]["content"][:100] if prompt_messages else "N/A"
-        )
-        logger.info(
-            f"Agent chat: System message in prompt: {content_preview}..."
         )
 
         # Handle streaming if requested
@@ -887,13 +831,14 @@ async def handler(request: dict, headers: dict = None):
         logger.info(
             f"Agent chat: Calling LLM with {len(prompt_messages)} messages"
         )
+        _truncated = _truncate_messages(prompt_messages) if prompt_messages else []
         logger.info(
             f"Agent chat: First message (system): "
-            f"{prompt_messages[0] if prompt_messages else 'N/A'}"
+            f"{_truncated[0] if _truncated else 'N/A'}"
         )
         logger.info(
             f"Agent chat: Last message (user): "
-            f"{prompt_messages[-1] if prompt_messages else 'N/A'}"
+            f"{_truncated[-1] if _truncated else 'N/A'}"
         )
         try:
             response = await call_llm_by_model(

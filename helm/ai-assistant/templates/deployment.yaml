@@ -80,6 +80,10 @@ spec:
             - name: CONVERSATION_WINDOW_LIMIT
               value: {{ .Values.env.conversationWindowLimit | quote }}
             {{- end }}
+            {{- if .Values.env.embeddingTimeout }}
+            - name: EMBEDDING_TIMEOUT
+              value: {{ .Values.env.embeddingTimeout | quote }}
+            {{- end }}
             {{- if or .Values.secrets.mistralApiKey .Values.secrets.anthropicApiKey }}
             {{- if .Values.secrets.mistralApiKey }}
             - name: MISTRAL_API_KEY

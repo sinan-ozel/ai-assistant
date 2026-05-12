@@ -41,8 +41,8 @@ cortex/
           tools.call_read_only()
           tools.wait()
 
-      with search(input()):
-          print("Customer question: " + input())
+      with search(input_text):
+          print("Customer question: " + input_text)
 
       response = llm()
       notify(response)
@@ -240,17 +240,17 @@ You are a support assistant. Answer using the provided documentation.
 If the answer is not in the documents, say so.
 """
 
-with search(input()):
-    print("User question: " + input())
+with search(input_text):
+    print("User question: " + input_text)
 ```
 
-`search(input())` runs a vector search and prints the matching chunks into the user message before the question. The LLM sees both.
+`search(input_text)` runs a vector search and prints the matching chunks into the user message before the question. The LLM sees both.
 
 To restrict search to one collection:
 
 ```python
-with search(input(), collection="product-docs", top_k=3):
-    print("User question: " + input())
+with search(input_text, collection="product-docs", top_k=3):
+    print("User question: " + input_text)
 ```
 
 No code changes needed when you add new documents — the pipeline picks them up automatically on the next poll cycle.

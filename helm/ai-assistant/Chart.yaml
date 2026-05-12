@@ -1,5 +1,5 @@
 apiVersion: v2
-name: ai-assistant
+name: ai-assistant-helm
 description: Helm chart for the ai-assistant agent framework
 
 # version      — chart version (packaging/compatibility changes).

@@ -9,7 +9,7 @@ about a fictional city called Nexara:
   shelf1: population 73,400 (flourishing city)
   shelf2: population <= 150 (abandoned settlement)
 
-When Search(input(), "shelf1") is used, only shelf1 content reaches the model,
+When Search(input_text, "shelf1") is used, only shelf1 content reaches the model,
 so the answer must reflect shelf1 facts.
 """
 
@@ -53,7 +53,7 @@ def test_agent_chat_returns_shelf1_facts():
     shelf1/city-guide.md says Nexara has a population of 73,400.
     shelf2/city-guide.md says Nexara had at most 150 inhabitants.
 
-    With Search(input(), "shelf1"), only shelf1 is searched, so the model
+    With Search(input_text, "shelf1"), only shelf1 is searched, so the model
     must report the shelf1 population (73,400 — contains "73").
     """
     response = requests.post(

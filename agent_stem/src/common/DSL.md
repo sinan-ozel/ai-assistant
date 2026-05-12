@@ -5,25 +5,33 @@ The prompt DSL is a lightweight Python-based system for customizing how the
 `cortex` directory and place a Python script at `cortex/chat/prompt.py` (or
 `cortex/chat/agent.py` as a fallback).
 
+All responses are streamed. There is one execution model — no
+interactive/non-interactive split.
+
 ---
 
 ## How it works
 
 When a chat request arrives the agent runtime:
 
-1. Looks for `cortex/chat/prompt.py`.
-2. If found, executes it with `runpy.run_path` inside a captured-stdout
-   context.
-3. Extracts:
-   - **System prompt** — the module-level docstring (`"""..."""`).
-   - **User message** — everything that was `print()`-ed (blank lines split
-     output into multiple user messages).
-   - **Agent config overrides** — any values set on the injected `agent`
-     object.
-4. Builds the final LLM call from these values.
+1. Locates `cortex/chat/prompt.py`.
+2. Executes it with `runpy.run_path` in a captured context.
+3. Extracts the **system prompt** from the module-level docstring.
+4. The final response is:
+   - the text passed to `print()`, if called; or
+   - the return value of the last `prompt()` call.
+5. Streams the response to the client and appends it to persistent
+   conversation history (Redis).
 
-If no script is found, the default system message from the environment is
-used and the raw user input is passed through unchanged.
+The persistent history is updated **exactly twice** per request: the user
+message is appended before the script runs, and the final assistant response
+is appended after. Nothing inside the script changes the persistent history.
+
+**Every script must call `prompt()` or `print()`.** If neither is called, the
+response is empty — this is a script error, not a fallback.
+
+If no script is found, the default system message is used and `prompt()` is
+called with the raw user input.
 
 ---
 
@@ -31,14 +39,16 @@ used and the raw user input is passed through unchanged.
 
 The following names are available inside `prompt.py` without any import:
 
-| Name              | Type / Value                                   |
-|-------------------|------------------------------------------------|
-| `input_text`      | `str` — the current user message               |
-| `user_message`    | `str` — alias for `input_text`                 |
-| `input()`         | `callable` — returns `input_text` (no stdin)   |
-| `message_history` | `list[dict]` — mutable conversation history    |
-| `agent`           | `AgentConfig` — parameter overrides (see below)|
-| `search`          | `Search` — context manager class (see below)   |
+| Name              | Type / Value                                                      |
+|-------------------|-------------------------------------------------------------------|
+| `input_text`      | `str` — the current user message                                  |
+| `user_message`    | `str` — alias for `input_text`                                    |
+| `user_query`      | `str` — alias for `input_text`                                    |
+| `Search`          | Context manager — injects retrieval results (see below)           |
+| `MessageHistory`  | Context manager — limits conversation history (see below)         |
+| `McpServer`       | Context manager — registers MCP tools (see below)                 |
+| `delay`           | `time.sleep` alias                                                |
+| `logger`          | `logging.Logger` — pre-configured, named `prompt_dsl.script.<stem>` |
 
 ---
 
@@ -52,54 +62,94 @@ The module-level docstring becomes the system prompt:
 
 ---
 
-## User message
+## `prompt(text=input_text, provider="default", **kwargs)`
 
-Everything written with `print()` replaces the raw user input as the message
-sent to the LLM. Blank lines between `print()` calls split output into
-multiple user message objects (each appended as a separate `role: user`
-entry).
+**The only function that calls an LLM.** Streams the response to the client
+and returns the complete reply as a `str`.
+
+The return value of the last `prompt()` call becomes the final response saved
+to conversation history, unless overridden by `print()`.
+
+| Parameter  | Default      | Description                                                    |
+|------------|--------------|----------------------------------------------------------------|
+| `text`     | `input_text` | User message for this call; defaults to the current user input |
+| `provider` | `"default"`  | Named provider from provider YAML                              |
+| `**kwargs` | —            | Any LiteLLM parameter; overrides provider YAML for this call  |
 
 ```python
-"""You are a helpful assistant."""
+# Calls LLM with the user's message
+response = prompt()
 
-print(input_text)          # pass through unchanged
+# Custom message
+response = prompt("Summarise the above in one sentence.")
+
+# Provider override
+response = prompt(provider="creative")
+
+# LiteLLM parameter override
+response = prompt(temperature=0.9)
 ```
-
-If the script produces no output, the original user message is used as-is.
 
 ---
 
-## `search` — RAG context manager
+## `print(text)`
 
-`search(query, ...)` is a context manager. On `__enter__` it runs a vector
-search and prints each result's text to stdout (so it becomes part of the
-user message). The results list is also returned for direct use inside the
-`with` block.
+Send `text` directly to the user as the final response, bypassing the LLM.
+Saved to conversation history. Whatever is passed is returned verbatim —
+`print(input_text)` echoes the user's message; `print("Hello world")` always
+returns `"Hello world"` regardless of what the user said.
 
 ```python
-with search(input()):
-    print("User question: " + input())
+# Static response — always says this, no matter what the user sends
+print("This agent is currently offline.")
+
+# Echo the user's message back
+print(input_text)
 ```
 
-This produces a user message that contains the retrieved text followed by
-the user's question, which the LLM can then use to answer.
+---
 
-### Parameters
+## `notify(text)`
 
-| Parameter    | Default        | Description                                      |
-|--------------|----------------|--------------------------------------------------|
-| `query`      | —              | Free-text query sent to the embedding server     |
-| `collection` | `None`         | Restrict to one collection; `None` = search all  |
-| `top_k`      | `5`            | Maximum number of results                        |
-| `filter`     | `None`         | Equality-filter dict (`{"file_path": "..."}`)    |
+Send `text` to the user as an intermediate streaming message. Not saved to
+conversation history. Use this for progress updates during long-running
+operations.
+
+```python
+notify("Searching documents…")
+with Search(input_text):
+    response = prompt()
+```
+
+---
+
+## `with Search(query, collection=None, top_k=5, filter=None)`
+
+Injects retrieval results into the LLM context for all `prompt()` calls inside
+the block. On exit the injected results are removed from context.
+
+| Parameter    | Default  | Description                                       |
+|--------------|----------|---------------------------------------------------|
+| `query`      | —        | Free-text query sent to the embedding server      |
+| `collection` | `None`   | Restrict to one collection; `None` = search all  |
+| `top_k`      | `5`      | Maximum number of results                         |
+| `filter`     | `None`   | Equality-filter dict (`{"file_path": "..."}`)     |
+
+```python
+"""You are a helpful assistant. Answer from the documents."""
+
+with Search(input_text):
+    response = prompt()
+```
 
 ### Accessing results directly
 
+The context manager yields the result list, allowing inspection:
+
 ```python
-with search(input(), collection="shelf1", top_k=3) as results:
-    for r in results:
-        print(r["section_title"], r["score"])
-    print("User question: " + input())
+with Search(input_text, collection="shelf1", top_k=3) as results:
+    logger.info("search returned %d results", len(results))
+    response = prompt()
 ```
 
 ### Result format
@@ -118,197 +168,145 @@ Each result dict contains at minimum:
 
 ---
 
-## `agent` — parameter overrides
+## `with MessageHistory(n)`
 
-The `agent` object lets the script override LLM parameters for this request:
+Limits the conversation history visible to `prompt()` calls inside the block
+to the last `n` user+assistant turn pairs. On exit the full history is
+restored.
 
 ```python
-agent.temperature = 0.2
-agent.max_tokens = 512
-agent.stream = True
-agent.stream_format = "ndjson"   # or "sse"
-agent.model = "gpt-4o"           # override default provider model
+with MessageHistory(3):
+    response = prompt()  # sees only the last 3 turns
 ```
 
-| Attribute      | Type              | Description                         |
-|----------------|-------------------|-------------------------------------|
-| `model`        | `str \| None`     | Override model selection            |
-| `temperature`  | `float \| None`   | Sampling temperature                |
-| `max_tokens`   | `int \| None`     | Maximum tokens to generate          |
-| `stream`       | `bool \| None`    | Enable streaming                    |
-| `stream_format`| `str \| None`     | `"sse"` or `"ndjson"`               |
-| `tool_choice`  | `str \| None`     | Tool selection preference           |
-| `params`       | `dict`            | Free-form LiteLLM parameters        |
+Use this to control context length or focus the LLM on recent turns.
 
 ---
 
-## `message_history`
+## `with McpServer(url)`
 
-A mutable list of `{"role": ..., "content": ...}` dicts. The script may
-inspect or modify it. The modified copy is used to build the conversation
-context for the LLM call.
+Connects to an MCP server and registers its tool schemas for all `prompt()`
+calls inside the block.
 
-```python
-# Remove the last assistant message before re-sending
-if message_history and message_history[-1]["role"] == "assistant":
-    message_history.pop()
-```
+On `__enter__`:
+- Fetches the tool list from the server.
+- Adds tool schemas to context — offered to every `prompt()` inside the block.
 
----
-
-## Interactive mode — `llm()`, `notify()`, `McpServer`
-
-When `prompt.py` contains any of the names `llm`, `notify`, `McpServer`, or
-`mcp`, the runtime switches to **interactive mode**.  In this mode the script
-drives the conversation explicitly: it decides when to call the LLM, which
-tools to invoke, and what to stream back to the frontend.
-
-> **Implicit vs explicit**: a docstring-only script still uses the original
-> implicit behaviour (single LLM call, no tools).  As soon as any of the
-> interactive primitives appear the designer takes full control.
-
-### `llm()`
-
-Call the LLM with the current message history and any pending tool results.
-Returns the assistant reply as a string.  May be called multiple times within
-one request to implement multi-turn or multi-phase reasoning.
+On `__exit__`:
+- Removes tool schemas from context.
+- Flushes any pending (in-flight) tool calls.
 
 ```python
-response = llm()
+"""You are a helpful assistant."""
+
+with McpServer("http://tool-server:8000"):
+    prompt()  # LLM sees tool schemas; selects and dispatches
+
+response = prompt()  # no tool schemas — LLM synthesises from tool results
 ```
-
-### `delay(seconds)`
-
-Sleep for *seconds* before the next operation.  Use this to pace LLM calls
-when the provider rate-limits on tokens-per-minute rather than
-requests-per-minute — a short pause between the tool-selection call and the
-final `llm()` call lets the quota window recover.
-
-```python
-with McpServer("http://tool-server:8000") as tools:
-    tools.call_read_only()
-    tools.wait()
-    delay(3)        # breathe before the second LLM call
-    response = llm()
-
-notify(response)
-```
-
-`delay` is a direct alias for `time.sleep`, so fractional seconds are
-accepted.
-
----
-
-### `notify(text)`
-
-Send `text` to the frontend immediately.  When streaming is enabled each
-`notify()` call emits one chunk to the SSE / NDJSON stream.  When streaming
-is disabled all notified strings are collected; only the last `notify()` call
-is used as the final response.
-
-```python
-notify("Thinking…")
-response = llm()
-notify(response)
-```
-
-### `McpServer(url)` — MCP tool context manager
-
-`McpServer` is a context manager that connects to an MCP-compatible tool server.
-The URL must be reachable at startup; the agent will refuse to start if the
-server is unreachable or returns zero tools.
-
-| Method             | Description                                                          |
-|--------------------|----------------------------------------------------------------------|
-| `call_read_only()` | Submit all tools marked `readOnlyHint=true` concurrently            |
-| `call_all()`       | Submit every available tool concurrently                            |
-| `wait()`           | Block until all submitted tool calls complete; appends results to history |
-
-```python
-with McpServer("http://tool-server:8000") as tools:
-    tools.call_read_only()
-    tools.wait()
-    response = llm()
-notify(response)
-```
-
-`mcp` is an alias for `McpServer`.
-
-### Multi-phase example
-
-```python
-"""You are a knowledgeable guide."""
-
-with McpServer("http://tool-server:8000") as tools:
-    tools.call_read_only()
-    notify("Consulting read-only tools…")
-    tools.wait()
-    response = llm()
-    notify(response)
-
-    tools.call_all()
-    notify("Running write tools…")
-    tools.wait()
-    response = llm()
-
-notify(response)
-```
-
-### Timeouts
-
-Every LLM call made inside interactive mode (`llm()` or the tool-selection
-call inside `call_read_only()` / `call_all()`) is wrapped with
-`asyncio.wait_for(timeout=100 s)`.  If the LLM provider does not respond
-within 100 seconds the coroutine is cancelled in the event loop and an
-`asyncio.TimeoutError` propagates out of the DSL call, which the agent
-endpoint surfaces as a 500 error.
-
-This 100-second ceiling sits intentionally below the evaluation harness's
-outer HTTP read-timeout of 130 seconds.  The layered chain is:
-
-```
-LLM provider
-  ↑ 100 s  asyncio.wait_for  (tools_dsl.py — cancels at event-loop level)
-  ↑ 130 s  requests.post timeout  (eval_dsl.py — eval's HTTP read timeout)
-```
-
-The MCP httpx client has its own independent 30-second timeout per request
-and is unaffected by the above.
 
 ### Startup validation
 
 At startup the agent scans `prompt.py` for `McpServer(...)` calls, extracts
 every URL, connects to each server, lists its tools, and stores the results in
-Redis.  If a server is unreachable or returns zero tools the process exits
-immediately.  The Streamlit UI displays discovered tools under "External Tools".
+Redis. If a server is unreachable or returns zero tools the process exits
+immediately.
+
+### Timeouts
+
+Every `prompt()` call is wrapped with a 100-second ceiling:
+
+```
+LLM provider
+  ↑ 100 s  asyncio.wait_for  (tools_dsl.py)
+  ↑ 130 s  HTTP read timeout (eval path only)
+```
+
+The MCP httpx client has its own independent 30-second timeout per request.
+
+---
+
+## Context managers — nesting rules
+
+`with` blocks can be nested. Each block mutates the active context on enter
+and restores it on exit. `prompt()` always sees the current context at the
+time it is called.
+
+```python
+with MessageHistory(5):
+    with Search(input_text):
+        response = prompt()  # sees: last 5 turns + search results + no tools
+```
+
+`McpServer` and `Search` can be combined:
+
+```python
+with Search(input_text):
+    with McpServer("http://tool-server:8000"):
+        prompt()  # tool-selection pass; LLM sees search results + tool schemas
+
+response = prompt()  # no search results, no tool schemas
+```
+
+---
+
+## `delay(seconds)`
+
+Sleep for *seconds*. Use to pace calls when the provider rate-limits on
+tokens-per-minute.
+
+```python
+with McpServer("http://tool-server:8000"):
+    prompt()
+    delay(3)
+
+response = prompt()
+```
+
+`delay` is a direct alias for `time.sleep`; fractional seconds are accepted.
+
+---
+
+## `logger`
+
+A pre-configured `logging.Logger` named `prompt_dsl.script.<stem>`. Available
+without any import. Use it to trace execution, measure latency, or surface
+values during debugging.
+
+```python
+logger.info("prompt.py: start — input_text=%r", input_text[:80])
+with Search(input_text) as results:
+    logger.info("search done — %d results", len(results))
+    response = prompt()
+```
 
 ---
 
 ## Examples
 
-### Minimal — system prompt only
+### Minimal
 
 ```python
 """You are a concise assistant. Always reply in one sentence."""
+
+response = prompt()
 ```
 
-### Pass-through with temperature override
+### Temperature override
 
 ```python
 """You are a creative writing assistant."""
 
-agent.temperature = 0.9
-print(input_text)
+response = prompt(temperature=0.9)
 ```
 
 ### RAG — answer from documents
 
 ```python
-"""You are a helpful assistant. Use the search results below to answer
-the user's question. If the answer is not in the results, say so."""
+"""You are a helpful assistant. Answer from the documents."""
 
-with search(input()):
-    print("User question: " + input())
+with Search(input_text):
+    response = prompt()
 ```
 
 ### RAG — restricted collection
@@ -316,56 +314,94 @@ with search(input()):
 ```python
 """You are a rules lawyer for tabletop RPGs."""
 
-with search(input(), collection="shelf1", top_k=3):
-    print("Question: " + input())
+with Search(input_text, collection="shelf1", top_k=3):
+    response = prompt()
 ```
 
-### Structured override (advanced)
+### Tool use — single phase
 
 ```python
-"""You are a JSON-only assistant."""
+"""You are a knowledgeable guide."""
 
-_override = {
-    "messages": [
-        {"role": "system", "content": "Reply only with valid JSON."},
-        {"role": "user", "content": input_text},
-    ]
-}
+with McpServer("http://tool-server:8000"):
+    prompt()  # LLM selects and dispatches tools
+
+response = prompt()  # LLM synthesises tool results
+```
+
+### Tool use — with pacing
+
+```python
+"""You are a knowledgeable guide."""
+
+with McpServer("http://tool-server:8000"):
+    prompt()
+    delay(3)
+
+response = prompt()
+```
+
+### RAG + tools
+
+```python
+"""You are a research assistant."""
+
+import os
+
+with McpServer(os.environ["MCP_SERVER_URL"]):
+    prompt()  # tool-selection pass
+
+with Search(input_text):
+    response = prompt()  # synthesis with search context
+```
+
+### Progress notification
+
+```python
+"""You are a helpful assistant."""
+
+notify("Searching…")
+with Search(input_text):
+    response = prompt()
+```
+
+### Limited history
+
+```python
+"""You are a focused assistant."""
+
+with MessageHistory(3):
+    response = prompt()
 ```
 
 ---
 
 ## Implementation
 
-The DSL runtime lives in `agent_stem/src/common/prompt_dsl.py`.
+The DSL runtime lives in `agent_stem/src/common/prompt_dsl.py`:
 
-| Symbol                              | Description                                                     |
-|-------------------------------------|-----------------------------------------------------------------|
-| `AgentConfig`                       | Dataclass for LLM parameter overrides                           |
-| `PromptResult`                      | Return type of `execute_prompt_script`                          |
-| `Search`                            | Context manager class injected as `search`                      |
-| `find_prompt_script()`              | Locates `prompt.py` / `agent.py` under `cortex/chat/`           |
-| `execute_prompt_script()`           | Runs a script and returns a `PromptResult`                      |
-| `is_interactive_dsl()`              | Returns `True` if the script uses interactive primitives        |
-| `execute_prompt_script_interactive()`| Runs an interactive script; returns final response string       |
-| `load_prompt_dsl()`                 | Entry point called by `agent_chat.py` on each request           |
+| Symbol                    | Description                                           |
+|---------------------------|-------------------------------------------------------|
+| `PromptResult`            | Return type of `execute_prompt_script`                |
+| `Search`                  | Context manager — injects retrieval results           |
+| `MessageHistory`          | Context manager — limits conversation history         |
+| `find_prompt_script()`    | Locates `prompt.py` / `agent.py` under `cortex/chat/` |
+| `execute_prompt_script()` | Entry point called by `agent_chat.py` on each request |
 
-Interactive-mode symbols live in `agent_stem/src/common/tools_dsl.py`:
+Tool and context primitives live in `agent_stem/src/common/tools_dsl.py`:
 
-| Symbol                  | Description                                                    |
-|-------------------------|----------------------------------------------------------------|
-| `DslRunContext`         | Mutable context passed to all DSL objects during one execution |
-| `Tools`                 | Base class; `call_read_only()`, `call_all()`, `wait()`         |
-| `McpServer`             | Subclass of `Tools`; connects to an MCP JSON-RPC server        |
-| `make_mcp_server_class()` | Factory that binds `McpServer` to a `DslRunContext`          |
-| `make_llm_fn()`         | Creates the `llm()` callable for a `DslRunContext`             |
-| `make_notify_fn()`      | Creates the `notify()` callable for a `DslRunContext`          |
+| Symbol                    | Description                                                   |
+|---------------------------|---------------------------------------------------------------|
+| `DslRunContext`           | Mutable context shared across all DSL objects for one request |
+| `McpServer`               | Context manager — connects to MCP server, registers tools     |
+| `make_prompt_fn()`        | Creates the `prompt()` callable                               |
+| `make_notify_fn()`        | Creates the `notify()` callable                               |
 
 Startup logic lives in `agent_stem/src/startup/mcp_startup.py`:
 
-| Symbol                   | Description                                                |
-|--------------------------|------------------------------------------------------------|
-| `discover_mcp_servers()` | Scans `prompt.py`, connects to MCP servers, dies on error  |
+| Symbol                   | Description                                              |
+|--------------------------|----------------------------------------------------------|
+| `discover_mcp_servers()` | Scans `prompt.py`, connects to MCP servers, dies on error |
 
 ---
 
@@ -378,7 +414,7 @@ The module docstring becomes the suite name. `eval(...)` at module level
 configures the run. Every non-underscore function is a test case.
 
 ```python
-\"\"\"My eval suite.\"\"\"
+"""My eval suite."""
 
 eval(repeat=2, threshold=1)
 
@@ -389,7 +425,7 @@ def greets_user():
 def remembers_name():
     assume("My name is Alice.")
     with question("What is my name?"):
-        expect(r"(?i)\\bAlice\\b")
+        expect(r"(?i)\bAlice\b")
 ```
 
 ## Injected globals
@@ -415,7 +451,7 @@ def remembers_name():
 
 ## Implementation
 
-The eval DSL runtime lives in `agent_stem/src/common/eval_dsl.py`.
+The eval DSL runtime lives in `agent_stem/src/common/eval_dsl.py`:
 
 | Symbol | Description |
 |---|---|
@@ -425,3 +461,24 @@ The eval DSL runtime lives in `agent_stem/src/common/eval_dsl.py`.
 | `find_eval_script()` | Locates `eval.py` under `cortex/chat/` |
 | `parse_eval_script()` | Collects cases and config without executing LLM calls |
 | `run_eval_suite()` | Entry point called by the POST endpoint handler |
+
+---
+
+# Future Plans
+
+1. **Streamable `print()`** — `print()` currently buffers and delivers its output only after the script
+   finishes.  The plan is to make it stream tokens to the client in real time, matching the behaviour
+   of `prompt()`.
+
+2. **Customisable search formatting** — `Search` currently formats results as
+   `[file_path | section_title]\ntext`.  A future `format=` parameter (callable or template string)
+   will let scripts control exactly how results are presented to the LLM.
+
+3. **Mutable `MessageHistory`** — The `MessageHistory` context manager currently provides a read-only
+   window into history.  The plan is to expose a mutable list so scripts can add, remove, or reorder
+   turns before passing them to the LLM.
+
+4. **Accessible search results** — When used as a context manager (`with Search(...) as results:`),
+   `results` will be a list of result dicts (matching the format documented above) rather than a
+   `Search` object, making it easy to inspect scores, filter by collection, or incorporate individual
+   chunks into the prompt manually.

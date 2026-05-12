@@ -11,12 +11,10 @@ Phone: (555) 012-3456
 import os
 
 with McpServer(os.environ["MCP_BUSINESS_HOURS_URL"]) as tools:
-    tools.call_read_only()
+    llm()        # LLM sees business-hours tool schemas, selects and dispatches
     tools.wait()
 
-with search(input()):
-    print("Customer question: " + input())
-
+search_results = str(Search(input_text))
 delay(3)
-response = llm()
+response = llm(f"Search results:\n{search_results}\n\nCustomer question: {input_text}")
 notify(response)

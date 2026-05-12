@@ -11,6 +11,9 @@ env:
   # Maximum tokens in the conversation context window.
   # Leave empty for no limit (uses the model's full context).
   conversationWindowLimit: ""
+  # Embedding request timeout in seconds. Increase if the embedding server
+  # is slow to respond (e.g. first-request cold start on a slow host).
+  embeddingTimeout: "0.5"
 
 # API keys injected as a Kubernetes Secret.
 # Leave empty to omit the Secret entirely (e.g. when using only local servers).

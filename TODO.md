@@ -3,6 +3,12 @@
 
 0.1.0
 - [ ] Chat window: multple conversations, also increases in height as the browser window changes?
+- [ ] Make sure that different tenants work on the streamlit interface
+- [ ] The title, "Agent Chat", needs to be customizable.
+- [ ] Turn the search into a full MCP toolset.
+  - [ ] Add L1 and cosine distance as metrics.
+- [ ] Should implement 413 - prompt too long
+- [ ] Make streamlit front-end streaming.
 
 
 0.1.1
@@ -29,6 +35,7 @@
 
 Anytime
 - [ ] Refactor: move the env and constant assignments to one place under common
+  - [ ] Refactor: move default_providers global from under api.py to somewher reasonable under common
 - [ ] Refactor: under each agent, write the tests that they need to run with each environment: tests/ --> tests/default, tests/no_qdrant, tests/no_mcp
   - [ ] test_agents/agent_with_tools, also needs to run in Mistral, because of (test_agent_succeeds_when_llm_skips_tools)
   - [ ] test_agents/agent_with_eval, also needs to run in Mistral, and make sure that the eval passes, even with rate limiting.
@@ -37,6 +44,8 @@ Anytime
 - [ ] Make sure that execute_prompt_script in agent_stem/src/common/prompt_dsl.py is removing duplicate messages, if `message_history` becomes editable.
 - [ ] Create an environment to test quick fails if the environmental variables are set incorrectly, or proper error messages.
 - [ ] Switch to synced-memory
+- [ ] If the embedding server or mode changes, rerun the chunking, log a warning.
+- [ ] Give a way to user to way for user to append to message history.
 
 
 
@@ -47,27 +56,19 @@ In Consideration
 - [ ] Update the chunking pipeline to delete files if the md does not exist, same for PDF. (Think on this: I want the markdown files to be the source of truth, but there will be a race condition if this is implemented.)
 
 
+
+
 - [ ] (0.1.0) Add a test for setting a keyword differently in the agent chat if it is not set.
 - [ ] (0.3.0) In workflows, if a description does not exist, fill it in from the prompt.
-
-- [ ] In the logs, make sure that this kind of message is being truncated properly:
-app-test-no-qdrant        | INFO:endpoints.agent_chat:Agent chat: Last message (user): {'role': 'user', 'content': [{'type': 'text', 'text': 'Describe what you see in this image in one sentence.'}, {'type': 'image_url', 'image_url': {'url': 'data:image/jpeg;base64,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
 
 - [ ] (0.1.0) Log a warning every time the context window is not enough. Add to /metrics
 - [ ] Introspect execute_prompt_script in agent_stem/src/common/prompt_dsl.py and make sure that docstring has all the core primitives. Then also check the docstring against the documentation and find out if anything is missing.
 
 
-- [x] In the Release (Dev) Check, fail if reformatting is necessary before the tests start. Also fail if there is a stable tag that matches the current version, the current version needs to be larger.
-
 - [ ] In the Release Check, fail if reformatting is necessary before the tests start. If the version is not greater than the last tag, fail.
-
-- [ ] (0.1.0) Show the system prompt in streamlit
-- [x] (0.1.0) Show all workflows in streamlit - Maybe a link to the OpenAPI ?
 
 - [ ] (0.1.0) Make sure that the evaluation function is using redis-memory for storage.
 
-- [ ] (0.3.0) Add L1 and cosine distance as metrics.
-- [ ] Refactor: move default_providers global from under api.py to somewher reasonable under common
 
 - [ ] Implement streaming in the generation API. I am still seeing a message like this? tests-runner-self-hosted-llm  | .::test_openapi[POST /v1/api/generate [generated-10]] <- ../usr/local/lib/python3.12/site-packages/pytest_openapi/plugin.py PASSED [ 66%]  Request: {"model": "Lorem ipsum dolor sit amet", "prompt": ...
 tests-runner-self-hosted-llm  |   Expected [200]: {"model": "gemma3:4b", "created_at": "2024-12-20T0...
@@ -84,8 +85,7 @@ tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet im
 - [ ] (0.2.0) Register workflows as MCP tools
 - [ ] Give a better way to develop edit the system message dependgin on context.
 - [ ] (0.1.0) Something is weird with the tests. The conversations sizes seem to keep growing: (1) add some additinal info lines abouth the last message, and a median message. (2) Are the tests using the same conversation id? (3) How does conversation ids work?
-- [ ] (0.1.0) Make sure that different tenants work on the streamlit interface
-- [ ] If the embedding server or mode changes, rerun the chunking, log a warning.
+
 
 - [ ] Bug: See the following, this is a problem. The model is missing from the server, but we got a non-descript 400 error.
 tests-runner-default    |     def test_nutrition_information_extraction():

@@ -45,11 +45,11 @@ Opening hours: Tuesday to Sunday, 8am to 6pm. Closed on Mondays.
 Location: 42 Flour Street.
 """
 
-with search(input()):
-    print("Customer question: " + input())
+with search(input_text):
+    print("Customer question: " + input_text)
 ```
 
-The text between the triple quotes is the system message — the instructions the AI follows in every conversation. The `with search(input()):` line tells the agent to look up relevant parts of your documents before answering.
+The text between the triple quotes is the system message — the instructions the AI follows in every conversation. The `with search(input_text):` line tells the agent to look up relevant parts of your documents before answering.
 
 ### `docker-compose.yaml`
 
@@ -121,7 +121,7 @@ cortex/library/
   spring-specials.pdf    ← add later, picked up automatically
 ```
 
-The `with search(input()):` in `prompt.py` runs a vector search against these files and adds the most relevant chunks to the message sent to the AI. If you remove the search block, the agent still works — it just won't look things up.
+The `with search(input_text):` in `prompt.py` runs a vector search against these files and adds the most relevant chunks to the message sent to the AI. If you remove the search block, the agent still works — it just won't look things up.
 
 To keep documents in separate groups (for searching one at a time):
 
@@ -138,8 +138,8 @@ cortex/library/
 Then in `prompt.py`:
 
 ```python
-with search(input(), collection="menu"):
-    print("Customer question: " + input())
+with search(input_text, collection="menu"):
+    print("Customer question: " + input_text)
 ```
 
 ---

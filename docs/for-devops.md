@@ -108,7 +108,7 @@ Provider discovery runs in the background after startup, so the `/health` endpoi
 The chart is on Docker Hub. No `helm repo add` required — install directly with:
 
 ```bash
-helm install ai-assistant oci://registry-1.docker.io/sinanozel/ai-assistant-chart \
+helm install ai-assistant oci://registry-1.docker.io/sinanozel/ai-assistant-helm \
   --version 0.1.0 \
   -f my-values.yaml \
   --namespace ai-assistant \
@@ -118,7 +118,7 @@ helm install ai-assistant oci://registry-1.docker.io/sinanozel/ai-assistant-char
 To upgrade an existing release:
 
 ```bash
-helm upgrade ai-assistant oci://registry-1.docker.io/sinanozel/ai-assistant-chart \
+helm upgrade ai-assistant oci://registry-1.docker.io/sinanozel/ai-assistant-helm \
   --version 0.1.0 \
   -f my-values.yaml \
   --namespace ai-assistant
@@ -126,79 +126,19 @@ helm upgrade ai-assistant oci://registry-1.docker.io/sinanozel/ai-assistant-char
 
 Available versions are listed on the [Docker Hub tags page](https://hub.docker.com/r/sinanozel/ai-assistant/tags). Versions ending in `-dev.<N>` (e.g. `0.1.0-dev.5`) are unstable pre-releases.
 
+For single-node setup see [local deployment](local-deployment.md) or [deployment on VPN](vpn-deployment.md).
+
 ---
 
 ## Single-node deployment with k3s
 
-### 1 — Install k3s
+For step-by-step instructions, see the dedicated deployment guides:
 
-```bash
-curl -sfL https://get.k3s.io | sh -
-
-mkdir -p ~/.kube
-sudo chmod 644 /etc/rancher/k3s/k3s.yaml
-```
-
-### 2 — GPU setup (only if using `llamacpp.enabled: true`)
-
-Skip this step entirely if you are using an external model backend — a cloud API (Mistral, Anthropic), a self-hosted llama.cpp running outside the cluster, or any other provider not deployed by the Helm chart. Kubernetes does not need to know about the GPU in those cases.
-
-If you are running the in-cluster llama.cpp deployment (`llamacpp.enabled: true` in your values), k3s needs access to the GPU. k3s uses its own bundled containerd, separate from the system Docker daemon, so the NVIDIA runtime must be configured for both:
-
-```bash
-sudo nvidia-ctk runtime configure --runtime=containerd
-sudo systemctl restart containerd
-
-sudo nvidia-ctk runtime configure --runtime=containerd \
-  --config=/var/lib/rancher/k3s/agent/etc/containerd/config.toml
-sudo systemctl restart k3s
-```
-
-Then deploy the NVIDIA device plugin so Kubernetes can schedule GPU workloads:
-
-```bash
-kubectl apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.0/deployments/static/nvidia-device-plugin.yml
-
-# Verify — should output "1" after ~30 s
-kubectl get nodes -o json | jq '.items[].status.capacity["nvidia.com/gpu"]'
-```
-
-### 3 — Install Helm
-
-```bash
-curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-```
-
-### 6 — Using an external llamacpp backend
-
-If llamacpp is already running as a systemd/Docker service on the same host (port 8080), keep it there and disable the in-cluster deployment. The k3s pods can reach it via the Tailscale hostname.
-
-`my-values.yaml`:
-
-```yaml
-llamacpp:
-  enabled: false
-
-cortex:
-  hostPath: /home/username/.config/ai-assistant/cortex     # <- Choose where you want to put your cortex
-```
-
-Create a ConfigMap with a `providers/default.yaml` that points to the Tailscale hostname:
-
-```yaml
-# providers/default.yaml
-api_base: http://<hostname>.<tailnet>.ts.net:8080/v1
-model: openai/gemma4-e2b
-api_key: dummy
-timeout: 300
-```
-
-```bash
-kubectl create configmap my-cortex \
-  --from-file=providers/default.yaml \
-  --from-file=chat/prompt.py \
-  -n ai-assistant
-```
+- [Local deployment](local-deployment.md) — one machine, no VPN. Uses the node's
+  LAN IP to connect pods to a local llamacpp backend.
+- [Deployment on VPN (Tailscale)](vpn-deployment.md) — machine is on a Tailscale
+  network. Pod networking cannot reach Tailscale addresses directly; the guide
+  covers the required workarounds.
 
 ---
 
