@@ -235,4 +235,4 @@ See [Model Providers](model_providers.md) for the full reference.
 - [Model Providers](model_providers.md) — all provider options, including local models
 - [Evaluation DSL](eval_dsl.md) — write automated test cases for your agent
 - [For the DevOps](for-devops.md) — Kubernetes, Helm, scaling, secrets management
-- [examples/](../examples/) — all runnable examples with Helm values
+- [examples/](https://github.com/sinan-ozel/ai-assistant/tree/main/examples/) — all runnable examples with Helm values

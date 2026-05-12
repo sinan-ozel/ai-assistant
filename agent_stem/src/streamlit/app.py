@@ -95,7 +95,7 @@ def main():
         """<style> #MainMenu {visibility: hidden;} header [data-
         testid="stToolbar"] {display: none;} .stDeployButton {display: none;}
         </style>"""
-           ,
+                   ,
         unsafe_allow_html=True,
     )
 

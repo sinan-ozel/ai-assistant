@@ -362,6 +362,6 @@ Each directory under `examples/` includes a `helm/values.yaml` ready for use:
 
 | Example | Description |
 |---|---|
-| [hello_world](../examples/hello_world/) | Minimal — just a provider, no customization |
-| [bakery_agent](../examples/bakery_agent/) | Chat agent with documents and personality |
-| [basic_example](../examples/basic_example/) | Agent with a workflow endpoint |
+| [hello_world](https://github.com/sinan-ozel/ai-assistant/tree/main/examples/hello_world/) | Minimal — just a provider, no customization |
+| [bakery_agent](https://github.com/sinan-ozel/ai-assistant/tree/main/examples/bakery_agent/) | Chat agent with documents and personality |
+| [basic_example](https://github.com/sinan-ozel/ai-assistant/tree/main/examples/basic_example/) | Agent with a workflow endpoint |

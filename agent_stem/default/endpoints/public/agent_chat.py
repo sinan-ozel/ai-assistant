@@ -739,7 +739,7 @@ async def handler(request: dict, headers: dict = None):
                             model=_override_model,
                             max_tokens=max_tokens,
                         )
-                    except litellm.RateLimitError as e:
+                    except litellm.RateLimitError:
                         raise HTTPException(
                             status_code=429,
                             detail="Rate limit exceeded — try again later.",

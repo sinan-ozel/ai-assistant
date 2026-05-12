@@ -257,7 +257,7 @@ response is appended after.  Nothing inside the script changes the persistent
 history.
 
 The transient context (`ctx.messages`) grows only when tool calls happen.
-See [MESSAGE_HISTORY.md](MESSAGE_HISTORY.md) for the full lifecycle diagram.
+See [message-history.md](message-history.md) for the full lifecycle diagram.
 
 ---
 
