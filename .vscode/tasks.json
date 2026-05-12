@@ -713,6 +713,22 @@
             "problemMatcher": []
         },
         {
+            "label": "Run Integration Tests: agent_with_memory @ default",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_default/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_memory/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_memory/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Run Integration Tests: complex_agent_1 @ default",
             "type": "shell",
             "command": "bash",
@@ -749,7 +765,8 @@
                 "Run Integration Tests: agent_with_tools @ default",
                 "Run Integration Tests: agent_with_tools_advanced @ default",
                 "Run Integration Tests: agent_with_tool_and_delay @ default",
-                "Run Integration Tests: complex_agent_1 @ default"
+                "Run Integration Tests: complex_agent_1 @ default",
+                "Run Integration Tests: agent_with_memory @ default"
             ],
             "dependsOrder": "sequence",
             "presentation": {
