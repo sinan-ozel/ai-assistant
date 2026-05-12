@@ -5,8 +5,8 @@ connects to each declared server, and lists its tools.  If any server is
 unreachable or returns zero tools the process is terminated — a broken tool
 declaration is a configuration error, not a recoverable condition.
 
-Discovered tools are persisted in Redis memory so the Streamlit UI can
-display them under "External Tools".
+Discovered tools are persisted in Redis memory so the Streamlit UI can display
+them under "External Tools".
 """
 
 import ast
@@ -221,8 +221,8 @@ def _save_tools_to_memory(server_url: str, tools: list) -> None:
 def discover_mcp_servers() -> Optional[list]:
     """Scan cortex/chat/prompt.py for McpServer declarations.
 
-    Returns a list of ``{server_url, tools}`` dicts for every server found,
-    or ``None`` if no prompt script exists or it contains no McpServer calls.
+    Returns a list of ``{server_url, tools}`` dicts for every server found, or
+    ``None`` if no prompt script exists or it contains no McpServer calls.
 
     Raises ``RuntimeError`` (causing the process to terminate via the startup
     callback) if any declared server is unreachable or returns zero tools.

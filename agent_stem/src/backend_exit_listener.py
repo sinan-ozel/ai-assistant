@@ -1,10 +1,10 @@
 """Supervisord event listener: shut the container down when fastapi exits.
 
 Listens for PROCESS_STATE_EXITED and PROCESS_STATE_FATAL events.  When the
-fastapi program exits with a non-zero code (or goes FATAL), writes
-/tmp/fatal-error so entrypoint.sh propagates exit code 1 to Docker /
-Kubernetes.  Then signals supervisord to shut down and blocks — supervisord
-will kill this process as part of its graceful shutdown sequence.
+fastapi program exits with a non-zero code (or goes FATAL), writes /tmp/fatal-
+error so entrypoint.sh propagates exit code 1 to Docker / Kubernetes.  Then
+signals supervisord to shut down and blocks — supervisord will kill this
+process as part of its graceful shutdown sequence.
 """
 
 import os

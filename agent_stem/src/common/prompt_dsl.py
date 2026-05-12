@@ -105,7 +105,9 @@ class Search:
         top_k: int = DEFAULT_TOP_K,
         filter: Optional[dict] = None,
     ):
-        logger.debug("Search.__init__: query=%r", query[:80] if query else query)
+        logger.debug(
+            "Search.__init__: query=%r", query[:80] if query else query
+        )
         self._query = query
         self._collection = collection
         self._top_k = top_k
@@ -163,7 +165,8 @@ class Search:
 
     def __enter__(self) -> "Search":
         logger.debug(
-            "Search.__enter__: query=%r", self._query[:80] if self._query else self._query
+            "Search.__enter__: query=%r",
+            self._query[:80] if self._query else self._query,
         )
         results_text = self._fetch()
         if self._ctx is not None:
@@ -187,7 +190,9 @@ def make_search_class(ctx):
     """Return a Search subclass that injects results into *ctx*.messages."""
 
     class _Search(Search):
-        def __init__(self, query, collection=None, top_k=DEFAULT_TOP_K, filter=None):
+        def __init__(
+            self, query, collection=None, top_k=DEFAULT_TOP_K, filter=None
+        ):
             super().__init__(query, collection, top_k, filter)
             self._ctx = ctx
 
@@ -259,8 +264,8 @@ def _run_interactive_script(
     """
     from common.tools_dsl import (
         DslRunContext,
-        make_message_history_class,
         make_mcp_server_class,
+        make_message_history_class,
         make_notify_fn,
         make_prompt_fn,
     )

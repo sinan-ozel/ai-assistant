@@ -131,6 +131,7 @@ def get_provider_config(
 
     return model, config
 
+
 async def call_llm_by_model(
     messages: list[Dict[str, str]],
     providers_state: Dict[str, Any],
@@ -465,7 +466,6 @@ async def iterate_llm_stream(
                 model=model,
             ) from e
         yield chunk
-
 
 
 async def call_llm_by_model_streaming(

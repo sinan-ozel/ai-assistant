@@ -18,8 +18,9 @@ logger = logging.getLogger(__name__)
 def expect_equality(
     actual: Union[str, dict, int, float, None], spec: Dict[str, Any]
 ) -> None:
-    """Check if output equals expected value. Supports dict, str, int, float,
-    and None types. For dict comparison, compares only non-None values in
+    """Check if output equals expected value.
+
+    Supports dict, str, int, float, and None types. For dict comparison, compares only non-None values in
     expected dict, but actual must not have extra keys beyond what's in
     expected.
 

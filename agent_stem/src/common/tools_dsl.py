@@ -53,22 +53,20 @@ class DslRunContext:
     Shared by all Tools objects and the prompt() / notify() callables created
     for the same request.  Carries:
 
-    ``messages``
-        Transient message list (history + tool turns).  Mutated only when the
-        LLM makes tool calls (assistant tool-call message) and when
-        McpServer.__exit__ flushes pending tool results.  Never mutated by
-        plain ``prompt()`` text responses.
+    ``messages``     Transient message list (history + tool turns).  Mutated
+    only when the     LLM makes tool calls (assistant tool-call message) and
+    when     McpServer.__exit__ flushes pending tool results.  Never mutated by
+    plain ``prompt()`` text responses.
 
-    ``available_tools``
-        Tool schemas registered by active McpServer context managers.
-        Offered to the LLM on every ``prompt()`` call while non-empty.
+    ``available_tools``     Tool schemas registered by active McpServer context
+    managers.     Offered to the LLM on every ``prompt()`` call while non-
+    empty.
 
-    ``tool_dispatchers``
-        Live Tools objects that ``prompt()`` can dispatch tool calls through.
+    ``tool_dispatchers``     Live Tools objects that ``prompt()`` can dispatch
+    tool calls through.
 
-    ``final_response``
-        Text of the last ``prompt()`` call, or content of ``print()`` if
-        called — returned as the HTTP response body.
+    ``final_response``     Text of the last ``prompt()`` call, or content of
+    ``print()`` if     called — returned as the HTTP response body.
     """
 
     def __init__(
@@ -133,13 +131,16 @@ class Tools:
 
     # --- dispatch ---
 
-    def _dispatch(self, tool_call_id: str, tool_name: str, arguments: dict) -> None:
+    def _dispatch(
+        self, tool_call_id: str, tool_name: str, arguments: dict
+    ) -> None:
         """Submit *tool_name* to the executor and record the future."""
         fut = self._executor.submit(self._invoke_tool, tool_name, arguments)
         self._pending.append((tool_call_id, fut))
 
     def wait(self) -> None:
-        """Block until all pending tool calls finish; append results to ctx.messages."""
+        """Block until all pending tool calls finish; append results to
+        ctx.messages."""
         for tool_call_id, fut in self._pending:
             try:
                 result = fut.result()

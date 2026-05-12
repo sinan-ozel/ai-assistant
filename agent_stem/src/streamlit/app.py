@@ -91,15 +91,11 @@ def main():
         layout="wide",
         initial_sidebar_state="expanded",
     )
-
     st.markdown(
-        """
-        <style>
-        #MainMenu {visibility: hidden;}
-        header [data-testid="stToolbar"] {display: none;}
-        .stDeployButton {display: none;}
-        </style>
-        """,
+        """<style> #MainMenu {visibility: hidden;} header [data-
+        testid="stToolbar"] {display: none;} .stDeployButton {display: none;}
+        </style>"""
+           ,
         unsafe_allow_html=True,
     )
 

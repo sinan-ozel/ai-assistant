@@ -536,8 +536,8 @@ def find_eval_script(cortex_path: str) -> Optional[Path]:
 def parse_eval_script(script_path: Path) -> ParsedSuite:
     """Parse an ``eval.py`` script and return its suite config and case names.
 
-    Runs the script with no-op DSL globals so that ``eval()`` configuration
-    is captured and function definitions are collected without making any LLM
+    Runs the script with no-op DSL globals so that ``eval()`` configuration is
+    captured and function definitions are collected without making any LLM
     calls or side effects.
     """
     source = script_path.read_text()

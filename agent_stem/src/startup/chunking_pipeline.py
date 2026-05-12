@@ -130,8 +130,8 @@ def _embed_texts(texts: list[str]) -> list[list[float]]:
 def _get_embedding_dim() -> int:
     """Return the vector dimension by embedding a single probe string.
 
-    The result is cached in ``_embedding_dim`` so the server is only
-    queried once per process lifetime.
+    The result is cached in ``_embedding_dim`` so the server is only queried
+    once per process lifetime.
     """
     global _embedding_dim
     if _embedding_dim is None:
@@ -922,8 +922,8 @@ class MarkdownChunker:
     def _split_toc(toc: list) -> tuple[list, list]:
         """Partition TOC entries into chapter entries and section entries.
 
-        *Chapter entries* — those whose title matches ``CHAPTER_RE`` — are
-        used only to populate the ``chapter`` metadata field on each chunk.
+        *Chapter entries* — those whose title matches ``CHAPTER_RE`` — are used
+        only to populate the ``chapter`` metadata field on each chunk.
 
         *Section entries* — everything else — drive ``toc_title`` assignment
         and page-range narrowing.
