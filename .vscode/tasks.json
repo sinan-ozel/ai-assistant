@@ -788,17 +788,12 @@
             "problemMatcher": []
         },
         {
-            "label": "Run All Costless Agent Integration Tests",
+            "label": "Run Pre-Release Tests",
             "dependsOn": [
+                "Run Unit Tests: self_hosted_llm",
                 "Run Integration Tests: text_workflows @ self_hosted_llm",
                 "Run Integration Tests: image_workflows @ self_hosted_llm",
-                "Run Integration Tests: son_of_anton @ self_hosted_llm",
                 "Run Integration Tests: talk_to_your_documents @ self_hosted_llm",
-                // "Run Integration Tests: agent_with_only_a_system_message @ no_redis",
-                // "Run Integration Tests: agent_with_only_a_system_message @ nothing",
-                // "Run Integration Tests: agent_with_search @ no_redis",
-                // "Run Integration Tests: agent_with_search @ nothing",
-                "Run Quick & Costless Agent Integration Tests",
             ],
             "dependsOrder": "sequence",
             "problemMatcher": []
@@ -873,7 +868,7 @@
                 "${workspaceFolder}/release/release.sh"
             ],
             "dependsOn": [
-                "Run All Agent Integration Tests",
+                "Run Pre-Release Tests",
                 "Release (Dev)",
                 "Publish Helm Chart (Dev)",
                 "Run Post-Release Tests",

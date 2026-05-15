@@ -29,12 +29,21 @@ services:
     container_name: embedding-test-default
     networks:
       - test-network
+    environment:
+      - OLLAMA_KEEP_ALIVE=1h
     healthcheck:
-      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/11434' || exit 1"]
-      # test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1"]
+      test:
+        - "CMD"
+        - "bash"
+        - "-c"
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/11434 &&
+          printf 'GET /api/tags HTTP/1.0\r\nHost: localhost\r\n\r\n' >&3 &&
+          timeout 5 cat <&3 | grep -q all-minilm
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 8s
+      retries: 10
+      start_period: 60s
 
   # Ollama server with gemma3-270m model
   ollama-test:
@@ -64,6 +73,30 @@ services:
       retries: 10
       start_period: 30s
 
+  # Cleans up generated .md files and Redis pipeline state before the app
+  # starts so the PDF pipeline always begins from a known-clean state and
+  # the chunking pipeline never processes stale files from a previous run.
+  init:
+    image: redis:7.4.2-alpine
+    container_name: init-default
+    networks:
+      - test-network
+    depends_on:
+      redis-test:
+        condition: service_healthy
+    volumes:
+      - ${AGENT_FOLDER:-./cortex}:/app/cortex
+    command:
+      - sh
+      - -c
+      - |
+          find /app/cortex/library -name '*.md' 2>/dev/null | grep -v '/\.' |
+          while IFS= read -r f; do
+            pdf=$$(echo "$$f" | sed 's/\.md$$/\.pdf/');
+            [ -f "$$pdf" ] && rm "$$f";
+          done;
+          redis-cli -h redis-test DEL memory:pdf_pipeline_state memory:chunking_pipeline_state memory:library
+
   # Application under test
   app:
     build:
@@ -78,11 +111,13 @@ services:
       - QDRANT_HOST=qdrant-test
       - QDRANT_PORT=6333
       - EMBEDDING_SERVER=http://embedding-test:11434
-      - EMBEDDING_TIMEOUT=10.0
+      - EMBEDDING_TIMEOUT=5.0
       # - LOG_LEVEL=DEBUG
     env_file:
       - .env
     depends_on:
+      init:
+        condition: service_completed_successfully
       redis-test:
         condition: service_healthy
       qdrant-test:

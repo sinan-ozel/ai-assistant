@@ -112,3 +112,36 @@ use `chunk_reset` and (where applicable) `pdf_conversion_reset` fixtures to clea
 and drop Qdrant collections before re-running the ingestion pipeline from scratch.
 `agent_with_collection_search` uses only `chunk_reset` because its library contains `.md` files
 directly (no PDF conversion step).
+
+---
+
+## DevOps notes
+
+### Embedding server requirements when the document pipeline is active
+
+The document pipeline (PDF → Markdown conversion → chunking → embedding → vector store) uses
+the same embedding server as the search path (query embedding at inference time).  When both
+run concurrently against a **single Ollama instance with `OLLAMA_NUM_PARALLEL: 1`**, the
+pipeline's batch embedding requests monopolise the server, causing search query embedding
+requests to time out.
+
+**Consequences in test environments:**
+
+- `test_env_no_qdrant` runs agents that do both document ingestion and live search queries.
+  If the environment provisions only one Ollama container, library-chat tests that fire while
+  ingestion is still embedding documents will fail with `EmbeddingUnavailableError`.
+
+**Solutions (pick one):**
+
+1. **Dedicated embedding containers** — deploy a separate Ollama instance for the pipeline
+   (set `EMBEDDING_BASE_URL` for the pipeline) and a separate one for query embedding.  This
+   is the most reliable option: each path gets its own server with no contention.
+
+2. **`OLLAMA_NUM_PARALLEL: N`** — set this env var on the shared Ollama container.  For BERT
+   embedding models this enables true batching (`n_seq_max=N`), allowing multiple concurrent
+   embedding requests.  It reduces contention but does not eliminate it under heavy load.
+
+The test dependency chain (`healthy` → `test_books_ingested` → library chat tests) ensures
+library-chat tests do not start until ingestion is complete, which eliminates the race in
+normal sequential runs.  A dedicated embedding server is required only when pipeline ingestion
+and search queries must run truly in parallel.

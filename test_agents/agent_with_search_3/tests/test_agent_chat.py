@@ -12,7 +12,7 @@ import requests
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 
-@pytest.mark.depends(name="test_agent_chat_basic_response", on=["healthy"])
+@pytest.mark.depends(name="test_agent_chat_basic_response", on=["healthy", "test_books_ingested"])
 def test_agent_chat_basic_response():
     """Test that the agent responds successfully with the search DSL."""
     response = requests.post(

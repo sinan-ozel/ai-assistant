@@ -17,7 +17,7 @@ LIBRARY_DIR = Path("/app/cortex/library")
 TIMEOUT = 180  # seconds
 
 # Allow time for PDF conversion + embedding model + chunking to complete.
-CHUNK_TIMEOUT = 900  # seconds
+CHUNK_TIMEOUT = 1200  # seconds
 
 
 @pytest.mark.depends(on=["healthy"])

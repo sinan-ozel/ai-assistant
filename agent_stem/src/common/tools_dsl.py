@@ -16,6 +16,33 @@ DSL usage example::
         prompt()         # LLM sees tool schemas, selects and dispatches
     # __exit__ calls wait(); tool results are now in ctx.messages
     response = prompt()  # LLM sees full context + tool results
+
+Thinking
+--------
+Enable extended thinking only on ``prompt()`` calls that need to plan or
+reason — typically the ones that trigger tool selection.  Leave it off on
+calls that synthesise tool results, since those just need to integrate
+information already in the context.
+
+The framework eagerly flushes tool results after each ``prompt()`` that
+triggers tool calls, so the next ``prompt()`` always sees a valid message
+sequence (ending with a ``tool`` result, not an ``assistant`` message).
+This means thinking can be safely enabled on tool-calling prompts without
+hitting the "assistant prefill incompatible with thinking" error.
+
+Provider-specific syntax::
+
+    # Anthropic Claude
+    prompt(thinking={"type": "enabled", "budget_tokens": 16000})
+
+    # Gemma via llama.cpp (OpenAI-compatible endpoint)
+    prompt(extra_body={"enable_thinking": True})
+
+Typical multi-step pattern::
+
+    with McpServer("http://server:8000"):
+        prompt(extra_body={"enable_thinking": True})  # plan + call tools
+    response = prompt()  # synthesise — no thinking needed
 """
 
 import asyncio
@@ -357,40 +384,77 @@ def make_mcp_server_class(ctx: DslRunContext):
 def make_message_history_class(ctx: DslRunContext):
     """Return a MessageHistory class bound to *ctx*.
 
-    Limits the conversation history visible to ``prompt()`` calls inside the
-    block to the last *n* user+assistant turn pairs (2*n messages).  On exit
-    the full history is restored, and any messages appended during the block
-    (e.g. tool call results) are preserved.
+    Temporarily narrows ctx.messages to the last N conversational turns while
+    preserving any messages appended during the context block.
 
-    Usage::
+    Assumptions:
+    - ctx.messages is a SyncedList
+    - layout is: [system, history..., active_user_message]
 
-        with MessageHistory(3):
-            response = prompt()  # sees only the last 3 turns
+    Any messages appended during the block (tool calls/results/etc.) are
+    preserved after restoration.
     """
 
-    class _MessageHistory:
+    class MessageHistory:
         def __init__(self, n: int):
             self._n = n
 
         def __enter__(self):
-            # ctx.messages layout: [system, hist1..histN, user_msg]
-            # We save and replace msgs[1:-1] (the history slice).
-            self._saved_history = ctx.messages[1:-1]
-            limited = self._saved_history[-2 * self._n :] if self._n > 0 else []
-            ctx.messages[1 : 1 + len(self._saved_history)] = limited
-            self._n_limited = len(limited)
+            messages = ctx.messages
+
+            # Snapshot the original full message list
+            self._saved_messages = messages.aslist()
+
+            if len(messages) < 2:
+                self._visible_len = len(messages)
+                return self
+
+            # Preserve:
+            #   first message  -> system
+            #   last message   -> active user message
+            system = self._saved_messages[:1]
+            tail = self._saved_messages[-1:]
+
+            history = self._saved_messages[1:-1]
+
+            # Each turn ~= user+assistant pair
+            limited_history = history[-2 * self._n :] if self._n > 0 else []
+
+            narrowed = system + limited_history + tail
+
+            # Replace entire SyncedList contents in-place
+            messages.clear()
+            messages.extend(narrowed)
+
+            self._visible_len = len(messages)
+
             return self
 
         def __exit__(self, exc_type, exc_val, exc_tb):
-            # Replace only the limited history slice; any messages appended
-            # after the user message during the block (tool calls, etc.) are
-            # preserved because they sit beyond index 1+n_limited.
-            ctx.messages[1 : 1 + self._n_limited] = self._saved_history
+            messages = ctx.messages
+
+            # Preserve anything appended during the scoped block
+            appended = messages[self._visible_len :]
+
+            restored = list(self._saved_messages)
+            restored.extend(
+                (
+                    item.asdict()
+                    if hasattr(item, "asdict")
+                    else item.aslist() if hasattr(item, "aslist") else item
+                )
+                for item in appended
+            )
+
+            messages.clear()
+            messages.extend(restored)
+
             return False
 
-    _MessageHistory.__name__ = "MessageHistory"
-    _MessageHistory.__qualname__ = "MessageHistory"
-    return _MessageHistory
+    MessageHistory.__name__ = "MessageHistory"
+    MessageHistory.__qualname__ = "MessageHistory"
+
+    return MessageHistory
 
 
 def make_prompt_fn(ctx: DslRunContext):
@@ -420,8 +484,20 @@ def make_prompt_fn(ctx: DslRunContext):
 
     *text* defaults to ``None`` (use messages already in ctx).  *provider*
     selects a named provider; ``"default"`` uses the configured default.
-    Any extra keyword argument is forwarded to LiteLLM as-is (e.g.
-    ``temperature=0.9``, ``max_tokens=512``).
+    Any extra keyword argument is forwarded to LiteLLM as-is.  Common uses:
+
+    * ``temperature=0.9``, ``max_tokens=512`` — sampling controls
+    * ``thinking={"type": "enabled", "budget_tokens": 16000}`` — extended
+      thinking for Anthropic models
+    * ``extra_body={"enable_thinking": True}`` — thinking for Gemma via
+      an OpenAI-compatible endpoint (e.g. llama.cpp)
+
+    Thinking mode is intentionally left to the agent designer: pass the
+    appropriate kwarg on the calls where reasoning depth matters, and omit
+    it on calls that feed tool results back to the model.  The framework
+    eagerly flushes tool results after each ``prompt()`` that triggers tool
+    calls, so subsequent calls always see a valid message sequence
+    regardless of whether thinking is on.
     """
     from common.llm import call_llm_by_model
 
@@ -451,13 +527,18 @@ def make_prompt_fn(ctx: DslRunContext):
                 model=requested_model,
                 **kwargs,
             )
+            # Use thread-level timeout on the concurrent.futures.Future rather
+            # than asyncio.wait_for — in Python 3.12, wait_for awaits the
+            # cancelled coroutine's cleanup before raising TimeoutError, which
+            # can block for minutes when the underlying httpx task is stuck.
+            # Future.result(timeout=N) is a pure thread-level deadline and
+            # always returns within N seconds.
+            _fut = asyncio.run_coroutine_threadsafe(coro, ctx.event_loop)
             try:
-                response = asyncio.run_coroutine_threadsafe(
-                    asyncio.wait_for(coro, timeout=_LLM_CALL_TIMEOUT),
-                    ctx.event_loop,
-                ).result()
+                response = _fut.result(timeout=_LLM_CALL_TIMEOUT)
                 break
             except TimeoutError:
+                _fut.cancel()
                 logger.error(
                     "prompt() timed out after %.0fs (attempt %d/%d, model=%r, provider=%r, tools=%d)",
                     _LLM_CALL_TIMEOUT,
@@ -519,6 +600,12 @@ def make_prompt_fn(ctx: DslRunContext):
                         "prompt(): no dispatcher found for tool '%s'",
                         tc.function.name,
                     )
+
+            # Eagerly flush tool results so subsequent prompt() calls don't see
+            # a dangling assistant message last — required for thinking-mode models
+            # that reject assistant prefill.
+            for dispatcher in ctx.tool_dispatchers:
+                dispatcher.wait()
 
         ctx.llm_called = True
         ctx.final_response = assistant_text

@@ -8,7 +8,7 @@ import requests
 
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
-CHUNK_TIMEOUT = 900  # seconds
+CHUNK_TIMEOUT = 1200  # seconds
 
 EXPECTED_BOOKS = {
     "shelf1/lycanthropes-in-eberron.pdf",

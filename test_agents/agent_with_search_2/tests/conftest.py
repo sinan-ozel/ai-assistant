@@ -30,29 +30,39 @@ def clear_test_memory():
     _clear()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='session', autouse=True)
 def chunk_reset():
-    """Reset the chunking pipeline state and drop all vector-store collections.
+    """Drop Qdrant collections and re-trigger chunking when Qdrant is present.
 
-    Clears the Redis chunking state and the library index so every Markdown
-    file is treated as new, then deletes all Qdrant collections when Qdrant
-    is reachable.
+    Pre-app cleanup (deleting generated .md files and clearing Redis pipeline
+    state) is handled by the docker-compose init service, which runs before
+    the app container starts.  This fixture only needs to act when Qdrant is
+    reachable: it drops the collections that the init service could not reach
+    (Qdrant starts after init) and clears pipeline state so the chunking
+    pipeline repopulates Qdrant from scratch.
+
+    In environments without Qdrant (e.g. test_env_no_qdrant) the init service
+    has already established a clean state and this fixture is a no-op.
     """
-    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
-    r.delete("memory:chunking_pipeline_state")
-    r.delete("memory:library")
-
     try:
         with socket.create_connection((QDRANT_HOST, QDRANT_PORT), timeout=2):
             qdrant_reachable = True
     except OSError:
         qdrant_reachable = False
 
-    if qdrant_reachable:
-        from qdrant_client import QdrantClient
+    if not qdrant_reachable:
+        yield
+        return
 
-        client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
-        for c in client.get_collections().collections:
-            client.delete_collection(c.name)
+    from qdrant_client import QdrantClient
+
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+    client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+    for c in client.get_collections().collections:
+        client.delete_collection(c.name)
+
+    r.delete("memory:pdf_pipeline_state")
+    r.delete("memory:chunking_pipeline_state")
+    r.delete("memory:library")
 
     yield

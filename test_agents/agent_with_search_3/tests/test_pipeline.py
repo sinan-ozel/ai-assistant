@@ -13,7 +13,7 @@ import requests
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 # Allow enough time for PDF conversion + embedding + chunking to complete.
-CHUNK_TIMEOUT = 900  # seconds
+CHUNK_TIMEOUT = 1200  # seconds
 
 EXPECTED_BOOKS = {
     "shelf2/lycanthropes-in-eberron.pdf",

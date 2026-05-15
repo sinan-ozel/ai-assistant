@@ -15,6 +15,10 @@ from common.llm import call_llm_by_model
 logger = logging.getLogger(__name__)
 
 
+class EvaluationCancelledError(Exception):
+    """Raised when the user cancels a running evaluation."""
+
+
 def expect_equality(
     actual: Union[str, dict, int, float, None], spec: Dict[str, Any]
 ) -> None:
@@ -265,7 +269,9 @@ def run_evaluation_case(
                         logger.info(
                             f"Evaluation cancelled for workflow: {workflow_path}"
                         )
-                        raise Exception("Evaluation was cancelled by user")
+                        raise EvaluationCancelledError(
+                            "Evaluation was cancelled by user"
+                        )
 
         run_result = {
             "run": run_idx + 1,

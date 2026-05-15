@@ -194,6 +194,12 @@ async def call_llm_by_model(
     if stop is not None:
         litellm_kwargs["stop"] = stop
 
+    # Disable SDK-level retries by default — the OpenAI SDK retries on 503
+    # and similar errors transparently, which circumvents our timeout logic
+    # and can block for many minutes.  Retry decisions belong to our framework.
+    # Callers may pass max_retries=N explicitly to override.
+    litellm_kwargs.setdefault("max_retries", 0)
+
     # Add any extra kwargs
     litellm_kwargs.update(kwargs)
 
@@ -335,6 +341,8 @@ async def connect_llm_streaming(
         litellm_kwargs["top_p"] = top_p
     if stop is not None:
         litellm_kwargs["stop"] = stop
+
+    litellm_kwargs.setdefault("max_retries", 0)
 
     litellm_kwargs.update(kwargs)
 

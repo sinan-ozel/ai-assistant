@@ -155,6 +155,7 @@ async def handler(path: str):
 
         # Build system message from workflow (same logic as workflow handler)
         # This includes the prompt template + output schema instructions
+        from self.evaluation.runner import EvaluationCancelledError
         from startup.workflows import json_schema_to_prompt_format
 
         # Get prompt from execution section or legacy root-level field
@@ -191,8 +192,28 @@ async def handler(path: str):
                 path,
                 system_message,
             )
+        except EvaluationCancelledError:
+            logger.info(f"Evaluation was cancelled for workflow: {path}")
+            with Memory() as memory:
+                try:
+                    state = memory.workflow_evaluation_state.get(path, {})
+                except AttributeError:
+                    state = {}
+                memory.workflow_evaluation_state = {
+                    path: {
+                        "status": "cancelled",
+                        "current_evaluation": None,
+                        "results": None,
+                        "error": "Evaluation was cancelled",
+                        "started_at": state.get("started_at"),
+                        "cancelled": True,
+                    }
+                }
+            return
         except Exception as e:
-            logger.error(f"Evaluation failed for workflow {path}: {e}")
+            logger.error(
+                f"Evaluation failed for workflow {path}: {e}", exc_info=True
+            )
             with Memory() as memory:
                 try:
                     state = memory.workflow_evaluation_state.get(path, {})
@@ -229,7 +250,15 @@ async def handler(path: str):
         logger.info(f"Evaluation completed for workflow: {path}")
 
     # Start background task
-    asyncio.create_task(run_evaluation_async())
+    def _on_done(task):
+        exc = task.exception() if not task.cancelled() else None
+        if exc:
+            logger.error(
+                "Unhandled exception in evaluation background task", exc_info=exc
+            )
+
+    task = asyncio.create_task(run_evaluation_async())
+    task.add_done_callback(_on_done)
 
     return {
         "message": f"Evaluation started for workflow: {path}",
