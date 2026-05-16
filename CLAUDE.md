@@ -49,7 +49,7 @@ need to be graceful if these services do not exist. This is black-box testing,
 everything is being test through request bodies and the responses.
 
 
-# redis-memory examples:
+# synced-memory examples:
 
 ```
 with Memory() as memory:
@@ -64,9 +64,10 @@ with Memory() as memory:
 Always use this pattern. Correct if used otherwise.
 
 Here is the github repo if you need to check the repo:
-https://github.com/sinan-ozel/redis-memory
+https://github.com/sinan-ozel/synced-memory
 
-Here is the code base: https://github.com/sinan-ozel/redis-memory/blob/main/src/redis_memory/__init__.py
+Here is the code base with the cor logic for synced-memory.
+https://raw.githubusercontent.com/sinan-ozel/synced-memory/refs/heads/main/src/synced_memory/common/__init__.py
 
 # Environment
 

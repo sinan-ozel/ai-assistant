@@ -1,3 +1,5 @@
+fullnameOverride: ai-assistant
+
 # ── Main application ────────────────────────────────────────────────────────
 image:
   repository: sinanozel/ai-assistant

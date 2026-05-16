@@ -403,7 +403,7 @@ def make_message_history_class(ctx: DslRunContext):
             messages = ctx.messages
 
             # Snapshot the original full message list
-            self._saved_messages = messages.aslist()
+            self._saved_messages = list(messages)
 
             if len(messages) < 2:
                 self._visible_len = len(messages)

@@ -5,4 +5,5 @@
 """You are a helpful AI assistant. Answer questions clearly and concisely.
 If you do not know the answer, say so rather than guessing."""
 
-print(input_text)
+with MessageHistory(3):
+    response = prompt()
