@@ -90,8 +90,15 @@ def _resolve_mcp_arg(arg: ast.expr) -> str:
     )
 
 
+_LOCAL_MCP_URL = "http://localhost:8001"
+
+
 def _extract_mcp_urls(source: str) -> list:
-    """Walk the AST of *source* and return all McpServer() URLs."""
+    """Walk the AST of *source* and return all McpServer() URLs.
+
+    ``McpServer()`` with no arguments resolves to the built-in MCP server at
+    ``http://localhost:8001``.
+    """
     tree = ast.parse(source)
     urls = []
     for node in ast.walk(tree):
@@ -99,20 +106,27 @@ def _extract_mcp_urls(source: str) -> list:
             isinstance(node, ast.Call)
             and isinstance(node.func, ast.Name)
             and node.func.id == "McpServer"
-            and node.args
         ):
-            urls.append(_resolve_mcp_arg(node.args[0]))
+            if not node.args:
+                urls.append(_LOCAL_MCP_URL)
+            else:
+                urls.append(_resolve_mcp_arg(node.args[0]))
     return urls
 
 
 def _parse_mcp_response(response: httpx.Response) -> dict:
-    """Parse an MCP response that may be JSON or a server-sent event stream."""
+    """Parse an MCP response: JSON, SSE, or NDJSON streaming."""
     content_type = response.headers.get("content-type", "")
     if "text/event-stream" in content_type:
         for line in response.text.splitlines():
             if line.startswith("data:"):
                 return json.loads(line[5:].strip())
         raise RuntimeError("MCP SSE response contained no data line")
+    if "application/x-ndjson" in content_type:
+        lines = [ln for ln in response.text.splitlines() if ln.strip()]
+        if not lines:
+            raise RuntimeError("MCP NDJSON response contained no data")
+        return json.loads(lines[-1])
     return response.json()
 
 

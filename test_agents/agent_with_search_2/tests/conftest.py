@@ -61,7 +61,6 @@ def chunk_reset():
     for c in client.get_collections().collections:
         client.delete_collection(c.name)
 
-    r.delete("memory:pdf_pipeline_state")
     r.delete("memory:chunking_pipeline_state")
     r.delete("memory:library")
 

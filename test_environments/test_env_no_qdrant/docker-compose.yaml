@@ -46,6 +46,11 @@ services:
         condition: service_healthy
     volumes:
       - ${AGENT_FOLDER:-./cortex}:/app/cortex
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/init_done"]
+      interval: 2s
+      timeout: 1s
+      retries: 30
     command:
       - sh
       - -c
@@ -55,7 +60,9 @@ services:
             pdf=$$(echo "$$f" | sed 's/\.md$$/\.pdf/');
             [ -f "$$pdf" ] && rm "$$f";
           done;
-          redis-cli -h redis-test DEL memory:pdf_pipeline_state memory:chunking_pipeline_state memory:library
+          redis-cli -h redis-test DEL memory:pdf_pipeline_state memory:chunking_pipeline_state memory:library;
+          touch /tmp/init_done;
+          tail -f /dev/null
 
   # Application under test
   app:
@@ -74,7 +81,7 @@ services:
       - .env
     depends_on:
       init:
-        condition: service_completed_successfully
+        condition: service_healthy
       redis-test:
         condition: service_healthy
       embedding-test:

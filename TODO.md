@@ -9,12 +9,15 @@
   - [ ] Add L1 and cosine distance as metrics.
 - [ ] Should implement 413 - prompt too long
 - [ ] Make streamlit front-end streaming.
+- [ ] Add the medical agent to the examples.
+- [ ] Create new test environment based on default, called api_test (for workflows) and mcp_test (for just the search for now). Maybe together?
+- [ ] Add a test with an additional tool.
 
 
 0.1.1
 - [ ] Add chunk information to the interface.
 - [ ] Raise error if embedding server changes.
-
+- [ ] Add useful tools, current time, etc..
 
 
 0.2.0

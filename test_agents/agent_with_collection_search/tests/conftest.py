@@ -30,14 +30,11 @@ def clear_test_memory():
     _clear()
 
 
-@pytest.fixture
-def chunk_reset(scope='session'):
-    """Reset the chunking pipeline state and drop all vector-store collections.
-
-    Clears the Redis chunking state and the library index so every Markdown
-    file is treated as new, then deletes all Qdrant collections when Qdrant
-    is reachable.
-    """
+@pytest.fixture(scope='session')
+def chunk_reset():
+    # Not autouse: static .md files never change mtime, so dropping Qdrant+Redis
+    # cannot trigger re-indexing (in-process _chunking_pipeline_state survives).
+    # The init service provides clean state on fresh container runs.
     r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
     r.delete("memory:chunking_pipeline_state")
     r.delete("memory:library")

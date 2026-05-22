@@ -306,7 +306,16 @@ def _search_lancedb(
                 table_name,
             )
             continue
-        tbl = db.open_table(table_name)
+        try:
+            tbl = db.open_table(table_name)
+        except ValueError:
+            # table_names() listed the directory but the manifest isn't flushed
+            # yet (chunking pipeline concurrent write); treat as not-yet-ready.
+            logger.warning(
+                "Search: LanceDB table '%s' listed but could not be opened — skipping.",
+                table_name,
+            )
+            continue
         query = tbl.search(query_vector).metric("l2").limit(top_k)
         if where_clause:
             query = query.where(where_clause)
@@ -488,7 +497,14 @@ def _filter_only_lancedb(
     for table_name in tables:
         if table_name not in existing:
             continue
-        tbl = db.open_table(table_name)
+        try:
+            tbl = db.open_table(table_name)
+        except ValueError:
+            logger.warning(
+                "Search: LanceDB table '%s' listed but could not be opened — skipping.",
+                table_name,
+            )
+            continue
         query = tbl.search().limit(top_k)
         if where_clause:
             query = query.where(where_clause)

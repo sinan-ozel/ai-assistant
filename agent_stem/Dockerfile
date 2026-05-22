@@ -29,6 +29,9 @@ COPY pyproject.toml /app/pyproject.toml
 RUN pip install --no-cache-dir $(python -c \
     "import tomllib; d=tomllib.load(open('/app/pyproject.toml','rb')); print(' '.join(d['project']['dependencies']))")
 
+# Pre-download tiktoken BPE data so containers without internet access can start.
+RUN python -c "import tiktoken; tiktoken.get_encoding('cl100k_base')"
+
 # Copy all agent_stem contents
 COPY agent_stem/src/ /app/src/
 COPY agent_stem/default/ /app/default/
@@ -41,10 +44,12 @@ COPY agent_stem/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Expose ports
 
-# Streamlit
-EXPOSE 8501
+# MCP server
+EXPOSE 8001
 # FastAPI
 EXPOSE 8000
+# Streamlit
+EXPOSE 8501
 
 # Entrypoint: run supervisord and propagate exit code 1 on fatal errors.
 # supervisord exits 0 on SIGTERM; if a fatal-error sentinel was written first
