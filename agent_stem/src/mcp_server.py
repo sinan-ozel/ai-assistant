@@ -27,10 +27,9 @@ import os
 from pathlib import Path
 from typing import AsyncIterator
 
+from common.mcp_tools import discover_tools
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
-
-from common.mcp_tools import discover_tools
 
 _log_level = getattr(
     logging, os.environ.get("LOG_LEVEL", "INFO").upper(), logging.INFO
@@ -43,9 +42,7 @@ _CORTEX_TOOLS_DIR = Path("/app/cortex/mcp/tools")
 
 # Discover and validate at import time so startup errors crash immediately.
 _tools = discover_tools([_DEFAULT_TOOLS_DIR, _CORTEX_TOOLS_DIR])
-logger.info(
-    "MCP server: %d tool(s) loaded: %s", len(_tools), sorted(_tools)
-)
+logger.info("MCP server: %d tool(s) loaded: %s", len(_tools), sorted(_tools))
 
 app = FastAPI(title="ai-assistant-mcp", version="0.1.0")
 
@@ -128,27 +125,22 @@ async def mcp_endpoint(request: Request):
 async def _stream_tool_call(
     func, arguments: dict, req_id
 ) -> AsyncIterator[str]:
-    """Invoke *func* with *arguments* and yield the result as one NDJSON line."""
+    """Invoke *func* with *arguments* and yield the result as one NDJSON
+    line."""
     try:
         if inspect.iscoroutinefunction(func):
             result = await func(**arguments)
         else:
             loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(
-                None, lambda: func(**arguments)
-            )
+            result = await loop.run_in_executor(None, lambda: func(**arguments))
     except Exception as exc:
-        logger.error(
-            "MCP server: tool call failed: %s", exc, exc_info=True
-        )
+        logger.error("MCP server: tool call failed: %s", exc, exc_info=True)
         yield json.dumps(
             {
                 "jsonrpc": "2.0",
                 "id": req_id,
                 "result": {
-                    "content": [
-                        {"type": "text", "text": f"Tool error: {exc}"}
-                    ],
+                    "content": [{"type": "text", "text": f"Tool error: {exc}"}],
                     "isError": True,
                 },
             }

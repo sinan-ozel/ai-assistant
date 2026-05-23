@@ -43,7 +43,8 @@ _SUPPORTED_TYPES: dict[type, str] = {
 
 
 def _parse_args_section(docstring: str) -> dict[str, str]:
-    """Extract parameter descriptions from the Args section of a Google-style docstring."""
+    """Extract parameter descriptions from the Args section of a Google-style
+    docstring."""
     args: dict[str, str] = {}
     in_args = False
     current_param: Optional[str] = None
@@ -208,9 +209,7 @@ def discover_tools(tool_dirs: list[Path]) -> dict[str, tuple[Callable, dict]]:
             try:
                 spec.loader.exec_module(module)
             except Exception as exc:
-                logger.error(
-                    "MCP tools: failed to import %s: %s", py_file, exc
-                )
+                logger.error("MCP tools: failed to import %s: %s", py_file, exc)
                 raise
 
             for attr_name in dir(module):
@@ -238,7 +237,9 @@ def discover_tools(tool_dirs: list[Path]) -> dict[str, tuple[Callable, dict]]:
                     )
                 tools[attr_name] = (attr, schema)
                 logger.info(
-                    "MCP tools: registered tool '%s' from %s.", attr_name, py_file
+                    "MCP tools: registered tool '%s' from %s.",
+                    attr_name,
+                    py_file,
                 )
 
     return tools
