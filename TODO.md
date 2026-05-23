@@ -5,7 +5,7 @@
 - [ ] Chat window: multple conversations, also increases in height as the browser window changes?
 - [ ] Make sure that different tenants work on the streamlit interface
 - [ ] The title, "Agent Chat", needs to be customizable.
-- [ ] Turn the search into a full MCP toolset.
+- [x] Turn the search into a full MCP toolset.
   - [ ] Add L1 and cosine distance as metrics.
 - [ ] Should implement 413 - prompt too long
 - [ ] Make streamlit front-end streaming.
@@ -18,6 +18,7 @@
 - [ ] Add chunk information to the interface.
 - [ ] Raise error if embedding server changes.
 - [ ] Add useful tools, current time, etc..
+- [ ] Very basic multi-agent support
 
 
 0.2.0
