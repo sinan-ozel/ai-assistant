@@ -1,11 +1,18 @@
 """Pytest configuration and fixtures for agent_with_tools tests."""
 
 import os
+import time
 import warnings
 
 import pytest
 
 warnings.filterwarnings("ignore", ".*Pydantic.*", UserWarning)
+
+
+@pytest.fixture(autouse=True)
+def pause_between_tests():
+    yield
+    time.sleep(5)
 
 
 @pytest.fixture(scope="function")

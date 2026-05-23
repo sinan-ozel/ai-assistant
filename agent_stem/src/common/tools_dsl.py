@@ -571,6 +571,18 @@ def make_prompt_fn(ctx: DslRunContext):
                     wait,
                 )
                 time.sleep(wait)
+            except litellm.InternalServerError as e:
+                if attempt == _LLM_MAX_RETRIES or "connection" not in str(e).lower():
+                    raise
+                wait = _LLM_RETRY_BASE_DELAY * (2 ** (attempt - 1))
+                logger.warning(
+                    "LLM connection error (attempt %d/%d); retrying in %.0fs: %s",
+                    attempt,
+                    _LLM_MAX_RETRIES,
+                    wait,
+                    e,
+                )
+                time.sleep(wait)
 
         choice = response.choices[0]
         assistant_text = choice.message.content or ""
