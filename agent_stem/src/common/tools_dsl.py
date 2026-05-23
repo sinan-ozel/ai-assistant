@@ -572,7 +572,10 @@ def make_prompt_fn(ctx: DslRunContext):
                 )
                 time.sleep(wait)
             except litellm.InternalServerError as e:
-                if attempt == _LLM_MAX_RETRIES or "connection" not in str(e).lower():
+                if (
+                    attempt == _LLM_MAX_RETRIES
+                    or "connection" not in str(e).lower()
+                ):
                     raise
                 wait = _LLM_RETRY_BASE_DELAY * (2 ** (attempt - 1))
                 logger.warning(
