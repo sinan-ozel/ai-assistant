@@ -808,6 +808,9 @@
             "label": "Run Pre-Release Tests",
             "dependsOn": [
                 "Run Unit Tests: self_hosted_llm",
+                "Run Integration Tests: mistral_agent @ mistral",
+                "Run Integration Tests: agent_with_tool_and_delay_on_mistral @ mistral",
+                "Run Integration Tests: anthropic_agent @ anthropic",
                 "Run Integration Tests: text_workflows @ self_hosted_llm",
                 "Run Integration Tests: image_workflows @ self_hosted_llm",
                 "Run Integration Tests: talk_to_your_documents @ self_hosted_llm",
@@ -890,6 +893,7 @@
                 "Release (Dev)",
                 "Publish Helm Chart (Dev)",
                 "Run Post-Release Tests",
+                "Publish Helm Chart",
             ],
             "dependsOrder": "sequence",
             "problemMatcher": []
