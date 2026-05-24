@@ -1,18 +1,17 @@
 
 # Introduction
 
-🤖 This is a framework for creating very lightweight AI agents, hence the word
-assistant. Write as a hobbyist and run locally using 🐳 Docker, or deploy in
-parallel in production using ⛵ Helm charts on ☸️ Kubernetes clusters.
+🤖 Build AI assistants the way you'd write a 🐍 Python script — because that's exactly what it is. Deploy
+on ⛵ Helm / ☸️ Kubernetes or spin up locally with 🐳 Docker in minutes. Bring your own model: cloud APIs,
+🦙 Ollama, or a llama.cpp server on decade-old hardware all work out of the box.
 
 Design Principles:
-1. Test locally with 🐳 Docker
-2. Deploy in parallel with ☸️ Kubernetes
-3. Only knowledge needed to start: Docker.
-4. To get more advanced: YAML files, basic Python
-5. Underneath, it's actually Python, so write your agentic flow as you see fit.
-6. Evaluation is a first-class citizen in this: the framework lets you write your evaluation.
-7. Locally-hosted or self-hosted models are also a first-class citizen: this has been developed and tested with small models working on a very old machine.
+1. 🐳 Start with Docker — no Kubernetes knowledge required.
+2. ☸️ Scale to Kubernetes — same code, no rewrites.
+3. 🐍 Your agent is a Python script — prompt logic, RAG, tool calls, all in one place.
+4. 📋 YAML for config, Python for logic — nothing more.
+5. 🧪 Evaluation is built in — write test cases alongside your agent, not as an afterthought.
+6. 🏠 Local models are first-class — developed and tested on small, self-hosted models.
 
 # Quickstart
 
@@ -37,15 +36,13 @@ cortex/
 
       import os
 
-      with McpServer(os.environ["MCP_BUSINESS_HOURS_URL"]) as tools:
-          tools.call_read_only()
-          tools.wait()
+      notify("Checking…")
+      with McpServer(os.environ["MCP_BUSINESS_HOURS_URL"]):
+          prompt()
+          delay(3)
 
-      with search(input_text):
-          print("Customer question: " + input_text)
-
-      response = llm()
-      notify(response)
+      with Search(input_text):
+          response = prompt()
 ```
 ```
 cortex/
@@ -212,10 +209,10 @@ You are a helpful assistant called "Aria".
 You are friendly and concise. When you don't know something, say so.
 """
 
-print(input_text)
+response = prompt()
 ```
 
-That's all you need. The `print(input_text)` passes the user's message through unchanged. Restart the container and the new system message is active.
+That's all you need. The docstring becomes the system prompt and `prompt()` calls the LLM. Restart the container and the new personality is active.
 
 ---
 
@@ -240,17 +237,17 @@ You are a support assistant. Answer using the provided documentation.
 If the answer is not in the documents, say so.
 """
 
-with search(input_text):
-    print("User question: " + input_text)
+with Search(input_text):
+    response = prompt()
 ```
 
-`search(input_text)` runs a vector search and prints the matching chunks into the user message before the question. The LLM sees both.
+`Search(input_text)` runs a vector search and injects the matching chunks into the LLM context before calling `prompt()`. The LLM sees both the search results and the conversation history.
 
 To restrict search to one collection:
 
 ```python
-with search(input_text, collection="product-docs", top_k=3):
-    print("User question: " + input_text)
+with Search(input_text, collection="product-docs", top_k=3):
+    response = prompt()
 ```
 
 No code changes needed when you add new documents — the pipeline picks them up automatically on the next poll cycle.
@@ -357,15 +354,17 @@ Named providers (non-default) are referenced by name from workflow YAML files us
 
 | Name | Description |
 |---|---|
-| `input_text` | The current user message |
-| `message_history` | Mutable conversation history list |
-| `agent` | Config object for overriding model, temperature, streaming, etc. |
-| `search` | Context manager for vector search (RAG) |
-| `llm()` | Call the LLM explicitly; returns the response as a string (interactive mode) |
-| `notify(text)` | Stream text to the client immediately (interactive mode) |
-| `McpServer(url)` | Context manager connecting to an MCP tool server (interactive mode) |
+| `input_text` | The current user message (`user_message` / `user_query` are aliases) |
+| `prompt()` | Call the LLM; streams tokens to the client and returns the response as a string |
+| `print(text)` | Send `text` as the final response verbatim, bypassing the LLM |
+| `notify(text)` | Send an intermediate progress message to the client (not saved to history) |
+| `Search(query)` | Context manager — injects vector search results into the LLM context |
+| `McpServer(url)` | Context manager — registers MCP tool schemas for `prompt()` calls inside the block |
+| `MessageHistory(n)` | Context manager — limits conversation history to the last n turn pairs |
+| `delay(seconds)` | `time.sleep` alias for pacing LLM calls |
+| `logger` | Pre-configured `logging.Logger` |
 
-The module docstring becomes the system prompt. Everything `print()`-ed becomes the user message sent to the LLM. When `llm`, `notify`, or `McpServer` appear in the script, the runtime switches to **interactive mode**: the script drives all LLM calls and tool invocations explicitly.
+The module docstring becomes the system prompt. `prompt()` is the only function that calls the LLM — it streams tokens to the client as they arrive and returns the complete reply as a string. The return value of the last `prompt()` call (or anything passed to `print()`) is saved to conversation history. See `agent_stem/src/common/DSL.md` for full reference.
 
 ### Process model
 
@@ -428,8 +427,6 @@ Do not use `print()` — use the existing logging patterns. Do not install packa
 ---
 
 ## Future Plans
-
-**Extended DSL** — multi-LLM-call flows within a single `prompt.py`, enabling sequential reasoning or routing between models.
 
 **Better memory** — automated summarization of older conversation turns when the context window is full, rather than simple truncation.
 
