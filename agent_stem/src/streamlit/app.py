@@ -13,23 +13,64 @@ API_BASE_URL = "http://localhost:8000"
 CHAT_ENDPOINT = f"{API_BASE_URL}/v1/agent/chat"
 
 
+def _messages_key(conv_id: str) -> str:
+    return f"messages_{conv_id}"
+
+
 def initialize_session_state():
     """Initialize session state variables."""
-    if "conversation_id" not in st.session_state:
-        st.session_state.conversation_id = str(uuid.uuid4())
+    if "conversations" not in st.session_state:
+        initial_id = str(uuid.uuid4())
+        st.session_state.conversations = {initial_id: {}}
+        st.session_state.active_conversation_id = initial_id
+        st.session_state[_messages_key(initial_id)] = []
     if "user_id" not in st.session_state:
         st.session_state.user_id = "streamlit-user"
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
     if "chat_warning" not in st.session_state:
         st.session_state.chat_warning = None
 
 
+def get_active_messages() -> list:
+    """Return the message list for the active conversation (read-only copy)."""
+    return list(
+        st.session_state.get(
+            _messages_key(st.session_state.active_conversation_id), []
+        )
+    )
+
+
+def _append_message(conv_id: str, message: dict) -> None:
+    key = _messages_key(conv_id)
+    st.session_state[key] = list(st.session_state.get(key, [])) + [message]
+
+
+def _conversation_label(conv_id: str) -> str:
+    """Return a short display label for a conversation."""
+    for msg in st.session_state.get(_messages_key(conv_id), []):
+        if msg["role"] == "user":
+            text = msg["content"]
+            return text[:40] + ("..." if len(text) > 40 else "")
+    return "New conversation"
+
+
+def create_new_conversation():
+    """Create a new conversation and make it active."""
+    new_id = str(uuid.uuid4())
+    st.session_state.conversations[new_id] = {}
+    st.session_state[_messages_key(new_id)] = []
+    st.session_state.active_conversation_id = new_id
+
+
 def send_message(message: str, media: list | None = None):
-    """Send a message to the agent chat endpoint and stream the response."""
+    """Send a message to the agent chat endpoint and stream the response.
+
+    Yields dicts with keys:
+    - ``content``: text token or complete notify text
+    - ``notify``: True when the chunk originates from a DSL ``notify()`` call
+    """
     payload = {
         "message": message,
-        "conversation_id": st.session_state.conversation_id,
+        "conversation_id": st.session_state.active_conversation_id,
         "user_id": st.session_state.user_id,
         "stream": True,
         "stream_format": "sse",
@@ -48,30 +89,27 @@ def send_message(message: str, media: list | None = None):
             return
         response.raise_for_status()
 
-        # Stream the response chunks
         for line in response.iter_lines(decode_unicode=True):
             if line and line.startswith("data: "):
-                data = line[6:]  # Remove "data: " prefix
+                data = line[6:]
                 if data == "[DONE]":
                     break
-                else:
-                    chunk = json.loads(data)
-                    if chunk.get("error") == "rate_limit_exceeded":
-                        st.session_state.chat_warning = "⚠️ Rate limit exceeded — please wait a moment and try again."
-                        return
-                    # Extract content from delta
-                    if "delta" in chunk and "content" in chunk["delta"]:
-                        yield chunk["delta"]["content"]
+                chunk = json.loads(data)
+                if chunk.get("error") == "rate_limit_exceeded":
+                    st.session_state.chat_warning = (
+                        "⚠️ Rate limit exceeded — please wait a moment"
+                        " and try again."
+                    )
+                    return
+                if "delta" in chunk and "content" in chunk["delta"]:
+                    yield {
+                        "content": chunk["delta"]["content"],
+                        "notify": chunk.get("notify", False),
+                    }
 
     except requests.exceptions.RequestException as e:
         st.error(f"Error communicating with agent: {str(e)}")
         return
-
-
-def reset_conversation():
-    """Start a new conversation."""
-    st.session_state.conversation_id = str(uuid.uuid4())
-    st.session_state.messages = []
 
 
 def _api_ready() -> bool:
@@ -110,28 +148,43 @@ def main():
 
     # Sidebar for chat
     with st.sidebar:
-        st.title("💬 Agent Chat")
-
-        # Conversation controls
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.caption(
-                f"Conversation ID: {st.session_state.conversation_id[:8]}..."
-            )
-        with col2:
-            if st.button("🔄", help="New conversation"):
-                reset_conversation()
+        # Title row with "New conversation" button
+        col_title, col_new = st.columns([4, 1])
+        with col_title:
+            st.title("💬 Agent Chat")
+        with col_new:
+            st.write("")  # vertical alignment spacer
+            if st.button("➕", help="New conversation"):
+                create_new_conversation()
                 st.rerun()
+
+        # Conversation selector (shown when more than one exists)
+        conv_ids = list(st.session_state.conversations.keys())
+        if len(conv_ids) > 1:
+            active_idx = conv_ids.index(st.session_state.active_conversation_id)
+            selected = st.selectbox(
+                "Conversations",
+                options=conv_ids,
+                format_func=_conversation_label,
+                index=active_idx,
+                label_visibility="collapsed",
+            )
+            st.session_state.active_conversation_id = selected
+        else:
+            st.caption(
+                f"Conversation: "
+                f"{st.session_state.active_conversation_id[:8]}…"
+            )
 
         st.divider()
 
         # Chat messages display
+        active_messages = get_active_messages()
         chat_container = st.container(height=500)
         with chat_container:
-            for msg in st.session_state.messages:
+            for msg in active_messages:
                 role = msg["role"]
                 content = msg["content"]
-
                 if role == "user":
                     st.chat_message("user").write(content)
                 else:
@@ -166,8 +219,7 @@ def main():
         user_input = st.chat_input("Type your message here...")
 
         if user_input:
-            st.session_state.chat_warning = None  # clear on new attempt
-            # Build media list from any uploaded images
+            st.session_state.chat_warning = None
             media = []
             for f in uploaded_files or []:
                 ext = f.name.rsplit(".", 1)[-1].lower()
@@ -180,31 +232,79 @@ def main():
                     }
                 )
 
-            # Add user message to history
-            st.session_state.messages.append(
-                {"role": "user", "content": user_input}
-            )
+            conv_id = st.session_state.active_conversation_id
 
-            # Send to agent and get streaming response.
-            # st.write_stream does not update incrementally when called inside
-            # a container that was already rendered, so we drive the generator
-            # manually and update an st.empty() placeholder on each chunk.
+            # Persist user message and show it immediately
+            _append_message(conv_id, {"role": "user", "content": user_input})
+            with chat_container:
+                st.chat_message("user").write(user_input)
+
+            # Stream the response into the chat container.
+            # notify() chunks go into an expandable "Thinking…" box;
+            # regular LLM delta chunks stream inline as the main response.
+            full_response = ""
+            thinking_texts: list[str] = []
+            response_text = ""
+
             with chat_container:
                 with st.chat_message("assistant"):
-                    placeholder = st.empty()
-                    response_text = ""
-                    for chunk in send_message(user_input, media=media or None):
-                        response_text += chunk
-                        placeholder.markdown(response_text + "▌")
-                    placeholder.markdown(response_text)
+                    thinking_slot = st.empty()
+                    response_placeholder = st.empty()
 
-            if response_text:
-                # Add assistant response to history
-                st.session_state.messages.append(
-                    {"role": "assistant", "content": response_text}
+                    for item in send_message(user_input, media=media or None):
+                        content = item["content"]
+                        is_notify = item.get("notify", False)
+
+                        if is_notify:
+                            thinking_texts.append(content)
+                            with thinking_slot.container():
+                                with st.expander("🤔", expanded=True):
+                                    for t in thinking_texts:
+                                        st.markdown(t)
+                            # Only show cursor if no prompt() delta tokens yet
+                            if not response_text:
+                                response_placeholder.markdown("▌")
+                        else:
+                            response_text += content
+                            response_placeholder.markdown(response_text + "▌")
+
+                    # Finalise after streaming completes.
+                    # response_text non-empty → prompt() produced the response;
+                    # thinking_texts are progress notifications shown in expander.
+                    # response_text empty + thinking_texts → old-style notify-as-
+                    # response pattern; last notify becomes the visible reply.
+                    if response_text:
+                        if thinking_texts:
+                            with thinking_slot.container():
+                                with st.expander("🤔", expanded=False):
+                                    for t in thinking_texts:
+                                        st.markdown(t)
+                        else:
+                            thinking_slot.empty()
+                        response_placeholder.markdown(response_text)
+                        full_response = response_text
+                    elif thinking_texts:
+                        intermediate = thinking_texts[:-1]
+                        final_text = thinking_texts[-1]
+                        if intermediate:
+                            with thinking_slot.container():
+                                with st.expander("🤔", expanded=False):
+                                    for t in intermediate:
+                                        st.markdown(t)
+                        else:
+                            thinking_slot.empty()
+                        response_placeholder.markdown(final_text)
+                        full_response = final_text
+                    else:
+                        thinking_slot.empty()
+                        response_placeholder.markdown(response_text)
+                        full_response = response_text
+
+            if full_response:
+                _append_message(
+                    conv_id, {"role": "assistant", "content": full_response}
                 )
 
-            # Rerun to update chat display
             st.rerun()
 
     # Main content area
@@ -224,7 +324,8 @@ def main():
             books = books_response.json()
             if not books:
                 st.info(
-                    "No books indexed yet. Add PDFs or Markdown files to `cortex/library/`."
+                    "No books indexed yet. Add PDFs or Markdown files to"
+                    " `cortex/library/`."
                 )
             else:
                 # Group by shelf (first path component before '/')
@@ -246,14 +347,12 @@ def main():
                     col_chunks.caption(f"{b['chunk_count']} chunks")
 
                 if len(shelves) <= 1:
-                    # Single shelf or all at root — flat list
                     shelf_name, shelf_books = next(iter(shelves.items()))
                     if shelf_name:
                         st.markdown(f"**{shelf_name}**")
                     for b in shelf_books:
                         _render_book(b)
                 else:
-                    # Multiple shelves — hierarchical expanders
                     for shelf_name in sorted(
                         shelves, key=lambda s: ("" if s is None else s)
                     ):
@@ -288,7 +387,8 @@ def main():
         if not isinstance(_mcp_tools, list) or not _mcp_tools:
             st.info(
                 "No external tools registered. "
-                "Add a `McpServer(...)` call to `cortex/chat/prompt.py` to enable tools."
+                "Add a `McpServer(...)` call to `cortex/chat/prompt.py`"
+                " to enable tools."
             )
         else:
             for _server in _mcp_tools:
@@ -334,7 +434,8 @@ def main():
                         ]
                         if _tooltip_icons:
                             st.markdown(
-                                " ".join(_tooltip_icons), unsafe_allow_html=True
+                                " ".join(_tooltip_icons),
+                                unsafe_allow_html=True,
                             )
                         if _desc:
                             st.caption(_desc)
@@ -382,12 +483,12 @@ def main():
             st.info("No completed evaluation run yet.")
 
         elif eval_resp.status_code == 202:
-            # Running (or cancellation in progress)
             data = eval_resp.json()
 
             if data.get("cancelled"):
                 st.warning(
-                    "⚪ Cancellation requested — waiting for the current step to finish…"
+                    "⚪ Cancellation requested — waiting for the current"
+                    " step to finish…"
                 )
             else:
                 with col_cancel:
@@ -422,7 +523,6 @@ def main():
             st.rerun()
 
         elif eval_resp.status_code == 200:
-            # Completed — show results
             data = eval_resp.json()
 
             if data.get("status") == "error":
@@ -439,7 +539,6 @@ def main():
                     except Exception:
                         return iso
 
-                # Header row: suite name + timestamps
                 suite_name = data.get("suite") or "Evaluation suite"
                 started = data.get("started_at")
                 completed = data.get("completed_at")
@@ -463,7 +562,6 @@ def main():
                 if ts_parts:
                     st.caption("   ·   ".join(ts_parts))
 
-                # Summary metrics
                 total = data.get("total", 0)
                 passed = data.get("passed", 0)
                 failed = data.get("failed", 0)
@@ -472,7 +570,6 @@ def main():
                 m2.metric("Passed", passed, delta=None)
                 m3.metric("Failed", failed, delta=None)
 
-                # Per-case results
                 cases = data.get("cases", [])
                 if cases:
                     st.markdown("#### Cases")
@@ -529,7 +626,8 @@ def main():
 
         else:
             st.warning(
-                f"Unexpected status from evaluation API: {eval_resp.status_code}"
+                f"Unexpected status from evaluation API:"
+                f" {eval_resp.status_code}"
             )
 
     # Workflows Section
@@ -537,7 +635,6 @@ def main():
     st.markdown("## 🔄 Workflows")
     st.markdown("Browse workflows and trigger evaluations where available.")
 
-    # Fetch available workflows
     try:
         workflows_response = requests.get(
             f"{API_BASE_URL}/private/v1/workflows", timeout=5
@@ -550,7 +647,8 @@ def main():
                 if not any(w.get("has_evaluation") for w in all_workflows):
                     st.caption(
                         "None of these workflows have evaluations defined. "
-                        "Add an `evaluation:` section to a workflow YAML to enable testing."
+                        "Add an `evaluation:` section to a workflow YAML to"
+                        " enable testing."
                     )
                 for workflow in all_workflows:
                     with st.expander(f"📊 {workflow['name']}", expanded=False):
@@ -576,18 +674,21 @@ def main():
                                 ):
                                     try:
                                         eval_response = requests.post(
-                                            f"{API_BASE_URL}/private/evaluate{workflow['path']}",
+                                            f"{API_BASE_URL}/private/evaluate"
+                                            f"{workflow['path']}",
                                             timeout=10,
                                         )
                                         if eval_response.status_code == 201:
                                             st.success("Evaluation started!")
                                         elif eval_response.status_code == 409:
                                             st.warning(
-                                                "Evaluation already in progress"
+                                                "Evaluation already in"
+                                                " progress"
                                             )
                                         else:
                                             st.error(
-                                                f"Failed to start: {eval_response.status_code}"
+                                                f"Failed to start:"
+                                                f" {eval_response.status_code}"
                                             )
                                     except Exception as e:
                                         st.error(f"Error: {str(e)}")
@@ -595,7 +696,8 @@ def main():
                             with col2:
                                 try:
                                     results_response = requests.get(
-                                        f"{API_BASE_URL}/private/evaluate{workflow['path']}/results",
+                                        f"{API_BASE_URL}/private/evaluate"
+                                        f"{workflow['path']}/results",
                                         timeout=5,
                                     )
                                     if results_response.status_code == 200:
@@ -613,7 +715,9 @@ def main():
                                             "cancelled": "⚪",
                                         }
                                         st.markdown(
-                                            f"**Status:** {status_colors.get(status, '⚪')} {status.upper()}"
+                                            f"**Status:**"
+                                            f" {status_colors.get(status, '⚪')}"
+                                            f" {status.upper()}"
                                         )
 
                                         if results_data.get("started_at"):
@@ -628,11 +732,13 @@ def main():
                                                     )
                                                 )
                                                 st.markdown(
-                                                    f"**Started:** {started_at.strftime('%Y-%m-%d %H:%M:%S')}"
+                                                    f"**Started:**"
+                                                    f" {started_at.strftime('%Y-%m-%d %H:%M:%S')}"
                                                 )
                                             except Exception:
                                                 st.markdown(
-                                                    f"**Started:** {results_data['started_at']}"
+                                                    f"**Started:**"
+                                                    f" {results_data['started_at']}"
                                                 )
 
                                         if (
@@ -644,7 +750,8 @@ def main():
 
                                             if results.get("errors"):
                                                 st.error(
-                                                    "⚠️ **Evaluation completed with errors:**"
+                                                    "⚠️ **Evaluation"
+                                                    " completed with errors:**"
                                                 )
                                                 for error in results["errors"]:
                                                     st.error(f"• {error}")
@@ -691,11 +798,15 @@ def main():
                                                         else "❌"
                                                     )
                                                     st.markdown(
-                                                        f"**{case_status} {case.get('id')}**"
+                                                        f"**{case_status}"
+                                                        f" {case.get('id')}**"
                                                     )
                                                     st.markdown(
-                                                        f"Passed: {case.get('pass_count')}/{case.get('repeat')} "
-                                                        f"(threshold: {case.get('threshold')})"
+                                                        f"Passed:"
+                                                        f" {case.get('pass_count')}"
+                                                        f"/{case.get('repeat')} "
+                                                        f"(threshold:"
+                                                        f" {case.get('threshold')})"
                                                     )
                                                     if not case.get("passed"):
                                                         for run in case.get(
@@ -707,7 +818,8 @@ def main():
                                                                 for (
                                                                     step
                                                                 ) in run.get(
-                                                                    "steps", []
+                                                                    "steps",
+                                                                    [],
                                                                 ):
                                                                     for (
                                                                         exp
@@ -721,13 +833,16 @@ def main():
                                                                             "error"
                                                                         ):
                                                                             st.error(
-                                                                                f"Run {run['run']}, step {step['step']} "
-                                                                                f"({exp['type']}): {exp['error']}"
+                                                                                f"Run {run['run']},"
+                                                                                f" step {step['step']} "
+                                                                                f"({exp['type']}):"
+                                                                                f" {exp['error']}"
                                                                             )
 
                                         elif status == "error":
                                             st.error(
-                                                "🚨 **Evaluation stopped due to error:**"
+                                                "🚨 **Evaluation stopped"
+                                                " due to error:**"
                                             )
                                             st.error(
                                                 f"• {results_data.get('error', 'Unknown error')}"
@@ -735,7 +850,8 @@ def main():
 
                                         elif status == "failed":
                                             st.warning(
-                                                "⚠️ **Evaluation completed with failures:**"
+                                                "⚠️ **Evaluation completed"
+                                                " with failures:**"
                                             )
                                             st.warning(
                                                 f"• {results_data.get('error', 'Some test cases failed')}"
@@ -748,7 +864,9 @@ def main():
                                                 key=f"cancel_{workflow['path']}",
                                             ):
                                                 cancel_response = requests.post(
-                                                    f"{API_BASE_URL}/private/cancel-evaluation{workflow['path']}",
+                                                    f"{API_BASE_URL}"
+                                                    f"/private/cancel-evaluation"
+                                                    f"{workflow['path']}",
                                                     timeout=10,
                                                 )
                                                 if (
@@ -756,19 +874,22 @@ def main():
                                                     == 200
                                                 ):
                                                     st.warning(
-                                                        "Cancellation requested"
+                                                        "Cancellation"
+                                                        " requested"
                                                     )
                                                     st.rerun()
                                                 else:
                                                     st.error(
-                                                        f"Failed to cancel: {cancel_response.status_code}"
+                                                        f"Failed to cancel:"
+                                                        f" {cancel_response.status_code}"
                                                     )
                                             time.sleep(2)
                                             st.rerun()
 
                                         elif status == "cancelled":
                                             st.warning(
-                                                "⚪ **Evaluation was cancelled**"
+                                                "⚪ **Evaluation was"
+                                                " cancelled**"
                                             )
                                 except Exception as e:
                                     st.warning(

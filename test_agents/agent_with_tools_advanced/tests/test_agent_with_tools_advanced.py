@@ -71,7 +71,7 @@ def test_agent_adv_two_phase_response(clear_test_memory):
 
 @pytest.mark.depends(on="test_adv_basic_response")
 def test_agent_adv_streaming_yields_notifications(clear_test_memory):
-    """Streaming response yields intermediate notify() chunks before final done."""
+    """Streaming response yields notify chunks with notify=true and delta chunks without it."""
     response = requests.post(
         f"{BASE_URL}/v1/agent/chat",
         json={
@@ -85,22 +85,47 @@ def test_agent_adv_streaming_yields_notifications(clear_test_memory):
     )
     assert response.status_code == 200
 
-    chunks = []
+    notify_chunks = []
+    delta_chunks = []
+    done_received = False
+
     for line in response.iter_lines(decode_unicode=True):
-        if line:
-            chunk = json.loads(line)
-            chunks.append(chunk)
-            if chunk.get("done"):
-                break
+        if not line:
+            continue
+        chunk = json.loads(line)
+        if chunk.get("done"):
+            done_received = True
+            break
+        if chunk.get("notify"):
+            notify_chunks.append(chunk)
+        else:
+            delta_chunks.append(chunk)
 
-    assert len(chunks) > 0
-    assert chunks[-1].get("done") is True
+    assert done_received, "Stream did not terminate with done"
 
-    # The advanced prompt sends at least two notify() calls before the final
-    # response ("Consulting the draconic prophecy..." and an llm result), so
-    # expect more than one non-done chunk.
-    non_done = [c for c in chunks if not c.get("done")]
-    assert len(non_done) >= 1
+    # The advanced prompt calls notify() multiple times — at least two are expected
+    assert len(notify_chunks) >= 2, (
+        f"Expected >=2 notify chunks, got {len(notify_chunks)}: "
+        f"{[c['delta'].get('content','') for c in notify_chunks]}"
+    )
+    assert len(delta_chunks) > 0, "Expected delta token chunks from prompt() calls"
+
+    # notify chunks must carry complete text in delta.content, not incremental tokens
+    for c in notify_chunks:
+        assert c.get("notify") is True
+        assert "delta" in c
+        content = c["delta"].get("content", "")
+        assert len(content) > 0, f"notify chunk has empty content: {c}"
+
+    # delta chunks (LLM tokens) must NOT carry the notify flag
+    for c in delta_chunks:
+        assert "notify" not in c, f"Unexpected notify flag on delta chunk: {c}"
+
+    # Accumulated delta content must form a non-empty response
+    full_response = "".join(
+        c["delta"].get("content", "") for c in delta_chunks
+    )
+    assert len(full_response) > 0, "No token content in delta chunks"
 
 
 @pytest.mark.depends(on="test_adv_basic_response")

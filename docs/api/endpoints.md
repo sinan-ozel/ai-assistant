@@ -34,8 +34,27 @@ curl -X POST http://localhost:8000/v1/agent/chat \
 
 **Streaming response chunk:**
 ```json
-{"conversation_id": "my-session-123", "user_id": "alice", "delta": "Paris"}
+{
+  "conversation_id": "my-session-123",
+  "user_id": "alice",
+  "role": "assistant",
+  "created": 1703347200,
+  "delta": {"content": "Paris"},
+  "finish_reason": null
+}
 ```
+
+When the agent runs in interactive mode (i.e. `cortex/chat/prompt.py` uses
+`notify()`), each `notify()` call emits one complete chunk with an additional
+`"notify": true` field.  This lets clients distinguish intermediate progress
+messages from final LLM response tokens:
+
+```json
+{"conversation_id": "...", "delta": {"content": "Consulting sources…"}, "notify": true}
+```
+
+The Streamlit UI shows `notify` chunks in a collapsible **🤔** box
+and promotes the last one as the visible assistant response.
 
 ---
 

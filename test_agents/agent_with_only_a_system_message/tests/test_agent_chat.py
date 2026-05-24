@@ -105,3 +105,153 @@ def test_agent_chat_custom_system_message():
     # Response should identify as "Son of Anton"
     response_text = data["message"]
     assert "Son of Anton" in response_text, f"Expected 'Son of Anton' in response, got: {response_text}"
+
+
+@pytest.mark.depends(on="test_agent_chat_basic_response")
+def test_agent_chat_streaming_sse():
+    """SSE stream delivers correctly structured chunks and terminates with [DONE]."""
+    response = requests.post(
+        f"{BASE_URL}/v1/agent/chat",
+        json={
+            "message": "Reply with exactly two words.",
+            "user_id": "test-stream-sse",
+            "stream": True,
+            "stream_format": "sse",
+            "max_tokens": 10,
+        },
+        stream=True,
+        timeout=60,
+    )
+
+    assert response.status_code == 200
+    assert "text/event-stream" in response.headers.get("content-type", "")
+
+    chunks = []
+    done_received = False
+    conversation_id = None
+
+    for line in response.iter_lines(decode_unicode=True):
+        if not line:
+            continue
+        assert line.startswith("data: "), f"Unexpected SSE line: {line!r}"
+        payload = line[6:]
+        if payload == "[DONE]":
+            done_received = True
+            break
+        chunk = json.loads(payload)
+        chunks.append(chunk)
+        if conversation_id is None:
+            conversation_id = chunk.get("conversation_id")
+
+    assert done_received, "Stream did not end with [DONE]"
+    assert len(chunks) > 0, "No chunks received before [DONE]"
+    assert conversation_id, "No conversation_id in chunks"
+
+    # Every chunk must carry the required envelope fields
+    required_fields = {"conversation_id", "user_id", "role", "created", "delta"}
+    for chunk in chunks:
+        missing = required_fields - chunk.keys()
+        assert not missing, f"Chunk missing fields {missing}: {chunk}"
+        assert chunk["role"] == "assistant"
+        assert chunk["user_id"] == "test-stream-sse"
+        assert chunk["conversation_id"] == conversation_id
+        # Regular token chunks must not carry the notify flag
+        assert "notify" not in chunk, f"Unexpected notify flag in delta chunk: {chunk}"
+
+    # Accumulated content must be non-empty
+    content = "".join(
+        c["delta"]["content"] for c in chunks if c["delta"].get("content")
+    )
+    assert len(content) > 0, "No token content received in stream"
+
+
+@pytest.mark.depends(on="test_agent_chat_basic_response")
+def test_agent_chat_streaming_ndjson():
+    """NDJSON stream delivers correctly structured chunks and terminates with done."""
+    response = requests.post(
+        f"{BASE_URL}/v1/agent/chat",
+        json={
+            "message": "Reply with exactly two words.",
+            "user_id": "test-stream-ndjson",
+            "stream": True,
+            "stream_format": "ndjson",
+            "max_tokens": 10,
+        },
+        stream=True,
+        timeout=60,
+    )
+
+    assert response.status_code == 200
+    assert "application/x-ndjson" in response.headers.get("content-type", "")
+
+    chunks = []
+    done_received = False
+
+    for line in response.iter_lines(decode_unicode=True):
+        if not line:
+            continue
+        chunk = json.loads(line)
+        if chunk.get("done"):
+            done_received = True
+            break
+        chunks.append(chunk)
+
+    assert done_received, "Stream did not end with {done: true}"
+    assert len(chunks) > 0, "No chunks received"
+
+    first = chunks[0]
+    assert "conversation_id" in first
+    assert first["role"] == "assistant"
+    assert first["user_id"] == "test-stream-ndjson"
+
+    content = "".join(
+        c["delta"]["content"] for c in chunks if c["delta"].get("content")
+    )
+    assert len(content) > 0, "No token content received in NDJSON stream"
+
+
+@pytest.mark.depends(on="test_agent_chat_basic_response")
+def test_agent_chat_streaming_preserves_conversation():
+    """Conversation history is stored and visible on the next streaming turn."""
+    # First turn — tell the agent something to remember
+    r1 = requests.post(
+        f"{BASE_URL}/v1/agent/chat",
+        json={
+            "message": "My favourite colour is vermillion. Acknowledge this in one sentence.",
+            "user_id": "test-stream-memory",
+            "stream": True,
+            "stream_format": "ndjson",
+            "max_tokens": 40,
+        },
+        stream=True,
+        timeout=60,
+    )
+    assert r1.status_code == 200
+
+    conv_id = None
+    for line in r1.iter_lines(decode_unicode=True):
+        if not line:
+            continue
+        chunk = json.loads(line)
+        if chunk.get("done"):
+            break
+        if conv_id is None:
+            conv_id = chunk.get("conversation_id")
+
+    assert conv_id, "No conversation_id returned on first turn"
+
+    # Second turn — ask the agent to recall it
+    r2 = requests.post(
+        f"{BASE_URL}/v1/agent/chat",
+        json={
+            "message": "What is my favourite colour?",
+            "user_id": "test-stream-memory",
+            "conversation_id": conv_id,
+        },
+        timeout=60,
+    )
+    assert r2.status_code == 200
+    data = r2.json()
+    assert "vermillion" in data["message"].lower(), (
+        f"Agent did not recall the colour from history: {data['message']}"
+    )

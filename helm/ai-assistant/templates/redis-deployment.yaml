@@ -26,6 +26,10 @@ spec:
               containerPort: 6379
               protocol: TCP
           args: ["redis-server"]
+          {{- if .Values.redis.resources }}
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
+          {{- end }}
           readinessProbe:
             exec:
               command: ["redis-cli", "ping"]

@@ -2,13 +2,14 @@
 
 
 0.1.0
-- [ ] Chat window: multple conversations, also increases in height as the browser window changes?
+- [x] Chat window: multple conversations,
+- [ ] Chat window should increase in height as the browser window changes?
 - [ ] Make sure that different tenants work on the streamlit interface
 - [ ] The title, "Agent Chat", needs to be customizable.
 - [x] Turn the search into a full MCP toolset.
   - [ ] Add L1 and cosine distance as metrics.
 - [ ] Should implement 413 - prompt too long
-- [ ] Make streamlit front-end streaming.
+- [x] Make streamlit front-end streaming.
 - [ ] Add the medical agent to the examples.
 - [ ] Create new test environment based on default, called api_test (for workflows) and mcp_test (for just the search for now). Maybe together?
 - [ ] Add a test with an additional tool.
@@ -22,7 +23,7 @@
 
 
 0.2.0
-- [ ] Multiple conversations (Need conversations endpoint and )
+- [ ] Multiple conversations (Need conversations endpoint?)
 - [ ] Local MCP tools
 - [ ] Add conversation summarization feature, and memory support in cortex
 - [ ] Ability to add books and create shelves on the interface.

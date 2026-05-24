@@ -25,6 +25,10 @@ spec:
             - name: embed
               containerPort: {{ .Values.embedding.port }}
               protocol: TCP
+          {{- if .Values.embedding.resources }}
+          resources:
+            {{- toYaml .Values.embedding.resources | nindent 12 }}
+          {{- end }}
           readinessProbe:
             tcpSocket:
               port: embed

@@ -28,6 +28,10 @@ spec:
             - name: grpc
               containerPort: 6334
               protocol: TCP
+          {{- if .Values.qdrant.resources }}
+          resources:
+            {{- toYaml .Values.qdrant.resources | nindent 12 }}
+          {{- end }}
           readinessProbe:
             tcpSocket:
               port: http

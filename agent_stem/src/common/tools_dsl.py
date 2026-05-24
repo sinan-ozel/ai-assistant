@@ -108,11 +108,13 @@ class DslRunContext:
         event_loop: asyncio.AbstractEventLoop,
         notify_fn: Callable[[str], None],
         retry_on_rate_limit: bool = False,
+        delta_fn: Optional[Callable[[str], None]] = None,
     ):
         self.messages = messages
         self.providers_state = providers_state
         self.event_loop = event_loop
         self.notify_fn = notify_fn
+        self.delta_fn = delta_fn
         self.llm_called: bool = False
         self.final_response: Optional[str] = None
         self.retry_on_rate_limit: bool = retry_on_rate_limit
@@ -530,6 +532,42 @@ def make_prompt_fn(ctx: DslRunContext):
         if tools:
             kwargs.setdefault("tools", tools)
             kwargs.setdefault("tool_choice", "auto")
+
+        if ctx.delta_fn is not None and not tools:
+            from common.llm import call_llm_by_model_streaming
+
+            async def _stream_call():
+                text_parts = []
+                async for chunk in call_llm_by_model_streaming(
+                    messages=call_messages,
+                    providers_state=ctx.providers_state,
+                    model=requested_model,
+                    **kwargs,
+                ):
+                    if chunk.choices:
+                        delta = chunk.choices[0].delta
+                        if hasattr(delta, "content") and delta.content:
+                            ctx.delta_fn(delta.content)
+                            text_parts.append(delta.content)
+                return "".join(text_parts)
+
+            _fut = asyncio.run_coroutine_threadsafe(
+                _stream_call(), ctx.event_loop
+            )
+            try:
+                assistant_text = _fut.result(timeout=_LLM_CALL_TIMEOUT)
+            except TimeoutError:
+                _fut.cancel()
+                logger.error(
+                    "prompt() streaming timed out after %.0fs (model=%r, provider=%r)",
+                    _LLM_CALL_TIMEOUT,
+                    requested_model,
+                    provider,
+                )
+                raise
+            ctx.llm_called = True
+            ctx.final_response = assistant_text
+            return assistant_text
 
         for attempt in range(1, _LLM_MAX_RETRIES + 1):
             coro = call_llm_by_model(

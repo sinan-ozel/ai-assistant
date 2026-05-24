@@ -232,6 +232,7 @@ def _run_interactive_script(
     event_loop: Any,
     notify_fn: Any,
     retry_on_rate_limit: bool = False,
+    delta_fn: Optional[Any] = None,
 ) -> PromptResult:
     """Execute a DSL script in the current (executor) thread.
 
@@ -276,6 +277,7 @@ def _run_interactive_script(
         event_loop=event_loop,
         notify_fn=notify_fn,
         retry_on_rate_limit=retry_on_rate_limit,
+        delta_fn=delta_fn,
     )
 
     import time as _time
@@ -330,6 +332,7 @@ async def execute_prompt_script(
     providers_state: dict,
     notify_fn: Any,
     retry_on_rate_limit: bool = False,
+    delta_fn: Optional[Any] = None,
 ) -> PromptResult:
     """Execute a DSL script asynchronously.
 
@@ -348,6 +351,10 @@ async def execute_prompt_script(
         Provider state dict for LLM calls.
     notify_fn:
         Thread-safe callable for forwarding notifications to the frontend.
+    delta_fn:
+        Thread-safe callable for forwarding LLM token deltas to the frontend.
+        When set and no tools are active, ``prompt()`` streams tokens through
+        this callback instead of returning the full response at once.
     """
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(
@@ -360,5 +367,6 @@ async def execute_prompt_script(
         loop,
         notify_fn,
         retry_on_rate_limit,
+        delta_fn,
     )
     return result

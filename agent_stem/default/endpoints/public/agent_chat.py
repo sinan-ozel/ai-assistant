@@ -43,8 +43,6 @@ DEFAULT_SYSTEM_MESSAGE = os.environ.get(
     "context across messages.",
 )
 
-EMBEDDING_TIMEOUT = float(os.environ.get("EMBEDDING_TIMEOUT", "0.5"))
-
 logger = logging.getLogger(__name__)
 
 
@@ -216,6 +214,7 @@ def _encode_notify_chunk(
         "created": created,
         "delta": {"content": text},
         "finish_reason": None,
+        "notify": True,
     }
     if stream_format == STREAM_FORMAT_SSE:
         return f"data: {json.dumps(chunk_data)}\n\n"
@@ -243,12 +242,17 @@ async def handle_interactive_streaming(
     """
     import queue as _queue
 
-    notify_queue: _queue.SimpleQueue = _queue.SimpleQueue()
+    chunk_queue: _queue.SimpleQueue = _queue.SimpleQueue()
     loop = asyncio.get_event_loop()
     created = int(time.time())
+    delta_sent = [False]
 
     def _notify_fn(text: str) -> None:
-        notify_queue.put(text)
+        chunk_queue.put(("notify", text))
+
+    def _delta_fn(token: str) -> None:
+        delta_sent[0] = True
+        chunk_queue.put(("delta", token))
 
     dsl_task = asyncio.ensure_future(
         execute_prompt_script(
@@ -257,11 +261,12 @@ async def handle_interactive_streaming(
             init_messages=init_messages,
             providers_state=providers_state_ref,
             notify_fn=_notify_fn,
+            delta_fn=_delta_fn,
         )
     )
 
     def _on_dsl_done(_task):
-        notify_queue.put(None)
+        chunk_queue.put(None)
 
     dsl_task.add_done_callback(_on_dsl_done)
 
@@ -273,12 +278,27 @@ async def handle_interactive_streaming(
 
     async def generate_chunks():
         while True:
-            item = await loop.run_in_executor(None, notify_queue.get)
+            item = await loop.run_in_executor(None, chunk_queue.get)
             if item is None:
                 break
-            yield _encode_notify_chunk(
-                item, conversation_id, user_id, created, stream_format
-            )
+            kind, text = item
+            if kind == "notify":
+                yield _encode_notify_chunk(
+                    text, conversation_id, user_id, created, stream_format
+                )
+            else:
+                delta_chunk = {
+                    "conversation_id": conversation_id,
+                    "user_id": user_id,
+                    "role": "assistant",
+                    "created": created,
+                    "delta": {"content": text},
+                    "finish_reason": None,
+                }
+                if stream_format == STREAM_FORMAT_SSE:
+                    yield f"data: {json.dumps(delta_chunk)}\n\n"
+                else:
+                    yield json.dumps(delta_chunk) + "\n"
 
         try:
             dsl_result = await dsl_task
@@ -292,8 +312,6 @@ async def handle_interactive_streaming(
 
         assistant_text = dsl_result.final_response or ""
         if assistant_text:
-            from redis_memory import ConversationMemory
-
             with ConversationMemory(conversation_id=conv_key) as memory:
                 if not hasattr(memory, "messages") or not isinstance(
                     memory.messages, list
@@ -303,6 +321,35 @@ async def handle_interactive_streaming(
                 memory.messages.append(
                     {"role": "assistant", "content": assistant_text}
                 )
+
+        if not delta_sent[0] and assistant_text:
+            # Fallback: prompt() ran with tools active and couldn't stream;
+            # send the complete response as a single chunk.
+            response_chunk = {
+                "conversation_id": conversation_id,
+                "user_id": user_id,
+                "role": "assistant",
+                "created": created,
+                "delta": {"content": assistant_text},
+                "finish_reason": "stop",
+            }
+            if stream_format == STREAM_FORMAT_SSE:
+                yield f"data: {json.dumps(response_chunk)}\n\n"
+            else:
+                yield json.dumps(response_chunk) + "\n"
+        elif delta_sent[0]:
+            finish_chunk = {
+                "conversation_id": conversation_id,
+                "user_id": user_id,
+                "role": "assistant",
+                "created": created,
+                "delta": {},
+                "finish_reason": "stop",
+            }
+            if stream_format == STREAM_FORMAT_SSE:
+                yield f"data: {json.dumps(finish_chunk)}\n\n"
+            else:
+                yield json.dumps(finish_chunk) + "\n"
 
         if stream_format == STREAM_FORMAT_SSE:
             yield "data: [DONE]\n\n"
@@ -957,9 +1004,61 @@ spec = {
     "methods": ["POST"],
     "summary": "Send message to agent",
     "description": (
-        "Send a message to an agent with stateful conversation memory. "
-        "The server manages conversation history and context "
-        "automatically."
+        "Send a message to the agent and receive a response. "
+        "Conversation history is stored in Redis and trimmed automatically "
+        "to fit the provider's context window.\n\n"
+        "## Conversation identity\n\n"
+        "Every request belongs to a *(user_id, conversation_id)* pair. "
+        "Omit `conversation_id` to start a new conversation — the server "
+        "generates one and returns it in the response. Pass the same "
+        "`conversation_id` on subsequent requests to continue the same "
+        "thread. The `user_id` field is optional; the proxy or ingress "
+        "should inject the `User-Id` request header instead (it takes "
+        "precedence over the body field). Defaults to `'default-user'` "
+        "when neither is supplied.\n\n"
+        "## Non-streaming response\n\n"
+        "Send `stream: false` (default) to receive a single JSON object "
+        "once the full response is ready:\n\n"
+        "```json\n"
+        '{"conversation_id":"abc","user_id":"alice","message":"Hello!","role":"assistant","created":1703347200,"usage":{"prompt_tokens":20,"completion_tokens":8,"total_tokens":28}}\n'
+        "```\n\n"
+        "## Streaming — SSE (default)\n\n"
+        "Set `stream: true` (and optionally `stream_format: \"sse\"`) to "
+        "receive a Server-Sent Events stream. Each event is a line of the "
+        "form `data: <JSON>\\n\\n`. The stream ends with the sentinel "
+        "`data: [DONE]\\n\\n`.\n\n"
+        "Each data chunk:\n\n"
+        "```json\n"
+        '{"conversation_id":"abc","user_id":"alice","role":"assistant","created":1703347200,"delta":{"content":"Hello"},"finish_reason":null}\n'
+        "```\n\n"
+        "The final chunk before `[DONE]` carries a non-null `finish_reason` "
+        "(typically `\"stop\"`).\n\n"
+        "## Streaming — NDJSON\n\n"
+        "Set `stream_format: \"ndjson\"` for Ollama-style newline-delimited "
+        "JSON. Each line is a complete JSON object. The stream ends with "
+        "`{\"done\": true}`.\n\n"
+        "The per-chunk structure is identical to SSE chunks above.\n\n"
+        "## Notify chunks\n\n"
+        "When the agent's `prompt.py` calls `notify(text)`, the server "
+        "emits a chunk with `\"notify\": true` **before** the final LLM "
+        "response begins streaming. Notify chunks carry a complete message "
+        "in `delta.content` — they are not incremental tokens.\n\n"
+        "```json\n"
+        '{"conversation_id":"abc","user_id":"alice","role":"assistant","created":1703347200,"delta":{"content":"Searching documents\\u2026"},"finish_reason":null,"notify":true}\n'
+        "```\n\n"
+        "Regular delta chunks (LLM tokens) do **not** include the `notify` "
+        "field. Clients should use its presence to distinguish progress "
+        "notifications from final response tokens: render notify chunks in "
+        "a collapsible 'thinking' indicator and accumulate delta chunks as "
+        "the visible reply.\n\n"
+        "## Error chunk\n\n"
+        "If the LLM connection drops mid-stream the server emits an error "
+        "chunk and closes the stream:\n\n"
+        "```json\n"
+        '{"conversation_id":"abc","user_id":"alice","role":"assistant","created":1703347200,"delta":{},"finish_reason":"error","error":"Connection reset by peer"}\n'
+        "```\n\n"
+        "For SSE this is followed immediately by `data: [DONE]\\n\\n`; for "
+        "NDJSON the error chunk itself carries `\"done\": true`."
     ),
     "requestBody": {
         "required": True,

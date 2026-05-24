@@ -107,6 +107,12 @@ No standard client compatibility — use directly.
 
 **Streaming formats:** same as `/v1/chat/completions` above, but chunks include `conversation_id`, `user_id`, and `delta`.
 
+When the agent runs in interactive mode (DSL `prompt.py` uses `notify()`), each
+`notify()` call emits one complete chunk with `"notify": true`.  Regular LLM
+delta chunks do not include this field.  Clients may use `"notify"` to
+distinguish intermediate progress messages from final response tokens — the
+Streamlit UI renders them in a collapsible **🤔** expander.
+
 **Responses:** `200 OK`, `408 Request Timeout`, `422 Unprocessable Entity`, `503 Service Unavailable` (no provider configured)
 
 #### Agent customization — `cortex/chat/prompt.py`

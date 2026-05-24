@@ -13,6 +13,9 @@
 
 replicaCount: 1
 
+env:
+  embeddingTimeout: "8.0"
+
 extraEnvFromSecret: llm-secrets
 
 mcpServers:

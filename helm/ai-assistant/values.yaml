@@ -15,7 +15,17 @@ env:
   conversationWindowLimit: ""
   # Embedding request timeout in seconds. Increase if the embedding server
   # is slow to respond (e.g. first-request cold start on a slow host).
-  embeddingTimeout: "0.5"
+  embeddingTimeout: "3.0"
+
+# Resource requests and limits for the main application container.
+# Override with null (~) to remove resource constraints entirely.
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
 
 # API keys injected as a Kubernetes Secret.
 # Leave empty to omit the Secret entirely (e.g. when using only local servers).
@@ -35,6 +45,14 @@ embedding:
   port: 11434
   # Model name sent to POST /api/embed — must match what is loaded in the image.
   model: "all-minilm:33m"
+  # Override with null (~) to remove resource constraints entirely.
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
 
 # ── Redis ────────────────────────────────────────────────────────────────────
 redis:
@@ -42,6 +60,14 @@ redis:
   image:
     repository: redis
     tag: "7.4.2-alpine"
+  # Override with null (~) to remove resource constraints entirely.
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
 
 # ── Qdrant ───────────────────────────────────────────────────────────────────
 qdrant:
@@ -49,6 +75,14 @@ qdrant:
   image:
     repository: qdrant/qdrant
     tag: "v1.12.1"
+  # Override with null (~) to remove resource constraints entirely.
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
 
 # ── Ollama model server (optional) ──────────────────────────────────────────
 # Enable this to run a local Ollama LLM inside the cluster.
@@ -159,6 +193,13 @@ cortex:
 #         TIMEZONE: America/New_York
 #         HOURS_MON: closed
 #         HOURS_TUE: "08:00-18:00"
+#       resources:          # optional — omit to run without limits
+#         requests:
+#           cpu: 50m
+#           memory: 64Mi
+#         limits:
+#           cpu: 200m
+#           memory: 128Mi
 mcpServers: []
 
 # ── Extra environment variables from existing Secrets ────────────────────────

@@ -13,3 +13,4 @@ _*.md
 _*/
 **/report.md
 .ruff_cache
+ai-assistant-helm*.tgz

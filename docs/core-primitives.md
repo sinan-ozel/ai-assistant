@@ -176,7 +176,10 @@ response = llm(input_text, temperature=0.9)
 Send text to the frontend immediately, without adding it to the LLM message
 context.
 
-- **Streaming on**: each call emits one chunk to the SSE / NDJSON stream.
+- **Streaming on**: each call emits one complete chunk to the SSE / NDJSON
+  stream with `"notify": true` in the payload.  The Streamlit UI shows all
+  but the final `notify()` call in a collapsible **🤔** box and
+  displays the last call as the assistant reply.
 - **Streaming off**: all calls are collected; only the last one is used as the
   final response.
 

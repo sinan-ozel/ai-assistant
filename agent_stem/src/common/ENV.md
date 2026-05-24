@@ -54,7 +54,7 @@ All variables consumed by the application. Groups below reflect where each varia
 | `EMBEDDING_HOST` | `embedding` | Hostname used to construct `EMBEDDING_SERVER` when that variable is not set directly. |
 | `EMBEDDING_PORT` | `11434` | Port used to construct `EMBEDDING_SERVER` when that variable is not set directly. |
 | `EMBEDDING_MODEL` | `all-minilm:33m` | Model name sent to the embedding server. |
-| `EMBEDDING_TIMEOUT` | `0.5` | Seconds to wait for a response from the embedding server before giving up (float). |
+| `EMBEDDING_TIMEOUT` | `0.5` | Seconds to wait for a response from the embedding server before giving up (float). Set higher (8.0+) when the embedding server may cold-start slowly (k8s, first request after pod start). |
 
 ---
 
@@ -97,6 +97,6 @@ The following variables are accepted by the application but are **never set in a
 - `CHUNK_CHECK_INTERVAL_SECONDS`
 - `DEFAULT_SYSTEM_MESSAGE`
 
-`EMBEDDING_TIMEOUT` is set only in `test_env_no_redis` (`1.0`) and `test_env_self_hosted_llm` implicitly; it is absent from the default and most other test environments.
+`EMBEDDING_TIMEOUT` is set to `8.0` in `docker-compose.default.yaml` and `test_env_default`; `10.0` in `test_env_no_qdrant`; `2.0` in `test_env_no_mcp`; `1.0` in `test_env_no_redis`. The helm chart default is `8.0`. The code-level default (`0.5`) only applies when no compose or helm configuration sets the variable.
 
 `CONVERSATION_WINDOW_LIMIT` is set to `2048` in `test_env_no_redis` and `test_env_self_hosted_llm` but is absent (unlimited) in all other environments including `test_env_default`.
