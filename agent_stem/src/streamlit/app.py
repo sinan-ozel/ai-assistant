@@ -355,9 +355,7 @@ def main():
                 + books_response.json().get("detail", "")
             )
         else:
-            st.warning(
-                f"Could not fetch books: {books_response.status_code}"
-            )
+            st.warning(f"Could not fetch books: {books_response.status_code}")
     except Exception as e:
         st.warning(f"Could not reach books API: {e}")
 
@@ -370,9 +368,7 @@ def main():
         from redis_memory import Memory
 
         with Memory() as _mem:
-            _mcp_tools = (
-                _mem.mcp_tools if hasattr(_mem, "mcp_tools") else []
-            )
+            _mcp_tools = _mem.mcp_tools if hasattr(_mem, "mcp_tools") else []
         if not isinstance(_mcp_tools, list) or not _mcp_tools:
             st.info(
                 "No external tools registered. "
@@ -440,8 +436,7 @@ def main():
     st.divider()
     st.markdown("## 🧪 Agent Evaluation")
     st.markdown(
-        "Run the `cortex/chat/eval.py` evaluation suite against this"
-        " agent."
+        "Run the `cortex/chat/eval.py` evaluation suite against this" " agent."
     )
 
     EVAL_URL = f"{API_BASE_URL}/private/v1/agent/evaluate"
@@ -493,9 +488,7 @@ def main():
                                 st.warning("Cancellation requested.")
                                 st.rerun()
                             else:
-                                st.error(
-                                    f"Could not cancel: {cr.status_code}"
-                                )
+                                st.error(f"Could not cancel: {cr.status_code}")
                         except Exception as e:
                             st.error(f"Error: {e}")
 
@@ -511,9 +504,7 @@ def main():
 
                 try:
                     ts = datetime.fromisoformat(data["started_at"])
-                    st.caption(
-                        f"Started: {ts.strftime('%Y-%m-%d %H:%M:%S')}"
-                    )
+                    st.caption(f"Started: {ts.strftime('%Y-%m-%d %H:%M:%S')}")
                 except Exception:
                     st.caption(f"Started: {data['started_at']}")
 
@@ -602,9 +593,7 @@ def main():
                                     chk_type = chk.get("type", "?")
                                     detail = ""
                                     if chk_type == "regexp":
-                                        detail = (
-                                            f"`{chk.get('pattern', '')}`"
-                                        )
+                                        detail = f"`{chk.get('pattern', '')}`"
                                     elif chk_type == "judge":
                                         detail = f"judge: _{chk.get('prompt', '')[:60]}_"
                                     elif chk_type == "similar_to":
@@ -652,9 +641,7 @@ def main():
                         " workflow YAML to enable testing."
                     )
                 for workflow in all_workflows:
-                    with st.expander(
-                        f"📊 {workflow['name']}", expanded=False
-                    ):
+                    with st.expander(f"📊 {workflow['name']}", expanded=False):
                         st.markdown(f"**Path:** `{workflow['path']}`")
                         if workflow.get("description"):
                             st.markdown(
@@ -662,9 +649,7 @@ def main():
                                 f" {workflow['description']}"
                             )
                         if workflow.get("provider"):
-                            st.markdown(
-                                f"**Provider:** {workflow['provider']}"
-                            )
+                            st.markdown(f"**Provider:** {workflow['provider']}")
 
                         if not workflow.get("has_evaluation"):
                             st.caption(
@@ -686,12 +671,8 @@ def main():
                                             timeout=10,
                                         )
                                         if eval_response.status_code == 201:
-                                            st.success(
-                                                "Evaluation started!"
-                                            )
-                                        elif (
-                                            eval_response.status_code == 409
-                                        ):
+                                            st.success("Evaluation started!")
+                                        elif eval_response.status_code == 409:
                                             st.warning(
                                                 "Evaluation already in"
                                                 " progress"
@@ -713,9 +694,7 @@ def main():
                                         timeout=5,
                                     )
                                     if results_response.status_code == 200:
-                                        results_data = (
-                                            results_response.json()
-                                        )
+                                        results_data = results_response.json()
                                         status = results_data.get(
                                             "status", "idle"
                                         )
@@ -759,9 +738,7 @@ def main():
                                             status == "completed"
                                             and results_data.get("results")
                                         ):
-                                            results = results_data[
-                                                "results"
-                                            ]
+                                            results = results_data["results"]
                                             st.markdown("### Results")
 
                                             if results.get("errors"):
@@ -770,9 +747,7 @@ def main():
                                                     " completed with"
                                                     " errors:**"
                                                 )
-                                                for error in results[
-                                                    "errors"
-                                                ]:
+                                                for error in results["errors"]:
                                                     st.error(f"• {error}")
                                                 st.markdown("---")
 
@@ -813,9 +788,7 @@ def main():
                                                 ):
                                                     case_status = (
                                                         "✅"
-                                                        if case.get(
-                                                            "passed"
-                                                        )
+                                                        if case.get("passed")
                                                         else "❌"
                                                     )
                                                     st.markdown(
@@ -829,9 +802,7 @@ def main():
                                                         f"(threshold:"
                                                         f" {case.get('threshold')})"
                                                     )
-                                                    if not case.get(
-                                                        "passed"
-                                                    ):
+                                                    if not case.get("passed"):
                                                         for run in case.get(
                                                             "runs", []
                                                         ):
@@ -882,9 +853,7 @@ def main():
                                             )
 
                                         elif status == "running":
-                                            st.info(
-                                                "Evaluation in progress..."
-                                            )
+                                            st.info("Evaluation in progress...")
                                             if st.button(
                                                 "❌ Cancel Evaluation",
                                                 key=f"cancel_{workflow['path']}",
@@ -919,8 +888,7 @@ def main():
                                             )
                                 except Exception as e:
                                     st.warning(
-                                        f"Could not fetch results:"
-                                        f" {str(e)}"
+                                        f"Could not fetch results:" f" {str(e)}"
                                     )
             else:
                 st.info(
