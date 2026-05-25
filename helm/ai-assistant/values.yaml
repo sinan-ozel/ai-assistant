@@ -8,6 +8,10 @@ image:
 
 replicaCount: 1
 
+ports:
+  fastapi: 8000
+  streamlit: 8501
+
 env:
   logLevel: INFO
   # Maximum tokens in the conversation context window.
@@ -180,6 +184,11 @@ cortex:
     print(input_text)
 
 # ── MCP tool servers (optional) ──────────────────────────────────────────────
+mcp:
+  # Default port used for MCP server containers when .port is not set per-entry.
+  defaultPort: 8000
+
+
 # List of MCP-compatible tool servers to deploy alongside the agent.
 # Each entry creates a Deployment and a ClusterIP Service.
 # The agent's prompt.py references them via McpServer("http://<release>-<name>:<port>").

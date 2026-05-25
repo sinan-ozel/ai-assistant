@@ -14,7 +14,7 @@ spec:
     app.kubernetes.io/component: {{ .name }}
   ports:
     - name: http
-      port: {{ .port | default 8000 }}
+      port: {{ .port | default $.Values.mcp.defaultPort }}
       targetPort: http
       protocol: TCP
 {{- end }}

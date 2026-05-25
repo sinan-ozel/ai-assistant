@@ -11,10 +11,10 @@ spec:
     app.kubernetes.io/component: app
   ports:
     - name: http
-      port: 8000
+      port: {{ .Values.ports.fastapi }}
       targetPort: http
       protocol: TCP
     - name: streamlit
-      port: 8501
+      port: {{ .Values.ports.streamlit }}
       targetPort: streamlit
       protocol: TCP

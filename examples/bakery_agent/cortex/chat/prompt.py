@@ -11,7 +11,7 @@ Phone: (555) 012-3456
 import os
 
 notify("Checking…")
-with McpServer(os.environ["MCP_BUSINESS_HOURS_URL"]):
+with McpServer(), McpServer(os.environ["MCP_BUSINESS_HOURS_URL"]):
     prompt()
     delay(3)
 

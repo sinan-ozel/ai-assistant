@@ -69,7 +69,8 @@ echo ">>> Using image tag: $IMAGE_TAG"
 # ---------------------------------------------------------------------------
 
 EXAMPLES=(
-    mistral_example
+    mistral_example,
+    web_researcher_agent,
 )
 
 echo ">>> Testing examples: ${EXAMPLES[*]}"
