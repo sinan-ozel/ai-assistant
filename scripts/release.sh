@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# release/release.sh — Build, tag, and push agent-stem to Docker Hub.
+# scripts/release.sh — Build, tag, and push agent-stem to Docker Hub.
 #
 # Usage:
-#   bash release/release.sh           # Production release
-#   bash release/release.sh --dev     # Dev release (appends build number to version)
+#   bash scripts/release.sh           # Production release
+#   bash scripts/release.sh --dev     # Dev release (appends build number to version)
 #
 # Version is read from [project].version in pyproject.toml — that is the
 # single source of truth. Bump it there before running a production release.

@@ -1,6 +1,6 @@
 # Releasing
 
-Releases are built and pushed using the **Release** VS Code task (or `bash release/release.sh <version>` directly).
+Releases are built and pushed using the **Release** VS Code task (or `bash scripts/release.sh <version>` directly).
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ From VS Code: **Tasks: Run Task** → **Release**, then enter the version when p
 From the terminal:
 
 ```bash
-bash release/release.sh 1.2.3
+bash scripts/release.sh 1.2.3
 ```
 
 ## What the release script does
@@ -49,4 +49,4 @@ Documentation release is not yet automated. To publish the docs manually:
 mkdocs gh-deploy
 ```
 
-This is tracked as a TODO in `release/release.sh`.
+This is tracked as a TODO in `scripts/release.sh`.
