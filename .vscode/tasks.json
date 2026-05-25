@@ -902,7 +902,7 @@
             "type": "shell",
             "command": "bash",
             "args": [
-                "${workspaceFolder}/release/release.sh",
+                "${workspaceFolder}/scripts/release.sh",
                 "--dev"
             ],
             "dependsOn": [
@@ -919,7 +919,7 @@
             "type": "shell",
             "command": "bash",
             "args": [
-                "${workspaceFolder}/release/release.sh"
+                "${workspaceFolder}/scripts/release.sh"
             ],
             "dependsOn": [
                 "Run Pre-Release Tests",
