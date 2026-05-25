@@ -248,6 +248,43 @@ Your `cortex/providers/default.yaml` can then use `${MISTRAL_API_KEY}` as usual 
 
 ---
 
+## Environment variables
+
+The chart provides three mechanisms for injecting environment variables into the application container.
+
+### `env` — chart-managed variables
+
+A structured map of variables with built-in chart logic. Only these keys are recognised — anything else is silently ignored:
+
+```yaml
+env:
+  logLevel: INFO                   # LOG_LEVEL              — default: INFO
+  conversationWindowLimit: "8192"  # CONVERSATION_WINDOW_LIMIT — omit for no limit
+  embeddingTimeout: "3.0"          # EMBEDDING_TIMEOUT      — seconds, default: 3.0
+```
+
+### `extraEnv` — arbitrary variables
+
+A raw list of Kubernetes env var entries appended after all chart-managed variables. Accepts the full Kubernetes env spec — plain `value`, `valueFrom`, `secretKeyRef`, `fieldRef`, etc.:
+
+```yaml
+extraEnv:
+  - name: LLAMA_CPP_HOST
+    value: "http://192.168.1.50:8080/v1"
+  - name: MY_POD_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.name
+```
+
+Use this for any variable not covered by `env:` — for example, pointing the agent at an external model server that is not managed by the Helm chart.
+
+### `extraEnvFromSecret` — bulk secret injection
+
+Injects every key from a named Kubernetes Secret as an environment variable. Described in [Secrets management](#secrets-management) above. Use this for API keys rather than `extraEnv` so credentials are never written into `values.yaml`.
+
+---
+
 ## Scaling replicas
 
 ```yaml
@@ -261,7 +298,7 @@ The document indexing pipeline runs inside each pod. If you have many replicas a
 
 ```yaml
 # values.yaml
-env:
+extraEnv:
   - name: PDF_CHECK_INTERVAL_SECONDS
     value: "300"
   - name: CHUNK_CHECK_INTERVAL_SECONDS
@@ -277,8 +314,7 @@ If you are running a local model with limited GPU memory, cap the token budget s
 ```yaml
 # values.yaml
 env:
-  - name: CONVERSATION_WINDOW_LIMIT
-    value: "4096"
+  conversationWindowLimit: "4096"
 ```
 
 Full conversation history is always stored in Redis. This limit only controls how much history is forwarded to the model per request. The same limit applies at the inference server level — set `-c 4096` in your llama.cpp flags or equivalent.
@@ -388,10 +424,8 @@ image:
 extraEnvFromSecret: llm-secrets
 
 env:
-  - name: CONVERSATION_WINDOW_LIMIT
-    value: "8192"
-  - name: LOG_LEVEL
-    value: "INFO"
+  logLevel: INFO
+  conversationWindowLimit: "8192"
 
 cortex:
   configMapName: my-agent-cortex

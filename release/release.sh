@@ -128,11 +128,6 @@ if [[ "$DEV_RELEASE" == "true" ]]; then
     echo ">>> Pushing Docker image ${DOCKER_IMAGE}:${DEV_VERSION} ..."
     docker push "${DOCKER_IMAGE}:${DEV_VERSION}"
 
-    NEW_BUILD_NUMBER=$(( BUILD_NUMBER + 1 ))
-    echo "$NEW_BUILD_NUMBER" > "$BUILD_NUMBER_FILE"
-    git add "$BUILD_NUMBER_FILE"
-    git commit -m "chore: bump build number to ${NEW_BUILD_NUMBER} after dev release ${DEV_VERSION}"
-
     DEV_TAG="v${DEV_VERSION}"
     echo ">>> Tagging git commit as ${DEV_TAG} ..."
     git tag -a "${DEV_TAG}" -m "Dev release ${DEV_VERSION}"
@@ -147,7 +142,7 @@ if [[ "$DEV_RELEASE" == "true" ]]; then
     echo "Dev release ${DEV_VERSION} complete."
     echo "  Docker: ${DOCKER_IMAGE}:${DEV_VERSION}"
     echo "  Git tag: ${DEV_TAG}"
-    echo "  Build number incremented to ${NEW_BUILD_NUMBER} and committed."
+    echo "  Run 'Publish Helm Chart (Dev)' to increment the build number."
     echo ""
     exit 0
 fi
