@@ -220,3 +220,14 @@ mcpServers: []
 #
 # The provider YAML in your cortex can then reference ${OPENAI_API_KEY} as usual.
 extraEnvFromSecret: ""
+
+# ── Extra environment variables ──────────────────────────────────────────────
+# Inject arbitrary env vars into the application container. Useful for
+# pointing at external services (e.g. a llama.cpp server running outside
+# the cluster) without creating a Kubernetes Secret.
+#
+# Example:
+#   extraEnv:
+#     - name: LLAMA_CPP_HOST
+#       value: "http://192.168.1.50:8080/v1"
+extraEnv: []

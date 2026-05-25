@@ -55,7 +55,7 @@ The Streamlit UI (port 8501) is also internal-only. Expose it only within the cl
 
 Each container runs two processes managed by supervisord:
 
-| Process | Port | Role | Restart policy |
+| Process | Port (default) | Role | Restart policy |
 |---|---|---|---|
 | **FastAPI** | 8000 | Production backend | None — container exits when it exits |
 | **Streamlit** | 8501 | Dev/test UI | Automatic restart on crash |
@@ -127,6 +127,60 @@ helm upgrade ai-assistant oci://registry-1.docker.io/sinanozel/ai-assistant-helm
 Available versions are listed on the [Docker Hub tags page](https://hub.docker.com/r/sinanozel/ai-assistant/tags). Versions ending in `-dev.<N>` (e.g. `0.1.0-dev.5`) are unstable pre-releases.
 
 For single-node setup see [local deployment](local-deployment.md) or [deployment on VPN](vpn-deployment.md).
+
+---
+
+## Port configuration
+
+All three service ports are configurable in `values.yaml` under a single `ports` block. The defaults match the process model above:
+
+```yaml
+ports:
+  fastapi: 8000      # Main FastAPI backend
+  streamlit: 8501    # Streamlit dev/test UI
+  mcpDefault: 8000   # Fallback for mcpServers[] entries with no explicit .port
+```
+
+### Changing a port
+
+Override whichever ports conflict with your environment:
+
+```yaml
+ports:
+  streamlit: 8502
+```
+
+### Closing a port
+
+Set a port to `~` (null) to remove it from both the Kubernetes Service and the container's port list entirely:
+
+```yaml
+ports:
+  streamlit: ~   # port omitted from Service and Deployment — never reachable
+```
+
+This is the recommended way to lock down Streamlit in production rather than relying on ingress rules alone.
+
+Do not set `fastapi` to `~` — the liveness and readiness probes target it and the container will fail health checks without it.
+
+### External MCP server ports
+
+`ports.mcpDefault` is the fallback port for entries in `mcpServers[]` that have no `.port` field. Individual entries can always override it:
+
+```yaml
+ports:
+  mcpDefault: 8000
+
+mcpServers:
+  - name: business-hours
+    image: sinanozel/business-hours-mcp:0.1.0
+    # no .port — uses ports.mcpDefault (8000)
+  - name: weather
+    image: sinanozel/weather-mcp:1.0.0
+    port: 9000   # overrides mcpDefault for this server only
+```
+
+This is separate from the **built-in MCP server** (port 8001), which is baked into the container image and serves tools defined in the cortex. That port is not configurable via Helm values.
 
 ---
 
