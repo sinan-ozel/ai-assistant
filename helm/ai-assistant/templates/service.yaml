@@ -10,11 +10,15 @@ spec:
     {{- include "ai-assistant.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: app
   ports:
+    {{- if .Values.ports.fastapi }}
     - name: http
       port: {{ .Values.ports.fastapi }}
       targetPort: http
       protocol: TCP
+    {{- end }}
+    {{- if .Values.ports.streamlit }}
     - name: streamlit
       port: {{ .Values.ports.streamlit }}
       targetPort: streamlit
       protocol: TCP
+    {{- end }}
