@@ -2,7 +2,7 @@ name: Deploy Documentation
 
 on:
   push:
-    # Trigger on semver tags created by release/release.sh (e.g. v1.2.3).
+    # Trigger on semver tags created by scripts/release.sh (e.g. v1.2.3).
     # Pattern matches the git tag format used by the Release VS Code task.
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
