@@ -23,28 +23,6 @@ services:
       timeout: 3s
       retries: 5
 
-  embedding-test:
-    image: sinanozel/ollama.0.12.11:all-minilm-33m
-    # image: sinanozel/llama.cuda.6gb:all-minilm-33m
-    container_name: embedding-test-default
-    networks:
-      - test-network
-    environment:
-      - OLLAMA_KEEP_ALIVE=1h
-    healthcheck:
-      test:
-        - "CMD"
-        - "bash"
-        - "-c"
-        - >-
-          exec 3<>/dev/tcp/127.0.0.1/11434 &&
-          printf 'GET /api/tags HTTP/1.0\r\nHost: localhost\r\n\r\n' >&3 &&
-          timeout 5 cat <&3 | grep -q all-minilm
-      interval: 10s
-      timeout: 8s
-      retries: 10
-      start_period: 60s
-
   # Ollama server with gemma3-270m model
   ollama-test:
     image: sinanozel/ollama.0.12.11:gemma3-270m
@@ -117,8 +95,6 @@ services:
       - REDIS_PORT=6379
       - QDRANT_HOST=qdrant-test
       - QDRANT_PORT=6333
-      - EMBEDDING_SERVER=http://embedding-test:11434
-      - EMBEDDING_TIMEOUT=8.0
       # - LOG_LEVEL=DEBUG
     env_file:
       - .env
@@ -128,8 +104,6 @@ services:
       redis-test:
         condition: service_healthy
       qdrant-test:
-        condition: service_healthy
-      embedding-test:
         condition: service_healthy
       ollama-test:
         condition: service_healthy

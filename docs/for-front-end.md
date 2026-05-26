@@ -223,7 +223,7 @@ async function chat(message) {
 |---|---|
 | `422` | Validation error — inspect `detail` in the response body |
 | `408` | LLM provider timed out |
-| `503` | No provider configured, or embedding server unavailable |
+| `503` | No provider configured |
 
 ### Errors mid-stream
 

@@ -97,8 +97,8 @@ def test_search_returns_results_as_expected():
     assert top["file_path"] == "shelf1/simple-psionics.pdf", (
         f"Top result file_path should be 'shelf1/simple-psionics.pdf': {top}"
     )
-    assert round(top["score"], 3) == 0.646, (
-        f"Top result score should be 0.646: {top['score']}"
+    assert round(top["score"], 2) == 0.48, (
+        f"Top result score should be 0.48: {top['score']}"
     )
 
 

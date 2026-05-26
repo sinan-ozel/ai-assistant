@@ -255,8 +255,7 @@ A `chunk_count > 0` means the document has been successfully ingested.
 
 | Variable | Default | Description |
 |---|---|---|
-| `EMBEDDING_SERVER` | `http://embedding:11434` | Ollama base URL for the embedding model |
-| `EMBEDDING_MODEL` | `all-minilm:33m` | Embedding model name |
+| `EMBEDDING_MODEL` | `sentence-transformers/all-MiniLM-L6-v2` | fastembed model name (runs in-process) |
 | `QDRANT_HOST` | `qdrant` | Qdrant hostname |
 | `QDRANT_PORT` | `6333` | Qdrant port |
 | `QDRANT_COLLECTION` | `library` | Fallback collection for files at the library root |

@@ -204,7 +204,7 @@ the reason appears in the report on failure.
 ### `similar_to(text, threshold)` → embedding similarity
 
 Passes if the cosine similarity between the response embedding and the reference text
-embedding is ≥ `threshold`. Requires the embedding server to be configured.
+embedding is ≥ `threshold`. Uses the in-process fastembed model.
 
 ```python
 expect(similar_to("a polite refusal", 0.82))

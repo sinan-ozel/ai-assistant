@@ -23,17 +23,6 @@ services:
       timeout: 3s
       retries: 5
 
-  embedding-test:
-    image: sinanozel/ollama.0.12.11:all-minilm-33m
-    container_name: embedding-test-mistral
-    networks:
-      - test-network
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/11434' || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   eberron-mcp-server:
     image: sinanozel/eberron-mcp-server:0.1.2
     container_name: eberron-mcp-server-mistral
@@ -59,7 +48,6 @@ services:
       - REDIS_PORT=6379
       - QDRANT_HOST=qdrant-test
       - QDRANT_PORT=6333
-      - EMBEDDING_SERVER=http://embedding-test:11434
       - DEFAULT_PROVIDER=mistral-7b
     env_file:
       - .env
@@ -67,8 +55,6 @@ services:
       redis-test:
         condition: service_healthy
       qdrant-test:
-        condition: service_healthy
-      embedding-test:
         condition: service_healthy
     healthcheck:
       test:

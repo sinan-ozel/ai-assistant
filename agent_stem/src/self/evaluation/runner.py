@@ -370,8 +370,18 @@ def run_evaluation_case(
                         try:
                             actual_parsed = json.loads(actual)
                         except (json.JSONDecodeError, ValueError):
-                            # If parsing fails, keep as string
-                            pass
+                            json_match = re.search(
+                                r"```(?:json)?\s*\n(.*?)\n```",
+                                actual,
+                                re.DOTALL,
+                            )
+                            if json_match:
+                                try:
+                                    actual_parsed = json.loads(
+                                        json_match.group(1)
+                                    )
+                                except (json.JSONDecodeError, ValueError):
+                                    pass
                         break
 
                 # Validate expectations

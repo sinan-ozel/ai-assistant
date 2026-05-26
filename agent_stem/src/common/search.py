@@ -14,19 +14,12 @@ When the caller does not specify any collections, the search runs across
 **all** existing collections / tables in the active backend.
 """
 
-import json
 import logging
 import os
 import socket
-import urllib.error
-import urllib.request
 from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
-
-
-class EmbeddingUnavailableError(Exception):
-    """Raised when the embedding server cannot be reached or times out."""
 
 
 # ── Environment-driven defaults (mirrors chunking_pipeline.py) ───────────────
@@ -38,16 +31,24 @@ QDRANT_COLLECTION = os.environ.get("QDRANT_COLLECTION", "library")
 LANCEDB_PATH = os.environ.get("LANCEDB_PATH", "/app/data/lancedb")
 LANCEDB_TABLE = os.environ.get("LANCEDB_TABLE", "library")
 
-_embedding_host = os.environ.get("EMBEDDING_HOST", "embedding")
-_embedding_port = os.environ.get("EMBEDDING_PORT", "11434")
-EMBEDDING_SERVER = os.environ.get(
-    "EMBEDDING_SERVER",
-    f"http://{_embedding_host}:{_embedding_port}",
+EMBEDDING_MODEL = os.environ.get(
+    "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
 )
-EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "all-minilm:33m")
-EMBEDDING_TIMEOUT = float(os.environ.get("EMBEDDING_TIMEOUT", "0.5"))
 
 DEFAULT_TOP_K = 5
+
+# ── Lazy-loaded in-process embedding model ───────────────────────────────────
+
+_embedding_model = None
+
+
+def _get_embedding_model():
+    global _embedding_model
+    if _embedding_model is None:
+        from fastembed import TextEmbedding
+
+        _embedding_model = TextEmbedding(EMBEDDING_MODEL)
+    return _embedding_model
 
 
 # ── Helper: TCP reachability check ───────────────────────────────────────────
@@ -70,45 +71,10 @@ def _qdrant_reachable(
 
 
 def _embed_query(text: str) -> list[float]:
-    """Return the embedding vector for *text* using the Ollama embedding
-    server.
-
-    Raises:
-        RuntimeError: If the HTTP request fails or returns unexpected data.
-    """
-    url = f"{EMBEDDING_SERVER.rstrip('/')}/api/embed"
-    payload = json.dumps({"model": EMBEDDING_MODEL, "input": [text]}).encode()
-    req = urllib.request.Request(
-        url,
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=EMBEDDING_TIMEOUT) as resp:
-            body = json.loads(resp.read().decode())
-    except urllib.error.HTTPError as exc:
-        raise RuntimeError(
-            f"Embedding server returned HTTP {exc.code} for POST {url}: "
-            f"{exc.reason}"
-        ) from exc
-    except urllib.error.URLError as exc:
-        raise RuntimeError(
-            f"Could not reach embedding server at {url}: {exc.reason}"
-        ) from exc
-    except (TimeoutError, OSError) as exc:
-        raise EmbeddingUnavailableError(
-            f"Embedding server at {url} did not respond within "
-            f"{EMBEDDING_TIMEOUT * 1000:.0f} ms "
-            f"(busy or unreachable): {exc}"
-        ) from exc
-
-    embeddings = body.get("embeddings")
-    if not embeddings:
-        raise RuntimeError(
-            f"Embedding server response missing 'embeddings' field: {body!r}"
-        )
-    return embeddings[0]
+    """Return the embedding vector for *text* using the in-process fastembed
+    model."""
+    model = _get_embedding_model()
+    return list(next(model.embed([text])))
 
 
 def ingestion_in_progress() -> bool:

@@ -41,7 +41,7 @@ Results are streamed as **NDJSON** (`application/x-ndjson`). Each line is a
 JSON object. The final line is the sentinel `{"done": true}`.
 
 ```jsonl
-{"score": 0.646, "collection": "shelf1", "file_path": "shelf1/book.pdf", "text": "...", "section_title": "...", "book": {"title": "...", "tags": ["shelf1"]}, "chunking_completed_at": "..."}
+{"score": 0.48, "collection": "shelf1", "file_path": "shelf1/book.pdf", "text": "...", "section_title": "...", "book": {"title": "...", "tags": ["shelf1"]}, "chunking_completed_at": "..."}
 {"done": true}
 ```
 
@@ -117,7 +117,7 @@ Filter-only results receive a score of `1.0`.
 
 | Test | What it verifies |
 |------|-----------------|
-| `test_search_returns_results_as_expected` | Streaming search for `"psionic powers"`: validates NDJSON structure, `book` as dict with `tags` list, top result is `shelf1/simple-psionics.pdf`, score rounds to `0.646`. |
+| `test_search_returns_results_as_expected` | Streaming search for `"psionic powers"`: validates NDJSON structure, `book` as dict with `tags` list, top result is `shelf1/simple-psionics.pdf`, score rounds to `0.48`. |
 | `test_search_stream_false` | Same query without `stream=True`: verifies identical structure when the client buffers the full response. |
 | `test_search_with_collection` | Search restricted to `collection="shelf1"` returns HTTP 200 with valid NDJSON. |
 | `test_search_missing_query_and_filter_returns_400` | Omitting both `query` and `filter` returns HTTP 400. |

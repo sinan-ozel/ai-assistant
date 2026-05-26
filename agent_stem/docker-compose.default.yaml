@@ -11,10 +11,7 @@ services:
     ports:
       - "8000:8000"
       - "8501:8501"
-      - "11434:11434"
     environment:
-      - EMBEDDING_SERVER=http://embedding:11434
-      - EMBEDDING_TIMEOUT=8.0
       - MCP_BUSINESS_HOURS_URL=http://business-hours:8000
       # - CONVERSATION_WINDOW_LIMIT=4096
       # - LOG_LEVEL=DEBUG
@@ -25,7 +22,6 @@ services:
     depends_on:
       - redis
       - qdrant
-      - embedding
       - business-hours
 
   redis:
@@ -47,12 +43,6 @@ services:
       - "6334:6334"
     volumes:
       - ${DEV_DATA_FOLDER:-./dev-data}/qdrant:/qdrant/storage
-    networks:
-      - agent-dev-network
-
-  embedding:
-    image: sinanozel/ollama.0.12.11:all-minilm-33m
-    container_name: embedding
     networks:
       - agent-dev-network
 

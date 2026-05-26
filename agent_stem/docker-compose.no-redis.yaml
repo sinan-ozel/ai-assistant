@@ -10,12 +10,6 @@ services:
     networks:
       - agent-dev-network
 
-  embedding:
-    image: sinanozel/ollama.0.12.11:all-minilm-33m
-    container_name: embedding
-    networks:
-      - agent-dev-network
-
   llamacpp:
     image: sinanozel/llama.cuda:qwen3-0.6b
     networks:
@@ -61,15 +55,12 @@ services:
       - "8501:8501"
       - "11434:11434"
     environment:
-      - EMBEDDING_SERVER=http://embedding:11434
-      - EMBEDDING_TIMEOUT=1.0
       # - CONVERSATION_WINDOW_LIMIT=4096
       # - LOG_LEVEL=DEBUG
     networks:
       - agent-dev-network
     depends_on:
       - qdrant
-      - embedding
 
 
 networks:

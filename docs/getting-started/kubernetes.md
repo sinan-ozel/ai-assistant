@@ -22,7 +22,6 @@ Each agent is an independent Deployment:
 │                                                                  │
 │  StatefulSet: redis                                              │
 │  StatefulSet: qdrant                                             │
-│  Deployment: embedding (Ollama)                                  │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -55,8 +54,6 @@ spec:
                 secretKeyRef:
                   name: llm-secrets
                   key: mistral-api-key
-            - name: EMBEDDING_SERVER
-              value: "http://embedding:11434"
           volumeMounts:
             - name: cortex
               mountPath: /app/cortex
@@ -145,10 +142,9 @@ Each namespace gets its own Redis, Qdrant, and agent-stem Deployment.
 
 | Service | CPU request | Memory request | Notes |
 |---|---|---|---|
-| agent-stem | 500m | 512Mi | Scale replicas for throughput |
+| agent-stem | 500m | 512Mi | Scale replicas for throughput (includes in-process embedding) |
 | redis | 100m | 128Mi | Conversation memory |
 | qdrant | 250m | 512Mi | Vector store |
-| embedding (Ollama) | 500m | 1Gi | `all-minilm:33m` |
 
 For GPU-accelerated local models (llama.cpp, Ollama with CUDA), add a node selector
 and resource limit for `nvidia.com/gpu: 1`.

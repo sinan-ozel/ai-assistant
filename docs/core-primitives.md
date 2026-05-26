@@ -91,7 +91,7 @@ they become part of the user message sent to the LLM).
 
 | Parameter    | Default | Description                                           |
 |--------------|---------|-------------------------------------------------------|
-| `query`      | —       | Free-text query sent to the embedding server          |
+| `query`      | —       | Free-text query (embedded in-process)                 |
 | `collection` | `None`  | Restrict to one shelf; `None` searches all            |
 | `top_k`      | `5`     | Maximum number of results                             |
 | `filter`     | `None`  | Equality-filter dict, e.g. `{"file_path": "foo.pdf"}` |
@@ -345,7 +345,7 @@ expect(judge("Did the agent correctly identify the calorie count?"))
 ### `similar_to(text, threshold)`
 
 Embedding cosine-similarity checker. Passes if the similarity between the
-response and `text` is ≥ `threshold`. Requires the embedding server.
+response and `text` is ≥ `threshold`. Uses the in-process fastembed model.
 
 ---
 

@@ -3,7 +3,7 @@
 This test environment validates the agent without a Qdrant vector store.
 It is used to test that the agent degrades gracefully when Qdrant is unavailable — for example, verifying that the chunking pipeline handles the missing service correctly and that the rest of the API remains functional.
 
-The environment runs a Redis server and an embedding model, but no Qdrant instance.
+The environment runs a Redis server but no Qdrant instance. Embedding runs in-process via fastembed.
 
 ## Running the Tests
 

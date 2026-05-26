@@ -62,10 +62,8 @@ spec:
               value: {{ include "ai-assistant.qdrantHost" . | quote }}
             - name: QDRANT_PORT
               value: "6333"
-            - name: EMBEDDING_SERVER
-              value: "http://{{ include "ai-assistant.embeddingHost" . }}:{{ .Values.embedding.port }}"
             - name: EMBEDDING_MODEL
-              value: {{ .Values.embedding.model | quote }}
+              value: {{ .Values.env.embeddingModel | default "sentence-transformers/all-MiniLM-L12-v2" | quote }}
             {{- if .Values.ollama.enabled }}
             - name: OLLAMA_HOST
               value: "{{ include "ai-assistant.ollamaHost" . }}:11434"
@@ -83,10 +81,6 @@ spec:
             {{- if .Values.env.conversationWindowLimit }}
             - name: CONVERSATION_WINDOW_LIMIT
               value: {{ .Values.env.conversationWindowLimit | quote }}
-            {{- end }}
-            {{- if .Values.env.embeddingTimeout }}
-            - name: EMBEDDING_TIMEOUT
-              value: {{ .Values.env.embeddingTimeout | quote }}
             {{- end }}
             {{- if or .Values.secrets.mistralApiKey .Values.secrets.anthropicApiKey }}
             {{- if .Values.secrets.mistralApiKey }}

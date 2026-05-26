@@ -32,6 +32,9 @@ RUN pip install --no-cache-dir $(python -c \
 # Pre-download tiktoken BPE data so containers without internet access can start.
 RUN python -c "import tiktoken; tiktoken.get_encoding('cl100k_base')"
 
+# Pre-download the fastembed embedding model so containers without internet access can start.
+RUN python -c "from fastembed import TextEmbedding; TextEmbedding('sentence-transformers/all-MiniLM-L6-v2')"
+
 # Copy all agent_stem contents
 COPY agent_stem/src/ /app/src/
 COPY agent_stem/default/ /app/default/

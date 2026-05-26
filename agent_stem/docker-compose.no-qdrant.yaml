@@ -12,15 +12,12 @@ services:
       - "8000:8000"
       - "8501:8501"
     environment:
-      - EMBEDDING_SERVER=http://embedding:11434
-      - EMBEDDING_TIMEOUT=1.0
       # - CONVERSATION_WINDOW_LIMIT=4096
       # - LOG_LEVEL=DEBUG
     networks:
       - agent-dev-network
     depends_on:
       - redis
-      - embedding
 
   redis:
     image: redis:7.4.2-alpine
@@ -30,12 +27,6 @@ services:
     volumes:
       - ${DEV_DATA_FOLDER:-./dev-data}/redis:/data
     command: redis-server
-    networks:
-      - agent-dev-network
-
-  embedding:
-    image: sinanozel/ollama.0.12.11:all-minilm-33m
-    container_name: embedding
     networks:
       - agent-dev-network
 

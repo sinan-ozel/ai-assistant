@@ -260,7 +260,6 @@ A structured map of variables with built-in chart logic. Only these keys are rec
 env:
   logLevel: INFO                   # LOG_LEVEL              — default: INFO
   conversationWindowLimit: "8192"  # CONVERSATION_WINDOW_LIMIT — omit for no limit
-  embeddingTimeout: "3.0"          # EMBEDDING_TIMEOUT      — seconds, default: 3.0
 ```
 
 ### `extraEnv` — arbitrary variables
@@ -322,6 +321,31 @@ Full conversation history is always stored in Redis. This limit only controls ho
 Known context windows from test environments:
 - `gemma3:270m` via Ollama: 32,768 tokens
 - `mistral-large` via Mistral API: 128,000 tokens
+
+---
+
+## Embedding model
+
+The agent uses a local Ollama instance to generate embeddings for document search. Two environment variables control it:
+
+| Variable | Default | Description |
+|---|---|---|
+| `EMBEDDING_SERVER` | `http://embedding:11434` | Ollama base URL |
+| `EMBEDDING_MODEL` | `all-minilm:33m` | Ollama model name |
+
+Set them via `extraEnv` if you need non-default values:
+
+```yaml
+extraEnv:
+  - name: EMBEDDING_MODEL
+    value: "nomic-embed-text"
+  - name: EMBEDDING_SERVER
+    value: "http://my-ollama:11434"
+```
+
+**Changing `EMBEDDING_MODEL` triggers a model download at container startup.** The embedding sidecar pulls the named model from the Ollama registry on first use. If the model is not already cached in the sidecar's volume, every pod in the deployment will spend time downloading it before it can serve requests — this can add several minutes to startup time depending on model size and network speed.
+
+Keep `EMBEDDING_MODEL` consistent across deployments. If you must change it, expect slower pod startup and adjust `initialDelaySeconds` on your readiness probe accordingly until the download completes.
 
 ---
 

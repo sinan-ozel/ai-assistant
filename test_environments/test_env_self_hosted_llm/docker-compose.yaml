@@ -23,17 +23,6 @@ services:
       timeout: 3s
       retries: 5
 
-  embedding-test:
-    image: sinanozel/ollama.0.12.11:all-minilm-33m
-    container_name: embedding-test-self-hosted-llm
-    networks:
-      - test-network
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/11434' || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # Application under test
   app:
     build:
@@ -47,7 +36,6 @@ services:
       - REDIS_PORT=6379
       - QDRANT_HOST=qdrant-test
       - QDRANT_PORT=6333
-      - EMBEDDING_SERVER=http://embedding-test:11434
       - CONVERSATION_WINDOW_LIMIT=2048
     env_file:
       - .env
@@ -55,8 +43,6 @@ services:
       redis-test:
         condition: service_healthy
       qdrant-test:
-        condition: service_healthy
-      embedding-test:
         condition: service_healthy
     healthcheck:
       test:

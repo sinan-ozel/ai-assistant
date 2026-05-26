@@ -8,17 +8,56 @@ Releases are built and pushed using the **Release** VS Code task (or `bash scrip
 - On branch `main` with a clean working tree
 - All integration tests passing
 
-## Running a release
+## Dev release (Docker image)
+
+Used to publish a pre-release Docker image without going through the full production checklist.
+
+From VS Code: **Tasks: Run Task** → **Release (Dev)**
+
+From the terminal:
+
+```bash
+bash scripts/release.sh --dev
+```
+
+The script reads the version from `pyproject.toml` and the current value of `build_number.txt` to produce a tag like `0.1.0-dev.12`. It builds and pushes the Docker image and creates a git tag (`v0.1.0-dev.12`), but does **not** increment `build_number.txt` — that is the Helm chart publish step's responsibility.
+
+## Dev release (Helm chart)
+
+From VS Code: **Tasks: Run Task** → **Publish Helm Chart (Dev)**
+
+From the terminal:
+
+```bash
+bash scripts/publish-helm-chart.sh --dev
+```
+
+### Build number resolution
+
+Rather than trusting `build_number.txt` blindly, the script derives the next build number from two sources of truth:
+
+1. **Git tags** — scans `v{VERSION}-dev.*` and extracts the highest N
+2. **Docker Hub** — queries the public tags API and extracts the highest M for `{VERSION}-dev.*`
+
+The new build number is `max(N, M + 1)`. This guarantees the Helm chart never reuses a build number already claimed by a Docker image or a prior git tag, even if `build_number.txt` is stale.
+
+After a successful push, `build_number.txt` is set to `NEW_BUILD + 1` and committed.
+
+### Combined Docker + Helm dev release
+
+Run **Release (Dev)** first, then **Publish Helm Chart (Dev)**. Because the Docker step does not increment `build_number.txt`, the Helm step will see the Docker image in the Hub API and select `docker_build + 1` as the next number — keeping them on separate, non-colliding build numbers by design.
+
+## Production release
 
 From VS Code: **Tasks: Run Task** → **Release**, then enter the version when prompted.
 
 From the terminal:
 
 ```bash
-bash scripts/release.sh 1.2.3
+bash scripts/release.sh
 ```
 
-## What the release script does
+### What the production release script does
 
 1. Validates the version is valid semver (`MAJOR.MINOR.PATCH`)
 2. Checks the version is not already a git tag

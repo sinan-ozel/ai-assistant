@@ -12,8 +12,6 @@ import logging
 
 from common.search import (
     DEFAULT_TOP_K,
-    EmbeddingUnavailableError,
-    ingestion_in_progress,
     run_search,
 )
 from fastapi import HTTPException
@@ -69,29 +67,12 @@ async def handler(request: dict):
         filter_payload,
     )
 
-    try:
-        results = run_search(
-            query=query,
-            collections=resolved_collections,
-            top_k=top_k,
-            filter_payload=filter_payload,
-        )
-    except EmbeddingUnavailableError:
-        if ingestion_in_progress():
-            detail = (
-                "Document ingestion is in progress. "
-                "The embedding service is busy — try again in 15 seconds."
-            )
-        else:
-            detail = (
-                "The embedding service is unavailable. "
-                "Try again in 15 seconds."
-            )
-        return JSONResponse(
-            status_code=503,
-            content={"detail": detail},
-            headers={"Retry-After": "15"},
-        )
+    results = run_search(
+        query=query,
+        collections=resolved_collections,
+        top_k=top_k,
+        filter_payload=filter_payload,
+    )
 
     if not stream:
         return JSONResponse(content=results)
@@ -237,13 +218,6 @@ spec = {
             "description": (
                 "Bad request — missing both 'query' and 'filter', or "
                 "both 'collection' and 'collections' provided."
-            ),
-        },
-        503: {
-            "description": (
-                "Service unavailable — the embedding service is temporarily "
-                "busy (e.g. document ingestion in progress). "
-                "Retry after the number of seconds indicated in Retry-After."
             ),
         },
     },

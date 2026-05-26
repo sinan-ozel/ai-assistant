@@ -18,9 +18,9 @@ env:
   # Maximum tokens in the conversation context window.
   # Leave empty for no limit (uses the model's full context).
   conversationWindowLimit: ""
-  # Embedding request timeout in seconds. Increase if the embedding server
-  # is slow to respond (e.g. first-request cold start on a slow host).
-  embeddingTimeout: "3.0"
+  # fastembed model name for in-process embeddings. Override to use a different
+  # sentence-transformers model supported by fastembed.
+  embeddingModel: "sentence-transformers/all-MiniLM-L6-v2"
 
 # Resource requests and limits for the main application container.
 # Override with null (~) to remove resource constraints entirely.
@@ -38,19 +38,17 @@ secrets:
   mistralApiKey: ""
   anthropicApiKey: ""
 
-# ── Embedding server ─────────────────────────────────────────────────────────
-# Two tag options — both expose the Ollama /api/embed endpoint on port 11434:
-#   all-minilm-33m      — small, fast, 33M-param sentence embeddings
-#   embeddinggemma-300m — larger, higher-quality Gemma-based embeddings
+# ── Embedding (disabled — runs in-process via fastembed) ─────────────────────
+# Embedding is handled in-process by fastembed (sentence-transformers/all-MiniLM-L6-v2).
+# No sidecar container is needed. Set enabled: true only if you want to override
+# with an external Ollama-compatible embedding server.
 embedding:
+  enabled: false
   replicaCount: 1
   image:
     repository: sinanozel/ollama.0.12.11
     tag: all-minilm-33m
   port: 11434
-  # Model name sent to POST /api/embed — must match what is loaded in the image.
-  model: "all-minilm:33m"
-  # Override with null (~) to remove resource constraints entirely.
   resources:
     requests:
       cpu: 250m

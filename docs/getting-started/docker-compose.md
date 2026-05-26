@@ -4,7 +4,7 @@ A complete `docker-compose.yaml` for running agent-stem locally with all service
 
 ## Minimal setup (cloud LLM)
 
-No local GPU required. Uses a cloud LLM and a pre-built embedding model.
+No local GPU required. Embedding runs in-process — no separate container needed.
 
 ```yaml
 services:
@@ -19,16 +19,12 @@ services:
     depends_on:
       - redis
       - qdrant
-      - embedding
 
   redis:
     image: redis:7-alpine
 
   qdrant:
     image: qdrant/qdrant:v1.12.1
-
-  embedding:
-    image: sinanozel/ollama.0.12.11:all-minilm-33m
 ```
 
 ## With Ollama (local LLM)
@@ -43,12 +39,9 @@ services:
       - ./cortex:/app/cortex
     ports:
       - "8000:8000"
-    environment:
-      - EMBEDDING_SERVER=http://embedding:11434
     depends_on:
       - redis
       - qdrant
-      - embedding
       - ollama
 
   redis:
@@ -56,9 +49,6 @@ services:
 
   qdrant:
     image: qdrant/qdrant:v1.12.1
-
-  embedding:
-    image: sinanozel/ollama.0.12.11:all-minilm-33m
 
   ollama:
     image: sinanozel/ollama.0.12.11:gemma3-270m
@@ -81,8 +71,7 @@ model: ollama/gemma3:270m
 | `DEFAULT_PROVIDER` | — | Name of the provider YAML to use as default (without `.yaml`) |
 | `DEFAULT_SYSTEM_MESSAGE` | built-in | System message when `cortex/chat/prompt.py` is absent |
 | `LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
-| `EMBEDDING_SERVER` | `http://embedding:11434` | Ollama base URL for embeddings |
-| `EMBEDDING_MODEL` | `all-minilm:33m` | Embedding model name |
+| `EMBEDDING_MODEL` | `sentence-transformers/all-MiniLM-L6-v2` | fastembed model name (runs in-process) |
 | `QDRANT_HOST` | `qdrant` | Qdrant hostname |
 | `QDRANT_PORT` | `6333` | Qdrant port |
 | `CONVERSATION_WINDOW_LIMIT` | — | Override context window (tokens). Useful on memory-constrained hardware. |

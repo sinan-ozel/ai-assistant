@@ -66,16 +66,12 @@ services:
     depends_on:
       - redis
       - qdrant
-      - embedding
 
   redis:
     image: redis:7-alpine
 
   qdrant:
     image: qdrant/qdrant:v1.12.1
-
-  embedding:
-    image: sinanozel/ollama.0.12.11:all-minilm-33m
 ```
 
 ### Start it

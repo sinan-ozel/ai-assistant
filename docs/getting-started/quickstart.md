@@ -78,9 +78,6 @@ services:
 
   qdrant:
     image: qdrant/qdrant:v1.12.1
-
-  embedding:
-    image: sinanozel/ollama.0.12.11:all-minilm-33m
 ```
 
 ## 4. Start

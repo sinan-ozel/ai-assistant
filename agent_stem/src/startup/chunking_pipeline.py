@@ -16,14 +16,10 @@ A missing Redis entry means the file has never been processed before.
 
 import asyncio
 import hashlib
-import json
 import logging
 import os
 import re
 import socket
-import urllib.error
-import urllib.parse
-import urllib.request
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -51,19 +47,28 @@ QDRANT_COLLECTION = os.environ.get("QDRANT_COLLECTION", "library")
 LANCEDB_PATH = os.environ.get("LANCEDB_PATH", "/app/data/lancedb")
 LANCEDB_TABLE = os.environ.get("LANCEDB_TABLE", "library")
 
-# Ollama embedding server.  EMBEDDING_SERVER is a full base URL such as
-# "http://embedding:11434".  For backwards compatibility, if it is not set the
-# code falls back to constructing the URL from EMBEDDING_HOST / EMBEDDING_PORT.
-_embedding_host = os.environ.get("EMBEDDING_HOST", "embedding")
-_embedding_port = os.environ.get("EMBEDDING_PORT", "11434")
-EMBEDDING_SERVER = os.environ.get(
-    "EMBEDDING_SERVER",
-    f"http://{_embedding_host}:{_embedding_port}",
+EMBEDDING_MODEL = os.environ.get(
+    "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
 )
-EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "all-minilm:33m")
 
 # Resolved at first use — call _get_embedding_dim() to obtain.
 _embedding_dim: Optional[int] = None
+
+# Lazy-loaded in-process fastembed model.
+_embedding_model = None
+
+
+def _get_embedding_model():
+    global _embedding_model
+    if _embedding_model is None:
+        from fastembed import TextEmbedding
+
+        _embedding_model = TextEmbedding(EMBEDDING_MODEL)
+        logger.info(
+            "Chunking pipeline: loaded fastembed model '%s'.", EMBEDDING_MODEL
+        )
+    return _embedding_model
+
 
 # In-process fallback for chunking state when Redis is unavailable.
 # Each with Memory() block is ephemeral without Redis, so we maintain state
@@ -91,58 +96,22 @@ def _count_tokens(text: str) -> int:
 
 
 def _embed_texts(texts: list[str]) -> list[list[float]]:
-    """Return embedding vectors for *texts* by calling the Ollama server.
-
-    Sends a single batch request to ``POST /api/embed`` and returns the list of
-    vectors in the same order as *texts*.
-
-    Raises:
-        RuntimeError: If the HTTP request fails or returns unexpected data.
-    """
-    url = f"{EMBEDDING_SERVER.rstrip('/')}/api/embed"
-    payload = json.dumps({"model": EMBEDDING_MODEL, "input": texts}).encode()
-    req = urllib.request.Request(
-        url,
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            body = json.loads(resp.read().decode())
-    except urllib.error.HTTPError as exc:
-        raise RuntimeError(
-            f"Embedding server returned HTTP {exc.code} for POST {url}: {exc.reason}"
-        ) from exc
-    except urllib.error.URLError as exc:
-        raise RuntimeError(
-            f"Could not reach embedding server at {url}: {exc.reason}"
-        ) from exc
-
-    embeddings = body.get("embeddings")
-    if not embeddings:
-        raise RuntimeError(
-            f"Embedding server response missing 'embeddings' field: {body!r}"
-        )
-    return embeddings
+    """Return embedding vectors for *texts* using the in-process fastembed
+    model."""
+    model = _get_embedding_model()
+    return [list(v) for v in model.embed(texts)]
 
 
 def _get_embedding_dim() -> int:
-    """Return the vector dimension by embedding a single probe string.
-
-    The result is cached in ``_embedding_dim`` so the server is only queried
-    once per process lifetime.
-    """
+    """Return the vector dimension, cached after the first call."""
     global _embedding_dim
     if _embedding_dim is None:
         vectors = _embed_texts(["probe"])
         _embedding_dim = len(vectors[0])
         logger.info(
-            "Chunking pipeline: embedding dimension resolved to %d "
-            "(model=%s, server=%s).",
+            "Chunking pipeline: embedding dimension resolved to %d (model=%s).",
             _embedding_dim,
             EMBEDDING_MODEL,
-            EMBEDDING_SERVER,
         )
     return _embedding_dim
 
@@ -1589,16 +1558,6 @@ async def run_chunking_pipeline() -> None:
             try:
                 chunks, toc, completed_at = await process_markdown_file(md_path)
             except RuntimeError as e:
-                if "Could not reach embedding server" in str(e):
-                    logger.error(
-                        "Chunking pipeline: failed to process %s — %s: %s",
-                        md_path.name,
-                        type(e).__name__,
-                        e,
-                    )
-                    raise RuntimeError(
-                        f"Chunking pipeline: failed to process {md_path.name} — {e}"
-                    ) from e
                 logger.error(
                     "Chunking pipeline: failed to process %s — %s: %s",
                     md_path.name,

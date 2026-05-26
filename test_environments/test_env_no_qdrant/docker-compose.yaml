@@ -12,27 +12,6 @@ services:
       timeout: 3s
       retries: 5
 
-  embedding-test:
-    image: sinanozel/ollama.0.12.11:all-minilm-33m
-    container_name: embedding-test-no-qdrant
-    networks:
-      - test-network
-    environment:
-      - OLLAMA_KEEP_ALIVE=1h
-    healthcheck:
-      test:
-        - "CMD"
-        - "bash"
-        - "-c"
-        - >-
-          exec 3<>/dev/tcp/127.0.0.1/11434 &&
-          printf 'GET /api/tags HTTP/1.0\r\nHost: localhost\r\n\r\n' >&3 &&
-          timeout 5 cat <&3 | grep -q all-minilm
-      interval: 10s
-      timeout: 8s
-      retries: 10
-      start_period: 60s
-
   # Cleans up generated .md files and Redis pipeline state before the app
   # starts so the PDF pipeline always begins from a known-clean state and
   # the chunking pipeline never processes stale files from a previous run.
@@ -75,16 +54,12 @@ services:
     environment:
       - REDIS_HOST=redis-test
       - REDIS_PORT=6379
-      - EMBEDDING_SERVER=http://embedding-test:11434
-      - EMBEDDING_TIMEOUT=10.0
     env_file:
       - .env
     depends_on:
       init:
         condition: service_healthy
       redis-test:
-        condition: service_healthy
-      embedding-test:
         condition: service_healthy
     healthcheck:
       test:
