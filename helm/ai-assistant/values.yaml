@@ -27,10 +27,10 @@ env:
 resources:
   requests:
     cpu: 250m
-    memory: 512Mi
+    memory: 1Gi
   limits:
     cpu: "1"
-    memory: 1Gi
+    memory: 2500Mi
 
 # API keys injected as a Kubernetes Secret.
 # Leave empty to omit the Secret entirely (e.g. when using only local servers).
