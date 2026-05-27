@@ -100,7 +100,7 @@ fi
 echo ">>> Copying cortex into minikube node at $NODE_CORTEX_PATH..."
 echo "    (Full directory tree — chat/, providers/, workflows/, etc.)"
 
-_tmptar=$(mktemp /tmp/cortex-XXXXXX.tar)
+_tmptar=$(mktemp /tmp/cortex-XXXXXX)
 COPYFILE_DISABLE=1 tar -C "$CORTEX_DIR" --exclude='._*' --exclude='.DS_Store' -cf "$_tmptar" .
 minikube cp "$_tmptar" /tmp/cortex.tar
 rm "$_tmptar"
@@ -143,10 +143,14 @@ prepull_images() {
     local images=()
     images+=("sinanozel/ai-assistant:${IMAGE_TAG}")
 
-    local emb_repo emb_tag
-    emb_repo="$(grep -A3 'repository: sinanozel/ollama' "$CHART_DIR/values.yaml" | head -1 | awk '{print $2}')"
-    emb_tag="$(grep -A4 'repository: sinanozel/ollama' "$CHART_DIR/values.yaml" | grep 'tag:' | head -1 | awk '{print $2}')"
-    images+=("${emb_repo}:${emb_tag}")
+    local emb_enabled
+    emb_enabled="$(awk '/^embedding:/{f=1} f && /enabled:/{print $2; exit}' "$CHART_DIR/values.yaml")"
+    if [[ "$emb_enabled" == "true" ]]; then
+        local emb_repo emb_tag
+        emb_repo="$(grep -A3 'repository: sinanozel/ollama' "$CHART_DIR/values.yaml" | head -1 | awk '{print $2}')"
+        emb_tag="$(grep -A4 'repository: sinanozel/ollama' "$CHART_DIR/values.yaml" | grep 'tag:' | head -1 | awk '{print $2}')"
+        images+=("${emb_repo}:${emb_tag}")
+    fi
 
     if grep -q 'ollama:' "$values_file" 2>/dev/null; then
         local ol_enabled
@@ -189,7 +193,6 @@ echo ">>> Installing chart for example: $EXAMPLE (image tag: $IMAGE_TAG)..."
 
 helm upgrade --install "$RELEASE" "$CHART_DIR" \
     --set "image.tag=${IMAGE_TAG}" \
-    --set "cortex.hostPath=${NODE_CORTEX_PATH}" \
     -f "$HELM_VALUES" \
     --wait --timeout 600s
 

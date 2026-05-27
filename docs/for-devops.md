@@ -29,7 +29,7 @@ You can run as many agent replicas as you need behind a load balancer. All repli
                   └─────┘     └───────┘   └─────────┘
 ```
 
-The cortex is mounted into pods via a Kubernetes ConfigMap or PersistentVolume. The container image is on Docker Hub as `sinanozel/agent-stem`.
+The cortex is mounted into pods as a directory via `hostPath`. The container image is on Docker Hub as `sinanozel/agent-stem`.
 
 ### Public vs private endpoints
 
@@ -198,33 +198,41 @@ For step-by-step instructions, see the dedicated deployment guides:
 
 ## Delivering the cortex to pods
 
-### Option 1: ConfigMap (small cortexes, no binary files)
+The cortex is mounted as a directory at `/app/cortex` inside the container. Set `cortex.hostPath` to a path on the Kubernetes node that contains the full cortex tree (`chat/`, `providers/`, `workflows/`, `library/`, etc.).
 
-Create the ConfigMap from your files:
+### Local dev with minikube
+
+Expose your local cortex directory into the minikube node first, then pass the node path to Helm:
 
 ```bash
-kubectl create configmap my-agent-cortex \
-  --from-file=cortex/providers/default.yaml \
-  --from-file=cortex/chat/prompt.py
+minikube mount /path/to/my/cortex:/mnt/ai-assistant-cortex &
+helm upgrade --install ai-assistant ... \
+  --set cortex.hostPath=/mnt/ai-assistant-cortex
 ```
 
-Reference it in `values.yaml`:
+Or in `values.yaml`:
 
 ```yaml
 cortex:
-  configMapName: my-agent-cortex
+  hostPath: /mnt/ai-assistant-cortex
 ```
 
-ConfigMaps have a 1 MB limit. Use a PVC if your `cortex/library/` contains PDFs.
+### Production clusters
 
-### Option 2: PersistentVolume (large document libraries)
+Use a PersistentVolume backed by network storage (NFS, EFS, etc.) with `ReadWriteMany` access. Pre-populate it with your cortex files using an init container or a one-off job, then set `hostPath` to the path where the PVC is mounted on the node.
+
+### Inline (quick starts and demos only)
+
+Leave `hostPath` empty. The chart generates a minimal single-file cortex from the `cortex.chatPrompt` value — no directory structure, no library:
 
 ```yaml
 cortex:
-  pvcName: my-agent-cortex-pvc
+  chatPrompt: |
+    """You are a helpful AI assistant."""
+    print(input_text)
 ```
 
-The PVC must be pre-populated with your library files before the agent starts. A typical pattern is an init container or a separate indexing job that writes to the PVC.
+The provider is auto-generated from the `ollama` or `llamacpp` settings in `values.yaml`. This mode is not suitable for production.
 
 ---
 
@@ -326,24 +334,21 @@ Known context windows from test environments:
 
 ## Embedding model
 
-The agent uses a local Ollama instance to generate embeddings for document search. Two environment variables control it:
+Embeddings run in-process via the `fastembed` library — no sidecar or external server needed. One environment variable controls the model:
 
 | Variable | Default | Description |
 |---|---|---|
-| `EMBEDDING_SERVER` | `http://embedding:11434` | Ollama base URL |
-| `EMBEDDING_MODEL` | `all-minilm:33m` | Ollama model name |
+| `EMBEDDING_MODEL` | `sentence-transformers/all-MiniLM-L6-v2` | fastembed model name |
 
-Set them via `extraEnv` if you need non-default values:
+Override via `extraEnv` if you need a different model:
 
 ```yaml
 extraEnv:
   - name: EMBEDDING_MODEL
-    value: "nomic-embed-text"
-  - name: EMBEDDING_SERVER
-    value: "http://my-ollama:11434"
+    value: "sentence-transformers/all-MiniLM-L12-v2"
 ```
 
-**Changing `EMBEDDING_MODEL` triggers a model download at container startup.** The embedding sidecar pulls the named model from the Ollama registry on first use. If the model is not already cached in the sidecar's volume, every pod in the deployment will spend time downloading it before it can serve requests — this can add several minutes to startup time depending on model size and network speed.
+**Changing `EMBEDDING_MODEL` triggers a model download at container startup.** The model is pre-downloaded during the Docker image build for the default value. Any other value will be fetched from the fastembed model hub on first use — every pod in the deployment will spend time downloading it before it can serve requests, which can add several minutes depending on model size and network speed.
 
 Keep `EMBEDDING_MODEL` consistent across deployments. If you must change it, expect slower pod startup and adjust `initialDelaySeconds` on your readiness probe accordingly until the download completes.
 
@@ -452,7 +457,7 @@ env:
   conversationWindowLimit: "8192"
 
 cortex:
-  configMapName: my-agent-cortex
+  hostPath: /mnt/ai-assistant-cortex
 
 livenessProbe:
   httpGet:

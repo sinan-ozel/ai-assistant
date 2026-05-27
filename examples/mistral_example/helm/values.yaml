@@ -2,6 +2,9 @@
 # API keys are read automatically from examples/mistral_example/.env by the
 # post-release scripts and created as the 'ai-assistant-api-keys' secret.
 
+cortex:
+  hostPath: /mnt/ai-assistant-cortex
+
 extraEnvFromSecret: ai-assistant-api-keys
 
 ollama:

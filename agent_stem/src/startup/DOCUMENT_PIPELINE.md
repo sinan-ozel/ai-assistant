@@ -140,8 +140,7 @@ A missing entry means the file has never been processed.
 | `QDRANT_COLLECTION`           | `library`            | Fallback collection name                |
 | `LANCEDB_PATH`                | `/app/data/lancedb`  | LanceDB data directory                  |
 | `LANCEDB_TABLE`               | `library`            | Fallback table name                     |
-| `EMBEDDING_SERVER`            | `http://embedding:11434` | Ollama base URL                     |
-| `EMBEDDING_MODEL`             | `all-minilm:33m`     | Ollama embedding model name             |
+| `EMBEDDING_MODEL`             | `sentence-transformers/all-MiniLM-L6-v2` | fastembed model name (runs in-process) |
 
 ---
 

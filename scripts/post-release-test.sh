@@ -38,27 +38,19 @@ TEST_IMAGE="ai-assistant-helm-test"
 PF_PID=""
 
 # ---------------------------------------------------------------------------
-# Resolve IMAGE_TAG from pyproject.toml + build_number.txt
-#
-# After a dev release the build number is incremented, so the last released
-# dev tag is VERSION-dev.(BUILD_NUMBER-1).  If no dev release has happened
-# yet (build_number <= 1) the bare VERSION is used (production release).
+# Resolve IMAGE_TAG from the most recent git tag.
 # Override by setting IMAGE_TAG in the environment.
 # ---------------------------------------------------------------------------
 
 resolve_image_tag() {
-    local version build_number
-    version="$(grep -m1 '^version' "$WORKSPACE/pyproject.toml" \
-        | sed 's/.*= *"\(.*\)"/\1/')"
-
-    if [[ -f "$WORKSPACE/build_number.txt" ]]; then
-        build_number="$(tr -d '[:space:]' < "$WORKSPACE/build_number.txt")"
-        if [[ "$build_number" =~ ^[0-9]+$ ]] && (( build_number > 1 )); then
-            echo "${version}-dev.$((build_number - 1))"
-            return
-        fi
+    local last_tag
+    last_tag="$(git -C "$WORKSPACE" describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')"
+    if [[ -n "$last_tag" ]]; then
+        echo "$last_tag"
+        return
     fi
-    echo "$version"
+    # Fall back to bare version when no tags exist yet
+    grep -m1 '^version' "$WORKSPACE/pyproject.toml" | sed 's/.*= *"\(.*\)"/\1/'
 }
 
 IMAGE_TAG="${IMAGE_TAG:-$(resolve_image_tag)}"
@@ -69,8 +61,8 @@ echo ">>> Using image tag: $IMAGE_TAG"
 # ---------------------------------------------------------------------------
 
 EXAMPLES=(
-    mistral_example,
-    web_researcher_agent,
+    mistral_example
+    web_researcher_agent
 )
 
 echo ">>> Testing examples: ${EXAMPLES[*]}"
@@ -140,10 +132,14 @@ prepull_images() {
     local images=()
     images+=("sinanozel/ai-assistant:${IMAGE_TAG}")
 
-    local emb_repo emb_tag
-    emb_repo="$(grep -A3 'repository: sinanozel/ollama' "$CHART_DIR/values.yaml" | head -1 | awk '{print $2}')"
-    emb_tag="$(grep -A4 'repository: sinanozel/ollama' "$CHART_DIR/values.yaml" | grep 'tag:' | head -1 | awk '{print $2}')"
-    images+=("${emb_repo}:${emb_tag}")
+    local emb_enabled
+    emb_enabled="$(awk '/^embedding:/{f=1} f && /enabled:/{print $2; exit}' "$CHART_DIR/values.yaml")"
+    if [[ "$emb_enabled" == "true" ]]; then
+        local emb_repo emb_tag
+        emb_repo="$(grep -A3 'repository: sinanozel/ollama' "$CHART_DIR/values.yaml" | head -1 | awk '{print $2}')"
+        emb_tag="$(grep -A4 'repository: sinanozel/ollama' "$CHART_DIR/values.yaml" | grep 'tag:' | head -1 | awk '{print $2}')"
+        images+=("${emb_repo}:${emb_tag}")
+    fi
 
     if grep -q 'ollama:' "$values_file" 2>/dev/null; then
         local ol_enabled
@@ -196,7 +192,7 @@ for EXAMPLE in "${EXAMPLES[@]}"; do
     create_api_secret "$EXAMPLE"
 
     echo ">>> Copying cortex into minikube node at $NODE_CORTEX_PATH..."
-    _tmptar=$(mktemp /tmp/cortex-XXXXXX.tar)
+    _tmptar=$(mktemp /tmp/cortex-XXXXXX)
     COPYFILE_DISABLE=1 tar -C "$CORTEX_DIR" --exclude='._*' --exclude='.DS_Store' -cf "$_tmptar" .
     minikube cp "$_tmptar" /tmp/cortex.tar
     rm "$_tmptar"
@@ -206,7 +202,6 @@ for EXAMPLE in "${EXAMPLES[@]}"; do
     echo ">>> Installing chart (image tag: $IMAGE_TAG)..."
     if ! helm upgrade --install "$RELEASE" "$CHART_DIR" \
         --set "image.tag=${IMAGE_TAG}" \
-        --set "cortex.hostPath=${NODE_CORTEX_PATH}" \
         -f "$HELM_VALUES" \
         --wait --timeout 600s; then
         echo "ERROR: helm install failed for $EXAMPLE." >&2
