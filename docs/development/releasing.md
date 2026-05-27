@@ -42,7 +42,7 @@ From the terminal:
 bash scripts/publish-helm-chart.sh --dev
 ```
 
-The script is a no-op if `helm/ai-assistant/` has not changed since the last git tag. When it does publish:
+The script is a no-op if neither `helm/ai-assistant/` nor `scripts/publish-helm-chart.sh` has changed since the last git tag. When it does publish:
 
 - **Chart version** — uses the current `build_number` value (e.g. `0.1.0-dev.14`)
 - **appVersion** — set to the latest git tag (e.g. `0.1.0-dev.13`), so the chart deploys the Docker image that actually exists

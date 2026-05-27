@@ -11,14 +11,15 @@ if [ "$1" = "--dev" ]; then
     BUILD_NUMBER_FILE="$WORKSPACE_ROOT/build_number.txt"
     [[ -f "$BUILD_NUMBER_FILE" ]] || { echo "ERROR: build_number.txt not found" >&2; exit 1; }
 
-    # Skip publish if helm/ai-assistant/ has not changed since the last dev tag
+    # Skip publish if neither helm/ai-assistant/ nor this script has changed
+    # since the last dev tag
     LAST_TAG=$(git tag --sort=-version:refname | grep "^v${BASE}-dev\." | head -1)
     if [[ -n "$LAST_TAG" ]]; then
-        if git diff --quiet "${LAST_TAG}" HEAD -- helm/ai-assistant/; then
-            echo ">>> No changes to helm/ai-assistant/ since ${LAST_TAG} — skipping Helm chart publish."
+        if git diff --quiet "${LAST_TAG}" HEAD -- helm/ai-assistant/ scripts/publish-helm-chart.sh; then
+            echo ">>> No changes to helm/ai-assistant/ or publish-helm-chart.sh since ${LAST_TAG} — skipping."
             exit 0
         fi
-        echo ">>> Changes detected in helm/ai-assistant/ since ${LAST_TAG} — publishing."
+        echo ">>> Changes detected since ${LAST_TAG} — publishing."
     fi
 
     # Helm chart version: current build_number (source of truth: build_number - 1 after publish)
