@@ -21,50 +21,43 @@ if [ "$1" = "--dev" ]; then
         echo ">>> Changes detected in helm/ai-assistant/ since ${LAST_TAG} — publishing."
     fi
 
-    # Highest build number across git tags: v{BASE}-dev.{N}
-    GIT_BUILD=$(git tag --list "v${BASE}-dev.*" \
-        | sed "s|^v${BASE}-dev\.||" \
-        | grep -E '^[0-9]+$' \
-        | sort -n | tail -1)
-    GIT_BUILD=${GIT_BUILD:-0}
+    # Helm chart version: current build_number (source of truth: build_number - 1 after publish)
+    BUILD_NUMBER=$(tr -d '[:space:]' < "$BUILD_NUMBER_FILE")
+    [[ "$BUILD_NUMBER" =~ ^[0-9]+$ ]] || { echo "ERROR: build_number.txt contains '$BUILD_NUMBER'" >&2; exit 1; }
+    CHART_VERSION="${BASE}-dev.${BUILD_NUMBER}"
 
-    # Highest build number from Docker Hub: {BASE}-dev.{N}
-    DOCKER_BUILD=$(curl -sf \
-        "https://hub.docker.com/v2/repositories/${DOCKER_IMAGE}/tags/?page_size=100" \
-        2>/dev/null \
-        | jq -r '.results[].name' \
-        | grep "^${BASE}-dev\." \
-        | sed "s|^${BASE}-dev\.||" \
-        | grep -E '^[0-9]+$' \
-        | sort -n | tail -1 \
-        || true)
-    DOCKER_BUILD=${DOCKER_BUILD:-0}
+    # appVersion: latest git tag = the Docker image that actually exists
+    APP_VERSION=$(git tag --sort=-version:refname | grep "^v${BASE}-dev\." | head -1 | sed 's/^v//')
+    if [[ -z "$APP_VERSION" ]]; then
+        APP_VERSION="${BASE}"
+    fi
 
-    echo ">>> Git max dev build   : ${GIT_BUILD}"
-    echo ">>> Docker Hub max build: ${DOCKER_BUILD}"
+    echo ">>> Chart version : ${CHART_VERSION}"
+    echo ">>> App version   : ${APP_VERSION} (Docker image)"
 
-    # Use max(git_build, docker_build + 1) so we never reuse an existing tag
-    NEW_BUILD=$(( GIT_BUILD > DOCKER_BUILD + 1 ? GIT_BUILD : DOCKER_BUILD + 1 ))
-    VERSION="${BASE}-dev.${NEW_BUILD}"
-    echo ">>> Publishing Helm chart ${VERSION} ..."
+    helm package helm/ai-assistant \
+        --version "${CHART_VERSION}" \
+        --app-version "${APP_VERSION}"
+    helm push "ai-assistant-helm-${CHART_VERSION}.tgz" oci://registry-1.docker.io/sinanozel
+    rm -f "ai-assistant-helm-${CHART_VERSION}.tgz"
 
-    helm package helm/ai-assistant --version "${VERSION}" --app-version "${VERSION}"
-    helm push "ai-assistant-helm-${VERSION}.tgz" oci://registry-1.docker.io/sinanozel
-    rm -f "ai-assistant-helm-${VERSION}.tgz"
-
-    NEXT_BUILD=$(( NEW_BUILD + 1 ))
+    NEXT_BUILD=$(( BUILD_NUMBER + 1 ))
     echo "$NEXT_BUILD" > "$BUILD_NUMBER_FILE"
     git add "$BUILD_NUMBER_FILE"
-    git commit -m "chore: bump build number to ${NEXT_BUILD} after dev Helm release ${VERSION}"
+    git commit -m "chore: bump build number to ${NEXT_BUILD} after dev Helm release ${CHART_VERSION}"
     git push origin main
 
     echo ""
-    echo "Published Helm chart ${VERSION} to Docker Hub OCI"
-    echo "  Build number incremented to ${NEXT_BUILD} and committed."
+    echo "Published Helm chart ${CHART_VERSION} (deploys ${DOCKER_IMAGE}:${APP_VERSION})"
+    echo "  Build number incremented to ${NEXT_BUILD}."
 else
     VERSION="${BASE}"
-    helm package helm/ai-assistant
+    APP_VERSION=$(git tag --sort=-version:refname | grep "^v${BASE}$" | head -1 | sed 's/^v//')
+    [[ -z "$APP_VERSION" ]] && APP_VERSION="${BASE}"
+    helm package helm/ai-assistant \
+        --version "${VERSION}" \
+        --app-version "${APP_VERSION}"
     helm push "ai-assistant-helm-${VERSION}.tgz" oci://registry-1.docker.io/sinanozel
     rm -f "ai-assistant-helm-${VERSION}.tgz"
-    echo "Published ai-assistant ${VERSION} to Docker Hub OCI"
+    echo "Published ai-assistant ${VERSION} (deploys ${DOCKER_IMAGE}:${APP_VERSION})"
 fi
