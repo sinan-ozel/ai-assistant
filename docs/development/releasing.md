@@ -20,7 +20,17 @@ From the terminal:
 bash scripts/release.sh --dev
 ```
 
-The script reads the version from `pyproject.toml` and the current value of `build_number.txt` to produce a tag like `0.1.0-dev.12`. It builds and pushes the Docker image and creates a git tag (`v0.1.0-dev.12`), but does **not** increment `build_number.txt` — that is the Helm chart publish step's responsibility.
+The script reads the version from `pyproject.toml` and the current value of `build_number.txt` to produce a tag like `0.1.0-dev.13`. It builds and pushes the Docker image, creates a git tag (`v0.1.0-dev.13`), then increments `build_number.txt` and commits.
+
+### Build number invariants
+
+| Thing | Source of truth |
+|---|---|
+| Latest Docker image | Most recent git tag (`git describe --tags`) |
+| Latest Helm chart version | `build_number - 1` |
+| Build currently in progress | `build_number` |
+
+After a Docker release with build number N: `build_number.txt` is set to `N + 1`.
 
 ## Dev release (Helm chart)
 
@@ -32,20 +42,13 @@ From the terminal:
 bash scripts/publish-helm-chart.sh --dev
 ```
 
-### Build number resolution
+The script is a no-op if `helm/ai-assistant/` has not changed since the last git tag. When it does publish:
 
-Rather than trusting `build_number.txt` blindly, the script derives the next build number from two sources of truth:
+- **Chart version** — uses the current `build_number` value (e.g. `0.1.0-dev.14`)
+- **appVersion** — set to the latest git tag (e.g. `0.1.0-dev.13`), so the chart deploys the Docker image that actually exists
+- **build_number.txt** — incremented to `build_number + 1` and committed
 
-1. **Git tags** — scans `v{VERSION}-dev.*` and extracts the highest N
-2. **Docker Hub** — queries the public tags API and extracts the highest M for `{VERSION}-dev.*`
-
-The new build number is `max(N, M + 1)`. This guarantees the Helm chart never reuses a build number already claimed by a Docker image or a prior git tag, even if `build_number.txt` is stale.
-
-After a successful push, `build_number.txt` is set to `NEW_BUILD + 1` and committed.
-
-### Combined Docker + Helm dev release
-
-Run **Release (Dev)** first, then **Publish Helm Chart (Dev)**. Because the Docker step does not increment `build_number.txt`, the Helm step will see the Docker image in the Hub API and select `docker_build + 1` as the next number — keeping them on separate, non-colliding build numbers by design.
+After a Helm release with chart version N: `build_number - 1` resolves to that chart version.
 
 ## Production release
 
