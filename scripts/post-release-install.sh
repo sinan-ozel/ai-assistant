@@ -21,7 +21,7 @@
 #   example_name  Subdirectory under examples/ to use (default: basic_example)
 #
 # Environment:
-#   IMAGE_TAG     Docker image tag to deploy (resolved from pyproject.toml + DockerHub if unset)
+#   IMAGE_TAG     Docker image tag to deploy (computed from pyproject.toml + build_number.txt if unset)
 
 set -euo pipefail
 
@@ -48,20 +48,15 @@ cleanup() {
 trap cleanup EXIT
 
 # ---------------------------------------------------------------------------
-# Resolve IMAGE_TAG from the latest git tag
+# Resolve IMAGE_TAG from pyproject.toml + build_number.txt.
+# Override by setting IMAGE_TAG in the environment.
 # ---------------------------------------------------------------------------
 
 resolve_image_tag() {
-    local latest_tag
-    latest_tag="$(git -C "$WORKSPACE" tag --sort=-version:refname \
-        | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' \
-        | head -1)"
-    if [[ -n "$latest_tag" ]]; then
-        echo "${latest_tag#v}"
-        return
-    fi
-    # Fallback: bare version from pyproject.toml
-    grep -m1 '^version' "$WORKSPACE/pyproject.toml" | sed 's/.*= *"\(.*\)"/\1/'
+    local version build_number
+    version="$(grep -m1 '^version' "$WORKSPACE/pyproject.toml" | sed 's/.*= *"\(.*\)"/\1/')"
+    build_number="$(cat "$WORKSPACE/build_number.txt")"
+    echo "${version}-dev.$((build_number - 1))"
 }
 
 IMAGE_TAG="${IMAGE_TAG:-$(resolve_image_tag)}"

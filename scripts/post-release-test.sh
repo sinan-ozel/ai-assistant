@@ -38,19 +38,15 @@ TEST_IMAGE="ai-assistant-helm-test"
 PF_PID=""
 
 # ---------------------------------------------------------------------------
-# Resolve IMAGE_TAG from the most recent git tag.
+# Resolve IMAGE_TAG from pyproject.toml + build_number.txt.
 # Override by setting IMAGE_TAG in the environment.
 # ---------------------------------------------------------------------------
 
 resolve_image_tag() {
-    local last_tag
-    last_tag="$(git -C "$WORKSPACE" describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')"
-    if [[ -n "$last_tag" ]]; then
-        echo "$last_tag"
-        return
-    fi
-    # Fall back to bare version when no tags exist yet
-    grep -m1 '^version' "$WORKSPACE/pyproject.toml" | sed 's/.*= *"\(.*\)"/\1/'
+    local version build_number
+    version="$(grep -m1 '^version' "$WORKSPACE/pyproject.toml" | sed 's/.*= *"\(.*\)"/\1/')"
+    build_number="$(cat "$WORKSPACE/build_number.txt")"
+    echo "${version}-dev.$((build_number - 1))"
 }
 
 IMAGE_TAG="${IMAGE_TAG:-$(resolve_image_tag)}"
