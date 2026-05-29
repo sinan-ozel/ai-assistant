@@ -644,7 +644,9 @@ async def query_context_window(provider_data: Dict[str, Any]) -> int:
 
     context_window = max(_CONTEXT_WINDOW_FALLBACK, min(candidates))
     logger.info(
-        "Context window: %d tokens (candidates: %s).", context_window, candidates
+        "Context window: %d tokens (candidates: %s).",
+        context_window,
+        candidates,
     )
     return context_window
 

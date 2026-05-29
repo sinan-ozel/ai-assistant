@@ -77,7 +77,8 @@ _CONTEXT_RESPONSE_RESERVE = 1024  # tokens to reserve for the model's reply
 
 
 def _fit_to_context(messages: list, context_window: int) -> list:
-    """Drop oldest non-system messages until the list fits within context_window.
+    """Drop oldest non-system messages until the list fits within
+    context_window.
 
     Preserves the first message (system prompt) and the last message (current
     user turn). Drops from the oldest history in the middle. Logs a WARNING
@@ -128,6 +129,8 @@ def _fit_to_context(messages: list, context_window: int) -> list:
         dropped,
     )
     return system + history + current
+
+
 _LLM_RETRY_BASE_DELAY = 5.0
 # Hard ceiling on a single LLM call. Must be lower than the eval HTTP timeout
 # so the agent can return an error before the eval's requests.post read-timeout.
@@ -577,7 +580,6 @@ def make_prompt_fn(ctx: DslRunContext):
         import time
 
         import litellm
-
         from situational.awareness import get_provider_context_window
 
         call_messages = list(ctx.messages)

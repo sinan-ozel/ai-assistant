@@ -481,9 +481,7 @@ def main():
                 st.markdown("### External Tools")
                 st.caption("Tools served by external MCP servers.")
                 for _surl, _etools in _external_by_server.items():
-                    st.markdown(
-                        f"**🌐 {_surl}** — {len(_etools)} tool(s)"
-                    )
+                    st.markdown(f"**🌐 {_surl}** — {len(_etools)} tool(s)")
                     for _tool in _etools:
                         _render_tool(_tool)
 

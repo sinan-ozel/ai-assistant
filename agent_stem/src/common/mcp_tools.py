@@ -38,7 +38,6 @@ import re
 from pathlib import Path
 from typing import Callable, Optional
 
-
 logger = logging.getLogger(__name__)
 
 _SUPPORTED_TYPES: dict[type, str] = {
