@@ -45,7 +45,7 @@ spec:
             {{- end }}
             {{- if .Values.ports.streamlit }}
             - name: streamlit
-              containerPort: {{ .Values.ports.streamlit }}
+              containerPort: 8501
               protocol: TCP
             {{- end }}
           {{- if .Values.extraEnvFromSecret }}

@@ -21,6 +21,14 @@ Docstring format (Google-style)::
             query: The natural-language query to find relevant documents.
             top_k: Maximum number of results to return.
         \"\"\"
+
+MCP annotation hints are declared by setting ``__mcp_annotations__`` directly
+on the function after its definition::
+
+    def search(query: str = "") -> str:
+        ...
+
+    search.__mcp_annotations__ = {"readOnlyHint": True}
 """
 
 import importlib.util
@@ -29,6 +37,7 @@ import logging
 import re
 from pathlib import Path
 from typing import Callable, Optional
+
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +176,7 @@ def validate_and_build_schema(func: Callable) -> dict:
             "default": param.default,
         }
 
-    return {
+    schema: dict = {
         "name": name,
         "description": description,
         "inputSchema": {
@@ -175,14 +184,24 @@ def validate_and_build_schema(func: Callable) -> dict:
             "properties": properties,
         },
     }
+    mcp_hints = getattr(func, "__mcp_annotations__", {})
+    if mcp_hints:
+        schema["annotations"] = mcp_hints
+    return schema
 
 
-def discover_tools(tool_dirs: list[Path]) -> dict[str, tuple[Callable, dict]]:
+def discover_tools(
+    tool_dirs: list[Path], source: str = ""
+) -> dict[str, tuple[Callable, dict]]:
     """Discover and validate all tools from the given directories.
 
     Scans each directory for ``*.py`` files (skipping ``_``-prefixed files).
     Every public function defined in those files (not prefixed with ``_``, not
     an import) becomes a tool.
+
+    *source* is an optional label (e.g. ``"default"`` or ``"cortex"``) stored
+    in each schema under ``x_source``. The Streamlit UI uses this to sort tools
+    into "Internal Tools (Default)" vs "Internal Tools (Custom)" sections.
 
     Returns a mapping of ``tool_name → (callable, schema)``. Raises on the
     first validation failure so misconfigured tools crash the process at
@@ -227,6 +246,8 @@ def discover_tools(tool_dirs: list[Path]) -> dict[str, tuple[Callable, dict]]:
                     continue
 
                 schema = validate_and_build_schema(attr)
+                if source:
+                    schema["x_source"] = source
 
                 if attr_name in tools:
                     logger.warning(

@@ -41,7 +41,11 @@ _DEFAULT_TOOLS_DIR = Path("/app/default/mcp/tools")
 _CORTEX_TOOLS_DIR = Path("/app/cortex/mcp/tools")
 
 # Discover and validate at import time so startup errors crash immediately.
-_tools = discover_tools([_DEFAULT_TOOLS_DIR, _CORTEX_TOOLS_DIR])
+# Each directory is discovered separately so tools are tagged with their source.
+_tools = {
+    **discover_tools([_DEFAULT_TOOLS_DIR], source="default"),
+    **discover_tools([_CORTEX_TOOLS_DIR], source="cortex"),
+}
 logger.info("MCP server: %d tool(s) loaded: %s", len(_tools), sorted(_tools))
 
 app = FastAPI(title="ai-assistant-mcp", version="0.1.0")

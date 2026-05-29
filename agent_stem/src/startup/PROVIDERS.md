@@ -137,6 +137,27 @@ max_tokens: 1024
 
 These become the defaults for every request routed through this provider. Request-level parameters (from the request body) do NOT override provider-level parameters — the YAML takes precedence.
 
+#### Context window and `max_tokens`
+
+`max_tokens` in a provider YAML has a dual role: it is forwarded to LiteLLM as a generation limit **and** it is used as the agent designer's declared context-window cap for conversation-history truncation.
+
+At startup the effective context window is determined by this formula:
+
+```
+effective = max(4096, min(yaml_max_tokens, litellm_model_info_context_window))
+```
+
+where only values that are present and greater than zero participate in the `min()`:
+
+| `max_tokens` in YAML | LiteLLM model info | Effective context window |
+|---|---|---|
+| 8 192 | 131 072 | 8 192 — YAML cap wins |
+| — | 8 192 | 8 192 — model info wins |
+| 8 192 | — | 8 192 — YAML cap wins |
+| — | — | 4 096 — hardcoded fallback |
+
+Set `max_tokens` in the provider YAML when the model runs on a memory-constrained node or pod and cannot handle the model's full declared context. The framework will truncate conversation history to this limit before every LLM call, logging a warning whenever truncation actually drops messages.
+
 ### Disabled provider
 
 ```yaml

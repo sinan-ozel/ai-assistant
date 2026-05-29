@@ -99,6 +99,32 @@ def library_search(
             )
         return "Library search is unavailable."
 
+    _result_lines = []
+    for _i, _hit in enumerate(results, start=1):
+        _book_meta = _hit.get("book") or {}
+        _book_title = (
+            _book_meta.get("title")
+            or _book_meta.get("title_from_pdf")
+            or ""
+        )
+        _file = _hit.get("file_path") or _hit.get("collection") or "?"
+        _section = _hit.get("section_title") or ""
+        _score = _hit.get("score", 0.0)
+        _line = f"  [{_i}] score={_score:.3f}  {_file}"
+        if _book_title:
+            _line += f"  book={_book_title!r}"
+        if _section:
+            _line += f"  § {_section!r}"
+        _result_lines.append(_line)
+
+    logger.debug(
+        "library_search: query=%r  top_k=%d  →  %d chunk(s) returned\n%s",
+        query,
+        top_k,
+        len(results),
+        "\n".join(_result_lines) if _result_lines else "  (none)",
+    )
+
     if not results:
         if not _qdrant_reachable():
             _log_qdrant_unavailable("run_search returned no results")
@@ -143,3 +169,6 @@ def library_search(
         parts.append("\n".join(lines))
 
     return "\n\n---\n\n".join(parts)
+
+
+library_search.__mcp_annotations__ = {"readOnlyHint": True}

@@ -6,7 +6,7 @@ unreachable or returns zero tools the process is terminated — a broken tool
 declaration is a configuration error, not a recoverable condition.
 
 Discovered tools are persisted in Redis memory so the Streamlit UI can display
-them under "External Tools".
+them under the appropriate Tools section.
 """
 
 import ast
@@ -210,6 +210,10 @@ def _save_tools_to_memory(server_url: str, tools: list) -> None:
                         "open_world": bool(
                             t.get("annotations", {}).get("openWorldHint", False)
                         ),
+                        "x_source": t.get("x_source", ""),
+                        "parameters": t.get("inputSchema", {}).get(
+                            "properties", {}
+                        ),
                     }
                     for t in tools
                 ],
@@ -227,7 +231,7 @@ def _save_tools_to_memory(server_url: str, tools: list) -> None:
     except Exception as e:
         logger.warning(
             "MCP startup: could not save tools to Redis (%s). "
-            "External tools will not appear in the Streamlit UI.",
+            "Tools will not appear in the Streamlit UI.",
             e,
         )
 

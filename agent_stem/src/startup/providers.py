@@ -570,52 +570,83 @@ def _load_and_validate_provider(
     return provider_data
 
 
-async def query_context_window(provider_data: Dict[str, Any]) -> int | None:
-    """Query a provider for their context window size using LiteLLM's
-    get_model_info.
+_CONTEXT_WINDOW_FALLBACK = 4096
+
+
+async def query_context_window(provider_data: Dict[str, Any]) -> int:
+    """Determine the effective context window for a provider.
+
+    Combines two sources and applies the formula::
+
+        max(4096, min(yaml_max_tokens, litellm_context_window))
+
+    where only values that are present and > 0 participate in the min().
+    This means the smaller of the two constraints wins (respecting both the
+    model's declared limit and any tighter limit the agent designer set in the
+    YAML for hardware/memory reasons), with 4096 as the hard floor when
+    neither source is available.
+
+    Sources (in order of lookup):
+    1. ``max_tokens`` in the provider YAML — the agent designer's explicit cap.
+       Use this to limit context when the model runs on a memory-constrained
+       node or pod.
+    2. ``litellm.get_model_info(model)`` — the model's declared context window
+       from LiteLLM's model database (may involve a network call for Ollama).
 
     Args:
         provider_data: Provider dictionary with config
 
     Returns:
-        Context window size as integer, or None if query fails
+        Effective context window in tokens (always >= 4096).
     """
     config = provider_data.get("config", {})
     model = config.get("model")
+    candidates: list[int] = []
 
-    if not model:
-        return None
+    # Source 1: YAML-configured max_tokens (agent designer / hardware limit).
+    yaml_max_tokens = config.get("max_tokens")
+    if isinstance(yaml_max_tokens, int) and yaml_max_tokens > 0:
+        candidates.append(yaml_max_tokens)
 
-    api_base = config.get("api_base")
-    env_backup = None
+    # Source 2: LiteLLM model info (model's declared context window).
+    if model:
+        api_base = config.get("api_base")
+        env_backup = None
+        if api_base and "ollama" in model.lower():
+            env_backup = os.environ.get("OLLAMA_API_BASE")
+            os.environ["OLLAMA_API_BASE"] = api_base
 
-    if api_base and "ollama" in model.lower():
-        env_backup = os.environ.get("OLLAMA_API_BASE")
-        os.environ["OLLAMA_API_BASE"] = api_base
+        # Run in a thread executor — LiteLLM may make a synchronous network
+        # call for some providers (e.g. Ollama).
+        loop = asyncio.get_event_loop()
+        try:
+            model_info = await loop.run_in_executor(None, get_model_info, model)
+            litellm_cw = model_info.get("max_tokens") or model_info.get(
+                "max_input_tokens"
+            )
+            if isinstance(litellm_cw, int) and litellm_cw > 0:
+                candidates.append(litellm_cw)
+        except Exception as e:
+            logger.debug("Failed to get context window via model info: %s", e)
+        finally:
+            if env_backup is not None:
+                os.environ["OLLAMA_API_BASE"] = env_backup
+            elif api_base and "OLLAMA_API_BASE" in os.environ:
+                del os.environ["OLLAMA_API_BASE"]
 
-    # Run get_model_info in a thread executor to avoid blocking the event loop
-    # — for some providers (e.g. ollama) LiteLLM may make a synchronous
-    # network call to fetch model metadata.
-    loop = asyncio.get_event_loop()
-    try:
-        model_info = await loop.run_in_executor(None, get_model_info, model)
-    except Exception as e:
-        logger.debug(f"Failed to get context window via model info: {e}")
-        return None
-    finally:
-        if env_backup is not None:
-            os.environ["OLLAMA_API_BASE"] = env_backup
-        elif api_base and "OLLAMA_API_BASE" in os.environ:
-            del os.environ["OLLAMA_API_BASE"]
+    if not candidates:
+        logger.info(
+            "Context window: no YAML max_tokens and model info unavailable"
+            " — using fallback %d tokens.",
+            _CONTEXT_WINDOW_FALLBACK,
+        )
+        return _CONTEXT_WINDOW_FALLBACK
 
-    context_window = model_info.get("max_tokens") or model_info.get(
-        "max_input_tokens"
+    context_window = max(_CONTEXT_WINDOW_FALLBACK, min(candidates))
+    logger.info(
+        "Context window: %d tokens (candidates: %s).", context_window, candidates
     )
-
-    if context_window:
-        logger.info(f"Context window from model info: {context_window}")
-
-    return context_window or None
+    return context_window
 
 
 async def discover_context_windows(providers_state: Dict[str, Any]) -> None:

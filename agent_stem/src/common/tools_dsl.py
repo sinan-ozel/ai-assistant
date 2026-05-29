@@ -73,6 +73,61 @@ def _parse_mcp_response(response: httpx.Response) -> dict:
 logger = logging.getLogger(__name__)
 
 _LLM_MAX_RETRIES = 3
+_CONTEXT_RESPONSE_RESERVE = 1024  # tokens to reserve for the model's reply
+
+
+def _fit_to_context(messages: list, context_window: int) -> list:
+    """Drop oldest non-system messages until the list fits within context_window.
+
+    Preserves the first message (system prompt) and the last message (current
+    user turn). Drops from the oldest history in the middle. Logs a WARNING
+    whenever any messages are dropped so the operator can see it happened.
+    Returns the original list unchanged when litellm token counting fails or
+    the messages already fit.
+    """
+    if not messages or context_window <= 0:
+        return messages
+
+    limit = context_window - _CONTEXT_RESPONSE_RESERVE
+    if limit <= 0:
+        return messages
+
+    try:
+        import litellm
+
+        total = litellm.token_counter(model="gpt-3.5-turbo", messages=messages)
+    except Exception:
+        return messages
+
+    if total <= limit:
+        return messages
+
+    if len(messages) <= 2:
+        # Nothing in the middle to drop — can't help.
+        return messages
+
+    system = messages[:1]
+    current = messages[-1:]
+    history = list(messages[1:-1])
+
+    dropped = 0
+    while history and total > limit:
+        removed = history.pop(0)
+        try:
+            total -= litellm.token_counter(
+                model="gpt-3.5-turbo", messages=[removed]
+            )
+        except Exception:
+            pass
+        dropped += 1
+
+    logger.warning(
+        "prompt(): context window (%d tokens) exceeded — "
+        "dropped %d oldest message(s) to fit.",
+        context_window,
+        dropped,
+    )
+    return system + history + current
 _LLM_RETRY_BASE_DELAY = 5.0
 # Hard ceiling on a single LLM call. Must be lower than the eval HTTP timeout
 # so the agent can return an error before the eval's requests.post read-timeout.
@@ -523,9 +578,15 @@ def make_prompt_fn(ctx: DslRunContext):
 
         import litellm
 
+        from situational.awareness import get_provider_context_window
+
         call_messages = list(ctx.messages)
         if text is not None:
             call_messages.append({"role": "user", "content": text})
+
+        _ctx_window = get_provider_context_window(ctx.providers_state, provider)
+        if _ctx_window:
+            call_messages = _fit_to_context(call_messages, _ctx_window)
 
         requested_model = None if provider == "default" else provider
         tools = ctx.available_tools if ctx.available_tools else None

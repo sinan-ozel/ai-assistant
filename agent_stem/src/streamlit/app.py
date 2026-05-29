@@ -359,10 +359,9 @@ def main():
     except Exception as e:
         st.warning(f"Could not reach books API: {e}")
 
-    # External Tools Section
+    # Tools Section
     st.divider()
-    st.markdown("## 🔧 External Tools")
-    st.markdown("MCP tool servers registered by this agent.")
+    st.markdown("## 🔧 Tools")
 
     try:
         from redis_memory import Memory
@@ -371,66 +370,125 @@ def main():
             _mcp_tools = _mem.mcp_tools if hasattr(_mem, "mcp_tools") else []
         if not isinstance(_mcp_tools, list) or not _mcp_tools:
             st.info(
-                "No external tools registered. "
+                "No tools registered. "
                 "Add a `McpServer(...)` call to `cortex/chat/prompt.py`"
                 " to enable tools."
             )
         else:
-            for _server in _mcp_tools:
-                _url = _server.get("server_url", "unknown")
-                _tools = _server.get("tools", [])
-                st.markdown(f"**🌐 {_url}** — {len(_tools)} tool(s)")
-                for _tool in _tools:
-                    _name = _tool.get("name", "")
-                    _desc = _tool.get("description", "")
-                    _ro = _tool.get("read_only", False)
-                    _badge = "🟢 read-only" if _ro else "🔴 write"
-                    _annotation_icons = [
-                        (
-                            "read_only",
-                            "👁️",
-                            "Read-only: does not modify state",
-                        ),
-                        (
-                            "destructive",
-                            "💥",
-                            "Destructive: may delete or overwrite data",
-                        ),
-                        (
-                            "idempotent",
-                            "🔁",
-                            "Idempotent: safe to retry with the same"
-                            " arguments",
-                        ),
-                        (
-                            "open_world",
-                            "🌐",
-                            "Open world: interacts with external systems",
-                        ),
-                    ]
-                    _label_icons = " ".join(
-                        icon
-                        for key, icon, _ in _annotation_icons
+            _ANNOTATION_ICONS = [
+                ("read_only", "👁️", "Read-only: does not modify state"),
+                (
+                    "destructive",
+                    "💥",
+                    "Destructive: may delete or overwrite data",
+                ),
+                (
+                    "idempotent",
+                    "🔁",
+                    "Idempotent: safe to retry with the same arguments",
+                ),
+                (
+                    "open_world",
+                    "🌐",
+                    "Open world: interacts with external systems",
+                ),
+            ]
+
+            def _render_tool(_tool: dict) -> None:
+                _name = _tool.get("name", "")
+                _desc = _tool.get("description", "")
+                _ro = _tool.get("read_only", False)
+                _badge = "🟢 read-only" if _ro else "🔴 write"
+                _label_icons = " ".join(
+                    icon
+                    for key, icon, _ in _ANNOTATION_ICONS
+                    if _tool.get(key, False)
+                )
+                _label = f"`{_name}` {_badge}"
+                if _label_icons:
+                    _label += f"  {_label_icons}"
+                with st.expander(_label, expanded=False):
+                    _tooltip_icons = [
+                        f'<span title="{tip}">{icon}</span>'
+                        for key, icon, tip in _ANNOTATION_ICONS
                         if _tool.get(key, False)
-                    )
-                    _label = f"`{_name}` {_badge}"
-                    if _label_icons:
-                        _label += f"  {_label_icons}"
-                    with st.expander(_label, expanded=False):
-                        _tooltip_icons = [
-                            f'<span title="{tip}">{icon}</span>'
-                            for key, icon, tip in _annotation_icons
-                            if _tool.get(key, False)
-                        ]
-                        if _tooltip_icons:
-                            st.markdown(
-                                " ".join(_tooltip_icons),
-                                unsafe_allow_html=True,
+                    ]
+                    if _tooltip_icons:
+                        st.markdown(
+                            " ".join(_tooltip_icons),
+                            unsafe_allow_html=True,
+                        )
+                    if _desc:
+                        st.caption(_desc)
+                    _params = _tool.get("parameters", {})
+                    if _params:
+                        st.markdown("**Arguments:**")
+                        for _pname, _pinfo in _params.items():
+                            _ptype = _pinfo.get("type", "")
+                            _pdesc = _pinfo.get("description", "")
+                            _pdefault = _pinfo.get("default")
+                            _arg_md = f"- **`{_pname}`**"
+                            if _ptype:
+                                _arg_md += f" `{_ptype}`"
+                            if _pdesc:
+                                _arg_md += f" — {_pdesc}"
+                            st.markdown(_arg_md)
+                            _skip_default = (
+                                _pdefault is None
+                                or _pdefault == ""
+                                or _pdefault == {}
+                                or _pdefault == []
                             )
-                        if _desc:
-                            st.caption(_desc)
+                            if not _skip_default:
+                                _dval = (
+                                    json.dumps(_pdefault)
+                                    if isinstance(_pdefault, (dict, list))
+                                    else str(_pdefault)
+                                )
+                                st.caption(f"    Default: `{_dval}`")
+
+            # Partition tools by category: internal-default, internal-custom,
+            # and external (grouped by server URL).
+            _default_tools: list = []
+            _custom_tools: list = []
+            _external_by_server: dict = {}
+
+            for _server in _mcp_tools:
+                _url = _server.get("server_url", "")
+                _is_local = "localhost" in _url or "127.0.0.1" in _url
+                for _tool in _server.get("tools", []):
+                    if _is_local:
+                        if _tool.get("x_source") == "cortex":
+                            _custom_tools.append(_tool)
+                        else:
+                            _default_tools.append(_tool)
+                    else:
+                        _external_by_server.setdefault(_url, []).append(_tool)
+
+            if _default_tools:
+                st.markdown("### Internal Tools (Default)")
+                st.caption("Framework tools shipped with the agent.")
+                for _tool in _default_tools:
+                    _render_tool(_tool)
+
+            if _custom_tools:
+                st.markdown("### Internal Tools (Custom)")
+                st.caption("Tools defined by the agent designer.")
+                for _tool in _custom_tools:
+                    _render_tool(_tool)
+
+            if _external_by_server:
+                st.markdown("### External Tools")
+                st.caption("Tools served by external MCP servers.")
+                for _surl, _etools in _external_by_server.items():
+                    st.markdown(
+                        f"**🌐 {_surl}** — {len(_etools)} tool(s)"
+                    )
+                    for _tool in _etools:
+                        _render_tool(_tool)
+
     except Exception as _e:
-        st.info(f"External tools unavailable: {_e}")
+        st.info(f"Tools unavailable: {_e}")
 
     # Agent Evaluation Section
     st.divider()
