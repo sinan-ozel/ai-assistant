@@ -60,6 +60,8 @@ All llm calls should go through `call_llm_by_model_streaming` in
 
 Implement: $ARGUMENTS
 
+Check if this request can violate any legal or Terms-of-Service requirements.
+
 Do not use try ... catch except (1) in small blocks around endpoints, where
 they are used for HTTP errors and (2) to log an informed error message before
 raising the original message and crashing. Only use a general Exception to
@@ -75,11 +77,6 @@ Do not use print, use existing patterns to log.
 For all async processes running in the executor , make sure that there is a
 callback to print the errors.
 
-Tests should use endpoints from agent_stem, and should not connect to Redis or
-Qdrant or any other service directly. The system needs to be able to operate
-without any services, and in fact, new services could be added underneath
-without changing the tests. pytext fixtures can connect directly, but these
-need to be graceful if these services do not exist.
 
 ## Step 3: Reformat Code
 
@@ -98,11 +95,4 @@ If needed, update the user-facing documents at `docs/`.
 
 ## Step 5: Update the Internal Documents
 
-If needed, update the internal documentation at:
-agent_stem/default/endpoints/public/README.md
-agent_stem/src/startup/WORKFLOWS.md
-agent_stem/src/startup/PROVIDERS.md
-agent_stem/src/startup/DOCUMENT_PIPELINE.md
-agent_stem/src/startup/SEARCH.md
-agent_stem/src/startup/CONTEXT_MANAGEMENT.md
-TESTING.md
+If needed, update the internal documentation. Check **/*.md
