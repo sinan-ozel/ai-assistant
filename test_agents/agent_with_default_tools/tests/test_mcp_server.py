@@ -88,8 +88,8 @@ def test_mcp_server_lists_search_tool():
     data = response.json()
     tools = data["result"]["tools"]
     names = [t["name"] for t in tools]
-    assert "library_search" in names, (
-        f"Expected 'library_search' in tool list; got: {names}"
+    assert "search.library_search" in names, (
+        f"Expected 'search.library_search' in tool list; got: {names}"
     )
 
 
@@ -105,14 +105,14 @@ def test_mcp_server_search_tool_schema():
     tools_by_name = {
         t["name"]: t for t in response.json()["result"]["tools"]
     }
-    schema = tools_by_name["library_search"]
+    schema = tools_by_name["search.library_search"]
 
-    assert schema.get("description"), "library_search must have a non-empty description"
+    assert schema.get("description"), "search.library_search must have a non-empty description"
 
     props = schema["inputSchema"]["properties"]
     for param in ("query", "collection", "top_k", "book"):
         assert param in props, (
-            f"Expected parameter '{param}' in library_search inputSchema; "
+            f"Expected parameter '{param}' in search.library_search inputSchema; "
             f"got: {list(props)}"
         )
         assert props[param].get("description"), (
@@ -136,7 +136,7 @@ def test_mcp_server_tool_call_streams_ndjson():
             "id": 4,
             "method": "tools/call",
             "params": {
-                "name": "library_search",
+                "name": "search.library_search",
                 "arguments": {"query": "what is Eberron?"},
             },
         },
@@ -170,7 +170,7 @@ def test_mcp_server_tool_call_no_results_is_not_error():
             "id": 5,
             "method": "tools/call",
             "params": {
-                "name": "library_search",
+                "name": "search.library_search",
                 "arguments": {
                     "query": "obscure topic with no matching documents",
                     "top_k": 3,
