@@ -285,7 +285,9 @@ def discover_tools(
                 if getattr(attr, "__module__", None) != module.__name__:
                     continue
 
-                schema = validate_and_build_schema(attr, module_stem=py_file.stem)
+                schema = validate_and_build_schema(
+                    attr, module_stem=py_file.stem
+                )
                 if source:
                     schema["x_source"] = source
 

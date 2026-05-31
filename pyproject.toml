@@ -73,6 +73,9 @@ line-length = 80
 select = ["I", "F", "E", "W"]
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+"*/mcp/tools/*.py" = ["F821"]  # `tool` is injected at load time by mcp_tools.py
+
 [tool.black]
 line-length = 80
 target-version = ['py312']
