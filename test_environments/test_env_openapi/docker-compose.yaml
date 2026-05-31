@@ -1,0 +1,133 @@
+services:
+  # Test infrastructure services
+  redis-test:
+    image: redis:7.4.2-alpine
+    container_name: redis-test-openapi
+    command: redis-server
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  qdrant-test:
+    image: qdrant/qdrant:v1.12.1
+    container_name: qdrant-test-openapi
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  eberron-mcp-server:
+    image: sinanozel/eberron-mcp-server:0.1.2
+    container_name: eberron-mcp-server-openapi
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # Cleans up generated .md files and Redis pipeline state before the app
+  # starts so the PDF pipeline always begins from a known-clean state and
+  # the chunking pipeline never processes stale files from a previous run.
+  init:
+    image: redis:7.4.2-alpine
+    container_name: init-openapi
+    networks:
+      - test-network
+    depends_on:
+      redis-test:
+        condition: service_healthy
+    volumes:
+      - ${AGENT_FOLDER:-./cortex}:/app/cortex
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/init_done"]
+      interval: 2s
+      timeout: 1s
+      retries: 30
+    command:
+      - sh
+      - -c
+      - |
+          find /app/cortex/library -name '*.md' 2>/dev/null | grep -v '/\.' |
+          while IFS= read -r f; do
+            pdf=$$(echo "$$f" | sed 's/\.md$$/\.pdf/');
+            [ -f "$$pdf" ] && rm "$$f";
+          done;
+          redis-cli -h redis-test DEL memory:pdf_pipeline_state memory:chunking_pipeline_state memory:library;
+          touch /tmp/init_done;
+          tail -f /dev/null
+
+  # Application under test
+  app:
+    build:
+      context: ../..
+      dockerfile: agent_stem/Dockerfile
+    container_name: app-test-openapi
+    networks:
+      - test-network
+    environment:
+      - REDIS_HOST=redis-test
+      - REDIS_PORT=6379
+      - QDRANT_HOST=qdrant-test
+      - QDRANT_PORT=6333
+      # - LOG_LEVEL=DEBUG
+    env_file:
+      - .env
+    depends_on:
+      init:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+      qdrant-test:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import json,urllib.request,sys; \
+          r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); \
+          d=json.load(r); \
+          sys.exit(0 if not d.get('providers_loading') else 1)"
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 60s
+    volumes:
+      - ${AGENT_FOLDER:-./cortex}:/app/cortex
+
+  # Test runner
+  tests:
+    build:
+      context: ../..
+      dockerfile: test_environments/Dockerfile
+    container_name: tests-runner-openapi
+    networks:
+      - test-network
+    environment:
+      - BASE_URL=http://app:8000
+      - REDIS_HOST=redis-test
+      - REDIS_PORT=6379
+    depends_on:
+      redis-test:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    volumes:
+      - ${TEST_FOLDER:-.}:/tests
+    command: ["pytest", "--openapi=http://app:8000", "--openapi-no-strict-example-checking", "--openapi-markdown-output=report.md", "--openapi-no-stdout", "--openapi-timeout=315", "-vv", "--maxfail=1"]
+
+networks:
+  test-network:
+    driver: bridge

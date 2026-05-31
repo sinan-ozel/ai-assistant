@@ -25,12 +25,12 @@
 
 0.2.0
 - [ ] Multiple conversations (Need conversations endpoint?)
-- [ ] Local MCP tools
+- [x] Local MCP tools
 - [ ] Add conversation summarization feature, and memory support in cortex
 - [ ] Ability to add books and create shelves on the interface.
 - [ ] Wider MCP Support
 - [ ] OpenAPI as tools
-- [ ] Local search as tool
+- [x] Local search as tool
 - [ ] Extend the books endpoint, implement v2 where we see everything in the pipeline.
 
 0.4.0

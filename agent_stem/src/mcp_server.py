@@ -55,7 +55,7 @@ app = FastAPI(title="ai-assistant-mcp", version="0.1.0")
 async def mcp_endpoint(request: Request):
     body = await request.json()
     method = body.get("method", "")
-    params = body.get("params", {})
+    params = body.get("params")
     req_id = body.get("id")
 
     if method == "initialize":
@@ -88,6 +88,18 @@ async def mcp_endpoint(request: Request):
         )
 
     if method == "tools/call":
+        if not isinstance(params, dict):
+            return JSONResponse(
+                {
+                    "jsonrpc": "2.0",
+                    "id": req_id,
+                    "error": {
+                        "code": -32602,
+                        "message": "Invalid params: 'params' must be an object.",
+                    },
+                },
+                status_code=400,
+            )
         tool_name = params.get("name")
         arguments = params.get("arguments", {})
 

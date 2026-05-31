@@ -62,6 +62,7 @@ def _log_qdrant_unavailable(context: str) -> None:
     )
 
 
+@tool.mcp(title="Library Search", read_only_hint=True)
 def library_search(
     query: str = "what is Eberron?",
     collection: str = "",
@@ -171,4 +172,3 @@ def library_search(
     return "\n\n---\n\n".join(parts)
 
 
-library_search.__mcp_annotations__ = {"readOnlyHint": True}

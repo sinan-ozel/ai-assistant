@@ -32,7 +32,28 @@ At import time, `mcp_server.py` calls `discover_tools()` with two directories:
 
 Every `*.py` file that does not start with `_` is loaded. Every public function
 (no `_` prefix) that is **defined in that file** (not an import) becomes an MCP
-tool. The tool name is the function name.
+tool.
+
+The tool `name` in the schema is `{module}.{function}`, e.g.
+`search.library_search` for `library_search` defined in `search.py`.
+
+### The `tool` object
+
+A `tool` object is injected into every tool module's global namespace — no
+import is needed. Use `@tool.mcp` to attach required metadata:
+
+```python
+@tool.mcp(title="Library Search", read_only_hint=True)
+def library_search(query: str = "what is Eberron?") -> str:
+    """Search the library vector database.
+
+    Args:
+        query: The natural-language query to find relevant documents.
+    """
+```
+
+Hint kwargs use snake_case and are converted to camelCase automatically:
+`read_only_hint=True` → `"readOnlyHint": true`.
 
 ### Validation rules
 
@@ -40,6 +61,7 @@ The process crashes with a `ValueError` + `logger.error` on any violation:
 
 | Rule | What is checked |
 |------|----------------|
+| `@tool.mcp(title=...)` required | Every tool must declare a human-readable title. |
 | Docstring required | The docstring becomes the tool description shown to the LLM. |
 | Type annotation required | Each parameter must be annotated with one of `{str, int, float, bool, dict, list}`. |
 | Default value required | Each parameter must have a default; it is used as the example in the schema. |
@@ -56,7 +78,7 @@ Each public function is converted to an MCP tool schema:
 
 ```json
 {
-  "name": "library_search",
+  "name": "search.library_search",
   "description": "Search the library vector database ...",
   "inputSchema": {
     "type": "object",
@@ -64,6 +86,10 @@ Each public function is converted to an MCP tool schema:
       "query": { "type": "string", "description": "...", "default": "what is Eberron?" },
       "top_k": { "type": "integer", "description": "...", "default": 5 }
     }
+  },
+  "annotations": {
+    "title": "Library Search",
+    "readOnlyHint": true
   }
 }
 ```
@@ -158,13 +184,14 @@ Invalid tool file
 ## Adding a Built-in Tool
 
 1. Create `agent_stem/default/mcp/tools/my_tool.py`.
-2. Define one or more public functions with:
-   - A Google-style docstring (first paragraph → tool description, `Args:` section → parameter descriptions).
-   - Type annotations from `{str, int, float, bool, dict, list}`.
-   - A default value for every parameter.
-3. Restart the container. The tool appears automatically in `tools/list`.
+2. Decorate every public function with `@tool.mcp(title="...")` (`tool` is
+   injected — no import needed).
+3. Add a Google-style docstring, type annotations, defaults, and `Args:` descriptions.
+4. Restart the container. The tool appears automatically in `tools/list` as
+   `my_tool.greet`.
 
 ```python
+@tool.mcp(title="Greet User")
 def greet(name: str = "world") -> str:
     """Return a greeting message.
 

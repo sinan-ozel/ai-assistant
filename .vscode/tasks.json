@@ -191,22 +191,6 @@
             "problemMatcher": []
         },
         {
-            "label": "Run Unit Tests: self_hosted_llm",
-            "type": "shell",
-            "command": "bash",
-            "args": [
-                "-c",
-                "F='${workspaceFolder}/test_environments/test_env_self_hosted_llm/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
-            ],
-            "options": {
-                "env": {
-                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/no_agent/cortex",
-                    "TEST_FOLDER": "${workspaceFolder}/test_agents/no_agent/tests"
-                }
-            },
-            "problemMatcher": []
-        },
-        {
             "label": "Run Integration Tests: image_workflows @ self_hosted_llm",
             "type": "shell",
             "command": "bash",
@@ -591,6 +575,16 @@
             "problemMatcher": []
         },
         {
+            "label": "Run Tests (OpenAPI)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_openapi/docker-compose.yaml'; D='${workspaceFolder}/test_environments/test_env_openapi'; docker compose -f \"$F\" --project-directory \"$D\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" --project-directory \"$D\" up --build --abort-on-container-exit --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" --project-directory \"$D\" down --remove-orphans; exit $EC"
+            ],
+            "problemMatcher": []
+        },
+        {
             "label": "Run Tests (Anthropic)",
             "type": "shell",
             "command": "bash",
@@ -729,6 +723,38 @@
             "problemMatcher": []
         },
         {
+            "label": "Run Integration Tests: agent_with_default_tools @ mcp",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_mcp/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_default_tools/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_default_tools/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: agent_with_cortex_tools @ mcp",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_mcp/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/agent_with_cortex_tools/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/agent_with_cortex_tools/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Run Integration Tests: agent_with_tool_and_delay @ default",
             "type": "shell",
             "command": "bash",
@@ -841,13 +867,14 @@
         {
             "label": "Run Pre-Release Tests",
             "dependsOn": [
-                "Run Unit Tests: self_hosted_llm",
-                "Run Integration Tests: mistral_agent @ mistral",
-                "Run Integration Tests: agent_with_tool_and_delay_on_mistral @ mistral",
-                "Run Integration Tests: anthropic_agent @ anthropic",
-                "Run Integration Tests: text_workflows @ self_hosted_llm",
-                "Run Integration Tests: image_workflows @ self_hosted_llm",
-                "Run Integration Tests: talk_to_your_documents @ self_hosted_llm",
+                "Run Integration Tests: mistral_agent @ default",
+                "Run Integration Tests: agent_with_tool_and_delay_on_mistral @ default",
+                "Run Integration Tests: anthropic_agent @ default",
+                "Run Integration Tests: text_workflows @ openapi",
+                "Run Integration Tests: image_workflows @ openapi",
+                "Run Integration Tests: talk_to_your_documents @ openapi",
+                "Run Integration Tests: agent_with_default_tools @ mcp",
+                "Run Integration Tests: agent_with_cortex_tools @ mcp",
             ],
             "dependsOrder": "sequence",
             "problemMatcher": []

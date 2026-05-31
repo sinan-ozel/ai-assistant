@@ -5,6 +5,7 @@ import httpx
 logger = logging.getLogger(__name__)
 
 
+@tool.mcp(title="Web Search", read_only_hint=True, open_world_hint=True)
 def web_search(query: str = "latest AI news", max_results: int = 5) -> str:
     """Search the web using DuckDuckGo and return a summary of the top results.
 

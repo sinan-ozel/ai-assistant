@@ -2,6 +2,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 
+@tool.mcp(title="Get Current Time", read_only_hint=True)
 def get_current_time(timezone: str = "UTC") -> str:
     """Return the current date and time in the specified timezone.
 
