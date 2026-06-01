@@ -34,8 +34,10 @@ Every `*.py` file that does not start with `_` is loaded. Every public function
 (no `_` prefix) that is **defined in that file** (not an import) becomes an MCP
 tool.
 
-The tool `name` in the schema is `{module}.{function}`, e.g.
-`search.library_search` for `library_search` defined in `search.py`.
+The tool `name` in the schema is `{hostname}/{module}.{function}`, e.g.
+`localhost/search.library_search` for `library_search` defined in `search.py`.
+The hostname is the MCP server host without protocol or port — always `localhost`
+for the built-in server.
 
 ### The `tool` object
 
@@ -78,7 +80,7 @@ Each public function is converted to an MCP tool schema:
 
 ```json
 {
-  "name": "search.library_search",
+  "name": "localhost/search.library_search",
   "description": "Search the library vector database ...",
   "inputSchema": {
     "type": "object",
