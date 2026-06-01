@@ -1,0 +1,41 @@
+services:
+  # Application under test — expected to crash at startup due to a bad MCP tool.
+  # No healthcheck: the container is intentionally not healthy.
+  # Stdout and stderr are redirected to a shared volume so the test can
+  # read the logged error message after the crash.
+  app:
+    build:
+      context: ../..
+      dockerfile: agent_stem/Dockerfile
+    container_name: app-test-bad-agent
+    env_file:
+      - .env
+    command: bash -c "mkdir -p /logs && /entrypoint.sh > /logs/app.log 2>&1"
+    volumes:
+      - ${AGENT_FOLDER:-./cortex}:/app/cortex
+      - logs:/logs
+
+  # Test runner starts as soon as the app container is created (not healthy,
+  # since it will never be healthy). The test itself waits long enough for
+  # the crash to complete before asserting.
+  tests:
+    build:
+      context: ../..
+      dockerfile: test_environments/Dockerfile
+    container_name: tests-runner-bad-agent
+    environment:
+      - BASE_URL=http://app:8000
+    depends_on:
+      app:
+        condition: service_started
+    volumes:
+      - ${TEST_FOLDER:-.}:/tests
+      - logs:/logs
+    command: ["pytest", "-v"]
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  logs:
