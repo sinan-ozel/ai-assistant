@@ -73,6 +73,9 @@ https://raw.githubusercontent.com/sinan-ozel/synced-memory/refs/heads/main/src/s
 
 There is no python in the development environment, it runs in containers only.
 Do not install python or anything else.
+Do not try to use pip.
+Instead, look into pyproject.toml for the source of truth for libraries.
+
 Use bash whenever possible, jq and yq are also there.
 If something needs to be part of the CI/CD pipeline,
 create containerized scripts.
