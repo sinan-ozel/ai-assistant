@@ -192,7 +192,9 @@ def _validate_lancedb_embedding_models() -> None:
     for table_name in tables:
         tbl = db.open_table(table_name)
         try:
-            df = tbl.to_lance().to_table(columns=["embedding_model"]).to_pydict()
+            df = (
+                tbl.to_lance().to_table(columns=["embedding_model"]).to_pydict()
+            )
             for model in df.get("embedding_model", []):
                 models_found.add(model if model else "__missing__")
         except Exception:

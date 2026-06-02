@@ -24,9 +24,9 @@ async def handler(path: str):
 
     import yaml
     from fastapi import HTTPException
-    from synced_memory import Memory
     from self.evaluation.parser import parse_evaluation_yaml
     from self.evaluation.runner import run_all_evaluations
+    from synced_memory import Memory
 
     # Check if workflow exists
     workflow = workflows_state.get("workflows", {}).get(path)

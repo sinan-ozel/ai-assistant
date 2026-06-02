@@ -23,8 +23,8 @@ from common.state import providers_state
 from fastapi import HTTPException
 from fastapi.responses import StreamingResponse
 from jsonschema import ValidationError, validate
-from synced_memory import PrefixedMemory
 from situational.awareness import get_provider_context_window
+from synced_memory import PrefixedMemory
 
 # Override context window (tokens) regardless of what the model reports.
 # Useful when VRAM is the real constraint, not the model's theoretical max.
