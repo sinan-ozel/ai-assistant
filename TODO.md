@@ -18,7 +18,7 @@
 
 0.1.1
 - [ ] Add chunk information to the interface.
-- [ ] Raise error if embedding server changes.
+- [x] Raise error if embedding server changes.
 - [ ] Add useful tools, current time, etc..
 - [ ] Very basic multi-agent support
 

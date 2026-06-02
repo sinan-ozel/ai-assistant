@@ -48,7 +48,7 @@ LANCEDB_PATH = os.environ.get("LANCEDB_PATH", "/app/data/lancedb")
 LANCEDB_TABLE = os.environ.get("LANCEDB_TABLE", "library")
 
 EMBEDDING_MODEL = os.environ.get(
-    "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
+    "EMBEDDING_MODEL", "nomic-ai/nomic-embed-text-v1.5"
 )
 
 # Resolved at first use — call _get_embedding_dim() to obtain.
@@ -131,6 +131,107 @@ def _qdrant_reachable(
             return True
     except OSError:
         return False
+
+
+def _validate_embedding_model_consistency() -> None:
+    """Assert all stored chunks were embedded with the current EMBEDDING_MODEL.
+
+    Reads the ``embedding_model`` payload field from every chunk in the active
+    vector store (Qdrant or LanceDB).  Raises ``RuntimeError`` if:
+
+    * any chunk is missing the field (ingested before model tracking was added),
+    * more than one model name is found across chunks, or
+    * the single model name differs from the current ``EMBEDDING_MODEL``.
+
+    Called once at pipeline startup; a mismatch means the index must be
+    rebuilt before the pipeline is allowed to run.
+    """
+    if _qdrant_reachable():
+        _validate_qdrant_embedding_models()
+    else:
+        _validate_lancedb_embedding_models()
+
+
+def _validate_qdrant_embedding_models() -> None:
+    from qdrant_client import QdrantClient
+
+    client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+    collections = [c.name for c in client.get_collections().collections]
+    if not collections:
+        return
+
+    models_found: set[str] = set()
+    for collection in collections:
+        offset = None
+        while True:
+            records, offset = client.scroll(
+                collection_name=collection,
+                limit=256,
+                offset=offset,
+                with_payload=["embedding_model"],
+                with_vectors=False,
+            )
+            for point in records:
+                model = (point.payload or {}).get("embedding_model")
+                models_found.add(model if model else "__missing__")
+            if offset is None:
+                break
+
+    _assert_model_set(models_found)
+
+
+def _validate_lancedb_embedding_models() -> None:
+    import lancedb
+
+    db = lancedb.connect(LANCEDB_PATH)
+    tables = db.table_names()
+    if not tables:
+        return
+
+    models_found: set[str] = set()
+    for table_name in tables:
+        tbl = db.open_table(table_name)
+        try:
+            df = tbl.to_lance().to_table(columns=["embedding_model"]).to_pydict()
+            for model in df.get("embedding_model", []):
+                models_found.add(model if model else "__missing__")
+        except Exception:
+            models_found.add("__missing__")
+
+    _assert_model_set(models_found)
+
+
+def _assert_model_set(models_found: set[str]) -> None:
+    if not models_found:
+        return
+
+    if "__missing__" in models_found:
+        raise RuntimeError(
+            f"Embedding model mismatch: some stored chunks are missing the "
+            f"'embedding_model' metadata field (ingested before model tracking "
+            f"was introduced). Current model: {EMBEDDING_MODEL!r}. "
+            f"Re-index the vector store to continue."
+        )
+
+    if len(models_found) > 1:
+        raise RuntimeError(
+            f"Embedding model mismatch: multiple models found in the vector "
+            f"store: {sorted(models_found)}. Current model: {EMBEDDING_MODEL!r}. "
+            f"Re-index the vector store with a single model to continue."
+        )
+
+    stored = next(iter(models_found))
+    if stored != EMBEDDING_MODEL:
+        raise RuntimeError(
+            f"Embedding model mismatch: vector store was built with "
+            f"{stored!r} but EMBEDDING_MODEL is set to {EMBEDDING_MODEL!r}. "
+            f"Re-index the vector store or restore the original model to continue."
+        )
+
+    logger.info(
+        "Chunking pipeline: embedding model validation passed (%r).",
+        EMBEDDING_MODEL,
+    )
 
 
 def _chunking_ok(stats: dict) -> bool:
@@ -218,6 +319,7 @@ def _lancedb_schema(vector_dim: int):
             pa.field("file_path", pa.string()),
             pa.field("text", pa.string()),
             pa.field("vector", pa.list_(pa.float32(), list_size=vector_dim)),
+            pa.field("embedding_model", pa.string()),
             pa.field("section_title", pa.string()),
             pa.field("section_title_in_toc", pa.string()),
             pa.field("chapter_label_in_toc", pa.string()),
@@ -1139,6 +1241,7 @@ def _write_to_qdrant(
             "file_path": file_path,
             "text": chunk.get("text", ""),
             **meta,
+            "embedding_model": EMBEDDING_MODEL,
             "page_number": (
                 meta.get("page_number")
                 if meta.get("page_number") is not None
@@ -1196,6 +1299,7 @@ def _write_to_lancedb(
                 "file_path": file_path,
                 "text": chunk.get("text", ""),
                 "vector": vector,
+                "embedding_model": EMBEDDING_MODEL,
                 "section_title": meta.get("section_title"),
                 "section_title_in_toc": meta.get("section_title_in_toc"),
                 "chapter_label_in_toc": meta.get("chapter_label_in_toc"),
@@ -1517,6 +1621,15 @@ async def run_chunking_pipeline() -> None:
     )
 
     loop = asyncio.get_event_loop()
+
+    # Fail fast if the vector store was built with a different embedding model.
+    try:
+        await loop.run_in_executor(None, _validate_embedding_model_consistency)
+    except RuntimeError as exc:
+        logger.error(
+            "Chunking pipeline: embedding model validation failed — %s", exc
+        )
+        raise
 
     while True:
         if not LIBRARY_DIR.exists():

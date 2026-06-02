@@ -140,7 +140,7 @@ A missing entry means the file has never been processed.
 | `QDRANT_COLLECTION`           | `library`            | Fallback collection name                |
 | `LANCEDB_PATH`                | `/app/data/lancedb`  | LanceDB data directory                  |
 | `LANCEDB_TABLE`               | `library`            | Fallback table name                     |
-| `EMBEDDING_MODEL`             | `sentence-transformers/all-MiniLM-L6-v2` | fastembed model name (runs in-process) |
+| `EMBEDDING_MODEL`             | `nomic-ai/nomic-embed-text-v1.5` | fastembed model name (runs in-process) |
 
 ---
 

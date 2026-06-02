@@ -33,7 +33,7 @@ RUN pip install --no-cache-dir $(python -c \
 RUN python -c "import tiktoken; tiktoken.get_encoding('cl100k_base')"
 
 # Pre-download the fastembed embedding model so containers without internet access can start.
-RUN python -c "from fastembed import TextEmbedding; TextEmbedding('sentence-transformers/all-MiniLM-L6-v2')"
+RUN python -c "from fastembed import TextEmbedding; TextEmbedding('nomic-ai/nomic-embed-text-v1.5')"
 
 # Copy all agent_stem contents
 COPY agent_stem/src/ /app/src/
