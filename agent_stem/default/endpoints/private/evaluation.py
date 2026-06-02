@@ -24,7 +24,7 @@ async def handler(path: str):
 
     import yaml
     from fastapi import HTTPException
-    from redis_memory import Memory
+    from synced_memory import Memory
     from self.evaluation.parser import parse_evaluation_yaml
     from self.evaluation.runner import run_all_evaluations
 

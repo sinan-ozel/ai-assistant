@@ -10,7 +10,7 @@ async def handler(path: str):
     Returns:
         Dict with evaluation results or status
     """
-    from redis_memory import Memory
+    from synced_memory import Memory
 
     # Get evaluation state for this workflow
     with Memory() as memory:

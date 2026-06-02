@@ -23,7 +23,7 @@ from common.state import providers_state
 from fastapi import HTTPException
 from fastapi.responses import StreamingResponse
 from jsonschema import ValidationError, validate
-from redis_memory import ConversationMemory
+from synced_memory import PrefixedMemory
 from situational.awareness import get_provider_context_window
 
 # Override context window (tokens) regardless of what the model reports.
@@ -172,7 +172,7 @@ def fit_messages_to_context(
 
         if current_tokens + msg_tokens <= available_token_count:
             # Create a fresh plain dict to avoid thread lock issues
-            # with redis-memory. Use text-only content without base64
+            # with synced-memory. Use text-only content without base64
             # images
             plain_msg = {"role": message.get("role"), "content": text_content}
             fitted_messages.insert(0, plain_msg)
@@ -312,7 +312,7 @@ async def handle_interactive_streaming(
 
         assistant_text = dsl_result.final_response or ""
         if assistant_text:
-            with ConversationMemory(conversation_id=conv_key) as memory:
+            with PrefixedMemory(prefix=conv_key) as memory:
                 if not hasattr(memory, "messages") or not isinstance(
                     memory.messages, list
                 ):
@@ -556,7 +556,7 @@ async def handle_streaming(
 
         # After streaming completes, store messages in memory
         assistant_message = "".join(full_content)
-        with ConversationMemory(conversation_id=conv_key) as memory:
+        with PrefixedMemory(prefix=conv_key) as memory:
             if not hasattr(memory, "messages") or not isinstance(
                 memory.messages, list
             ):
@@ -694,7 +694,7 @@ async def handler(request: dict, headers: dict = None):
     conv_key = get_conversation_key(user_id, conversation_id)
 
     # Use context manager to ensure Redis flush before returning
-    with ConversationMemory(conversation_id=conv_key) as memory:
+    with PrefixedMemory(prefix=conv_key) as memory:
         # Get existing messages or initialize
         if not hasattr(memory, "messages"):
             memory.messages = []
@@ -972,7 +972,6 @@ async def handler(request: dict, headers: dict = None):
         assistant_message = choice.message.content
 
         # Store user message and assistant response in memory
-        # Use redis-memory's append() which handles persistence
         memory.messages.append({"role": "user", "content": message})
         memory.messages.append(
             {"role": "assistant", "content": assistant_message}

@@ -258,7 +258,7 @@ def run_evaluation_case(
     for run_idx in range(repeat):
         # Check for cancellation
         if workflow_path:
-            from redis_memory import Memory
+            from synced_memory import Memory
 
             with Memory() as memory:
                 if hasattr(memory, "workflow_evaluation_state"):
@@ -286,7 +286,7 @@ def run_evaluation_case(
             for step_idx, step in enumerate(steps):
                 # Check for cancellation before each step
                 if workflow_path:
-                    from redis_memory import Memory
+                    from synced_memory import Memory
 
                     with Memory() as memory:
                         if hasattr(memory, "workflow_evaluation_state"):

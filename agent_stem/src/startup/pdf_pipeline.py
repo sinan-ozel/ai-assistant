@@ -25,7 +25,7 @@ import pymupdf4llm
 import yaml
 from common import CUSTOMIZATION_FOLDER
 from pymupdf.mupdf import FzErrorLibrary
-from redis_memory import Memory
+from synced_memory import Memory
 
 logger = logging.getLogger(__name__)
 

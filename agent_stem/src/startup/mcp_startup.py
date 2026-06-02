@@ -182,7 +182,7 @@ def _list_tools(base_url: str) -> list:
 def _save_tools_to_memory(server_url: str, tools: list) -> None:
     """Persist *tools* in Redis memory keyed by *server_url*."""
     try:
-        from redis_memory import Memory
+        from synced_memory import Memory
 
         with Memory() as memory:
             existing = memory.mcp_tools if hasattr(memory, "mcp_tools") else []

@@ -364,7 +364,7 @@ def main():
     st.markdown("## 🔧 Tools")
 
     try:
-        from redis_memory import Memory
+        from synced_memory import Memory
 
         with Memory() as _mem:
             _mcp_tools = _mem.mcp_tools if hasattr(_mem, "mcp_tools") else []

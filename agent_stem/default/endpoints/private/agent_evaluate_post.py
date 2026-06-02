@@ -28,7 +28,7 @@ async def handler(request: dict):
     )
     from fastapi import HTTPException
     from fastapi.responses import JSONResponse
-    from redis_memory import Memory
+    from synced_memory import Memory
 
     script_path = find_eval_script("/app/cortex")
     if script_path is None:
@@ -68,7 +68,7 @@ async def handler(request: dict):
         )
 
     async def _run_background():
-        from redis_memory import Memory
+        from synced_memory import Memory
 
         def _cancelled() -> bool:
             with Memory() as m:

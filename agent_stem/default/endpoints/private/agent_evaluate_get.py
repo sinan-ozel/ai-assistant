@@ -12,7 +12,7 @@ async def handler():
     - 404 Not Found: no completed run exists yet.
     """
     from fastapi.responses import JSONResponse
-    from redis_memory import Memory
+    from synced_memory import Memory
 
     with Memory() as memory:
         state = getattr(memory, _EVAL_STATE_KEY, None)

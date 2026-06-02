@@ -28,7 +28,7 @@ from typing import Optional
 import tiktoken
 import yaml
 from common import CUSTOMIZATION_FOLDER
-from redis_memory import Memory
+from synced_memory import Memory
 
 logger = logging.getLogger(__name__)
 

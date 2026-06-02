@@ -87,7 +87,7 @@ def ingestion_in_progress() -> bool:
     _ACTIVE_PDF = {"Queued", "Converting"}
     _ACTIVE_CHUNK = {"Queued", "Chunking"}
     try:
-        from redis_memory import Memory
+        from synced_memory import Memory
         from startup.chunking_pipeline import _chunking_pipeline_state
         from startup.pdf_pipeline import _pdf_pipeline_state
 

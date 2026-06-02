@@ -22,8 +22,8 @@ All variables consumed by the application. Groups below reflect where each varia
 
 | Variable | Default | Description |
 |---|---|---|
-| `REDIS_HOST` | `redis` | Hostname of the Redis server. Read by the `redis-memory` package. |
-| `REDIS_PORT` | `6379` | Port of the Redis server. Read by the `redis-memory` package. |
+| `REDIS_HOST` | `redis` | Hostname of the Redis server. Read by the `synced-memory` package. |
+| `REDIS_PORT` | `6379` | Port of the Redis server. Read by the `synced-memory` package. |
 
 ---
 

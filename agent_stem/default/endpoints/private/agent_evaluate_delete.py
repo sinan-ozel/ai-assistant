@@ -15,7 +15,7 @@ async def handler():
     Returns 200 when cancellation is queued, or 404 if no run is active.
     """
     from fastapi import HTTPException
-    from redis_memory import Memory
+    from synced_memory import Memory
 
     with Memory() as memory:
         state = getattr(memory, _EVAL_STATE_KEY, None)

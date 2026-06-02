@@ -18,7 +18,7 @@ async def handler(request: dict):
         HTTPException: If no evaluation is running
     """
     from fastapi import HTTPException
-    from redis_memory import Memory
+    from synced_memory import Memory
 
     path = request.get("workflow_path")
     if not path:
