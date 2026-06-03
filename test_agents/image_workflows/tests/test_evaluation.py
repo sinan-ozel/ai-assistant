@@ -2,6 +2,7 @@
 
 import os
 import time
+from datetime import datetime
 
 import pytest
 import requests
@@ -56,7 +57,6 @@ def test_nutrition_workflow_evaluation(clear_evaluation_state):
         data["started_at"], str
     ), "Expected 'started_at' to be a string (ISO format)"
     # Try to parse it as ISO datetime
-    from datetime import datetime
 
     try:
         datetime.fromisoformat(data["started_at"])

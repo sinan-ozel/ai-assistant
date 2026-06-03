@@ -9,6 +9,7 @@ that a small LLM cannot produce correctly without a successful tool call.
 These are used to verify that tool invocation actually worked end-to-end.
 """
 
+import json
 import os
 
 import pytest
@@ -87,7 +88,6 @@ def test_agent_tools_streaming(clear_test_memory):
     chunks = []
     for line in response.iter_lines(decode_unicode=True):
         if line:
-            import json
 
             chunk = json.loads(line)
             chunks.append(chunk)

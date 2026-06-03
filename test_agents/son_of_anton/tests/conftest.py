@@ -3,6 +3,7 @@
 import os
 
 import pytest
+import redis
 
 
 @pytest.fixture(scope="session")
@@ -14,7 +15,6 @@ def base_url():
 @pytest.fixture(scope="function")
 def clear_test_memory():
     """Clear test conversation memory before and after test run."""
-    import redis
 
     redis_host = os.getenv("REDIS_HOST", "redis-test")
     redis_port = int(os.getenv("REDIS_PORT", 6379))

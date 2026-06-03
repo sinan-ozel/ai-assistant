@@ -5,6 +5,7 @@ import time
 import warnings
 
 import pytest
+import redis
 
 warnings.filterwarnings("ignore", ".*Pydantic.*", UserWarning)
 
@@ -18,7 +19,6 @@ def pause_between_tests():
 @pytest.fixture(scope="function")
 def clear_test_memory():
     """Clear test conversation memory before and after each test."""
-    import redis
 
     redis_host = os.getenv("REDIS_HOST", "redis-test")
     redis_port = int(os.getenv("REDIS_PORT", 6379))

@@ -11,7 +11,6 @@ from pathlib import Path
 import pytest
 import requests
 
-
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 IMAGES_DIR = Path(__file__).parent / "images"
 

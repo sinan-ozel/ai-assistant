@@ -3,6 +3,7 @@
 import os
 
 import pytest
+import redis
 
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
@@ -17,7 +18,6 @@ def clear_evaluation_state():
     try:
         # Import redis_memory to clear the evaluation state
         # Note: This runs in the test container, which needs redis_memory installed
-        import redis
 
         # Connect to Redis (same connection redis_memory uses)
         redis_host = os.getenv("REDIS_HOST", "redis")

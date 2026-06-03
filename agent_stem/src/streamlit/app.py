@@ -574,6 +574,7 @@ def main():
                     f" {data.get('error', 'Unknown error')}"
                 )
             else:
+
                 def _fmt_ts(iso: str) -> str:
                     try:
                         dt = datetime.fromisoformat(iso)

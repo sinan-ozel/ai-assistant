@@ -2,6 +2,4 @@
 
 import warnings
 
-import pytest
-
 warnings.filterwarnings("ignore", ".*Pydantic.*", UserWarning)

@@ -7,11 +7,9 @@ and validating responses.
 
 import json
 import os
-from pathlib import Path
 
 import pytest
 import requests
-
 
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 

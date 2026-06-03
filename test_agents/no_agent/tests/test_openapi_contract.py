@@ -3,8 +3,9 @@
 This test uses the pytest-openapi plugin to validate the API against its OpenAPI spec.
 Run with: pytest --openapi=http://app:8000 test_openapi_contract.py
 """
-import pytest
 import os
+
+import pytest
 
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 

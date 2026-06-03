@@ -1,8 +1,8 @@
+import os
+import time
+
 import pytest
 import requests
-import time
-import os
-
 
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 

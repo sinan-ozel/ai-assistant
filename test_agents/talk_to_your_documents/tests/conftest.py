@@ -1,10 +1,13 @@
 """Pytest configuration and fixtures for talk_to_your_documents tests."""
 
 import os
+import socket
 from pathlib import Path
 
+import lancedb
 import pytest
 import redis
+from qdrant_client import QdrantClient
 
 REDIS_HOST = os.getenv("REDIS_HOST", "redis-test")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
@@ -53,7 +56,7 @@ def chunk_reset():
     On teardown, restores any Markdown files that were modified during the test
     so the on-disk cortex folder is left in its original state.
     """
-    import socket
+
 
     r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
     r.delete("memory:chunking_pipeline_state")
@@ -66,13 +69,11 @@ def chunk_reset():
         qdrant_reachable = False
 
     if qdrant_reachable:
-        from qdrant_client import QdrantClient
 
         client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
         for c in client.get_collections().collections:
             client.delete_collection(c.name)
     else:
-        import lancedb
 
         lancedb_path = os.getenv("LANCEDB_PATH", "/app/data/lancedb")
         try:

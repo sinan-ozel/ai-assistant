@@ -5,6 +5,7 @@ import socket
 
 import pytest
 import redis
+from qdrant_client import QdrantClient
 
 REDIS_HOST = os.getenv("REDIS_HOST", "redis-test")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
@@ -48,7 +49,6 @@ def chunk_reset():
         qdrant_reachable = False
 
     if qdrant_reachable:
-        from qdrant_client import QdrantClient
 
         client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
         for c in client.get_collections().collections:

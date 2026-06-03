@@ -1,7 +1,8 @@
+import os
+
+import litellm
 import pytest
 import requests
-import litellm
-import os
 
 litellm.set_verbose = False
 litellm.verbose = False

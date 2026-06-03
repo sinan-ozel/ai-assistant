@@ -4,6 +4,7 @@ import os
 import warnings
 
 import pytest
+import redis
 
 warnings.filterwarnings("ignore", ".*Pydantic.*", UserWarning)
 
@@ -14,7 +15,6 @@ _REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 @pytest.fixture(scope="function")
 def clear_test_memory():
     """Clear test conversation keys in Redis before and after each test."""
-    import redis
 
     client = redis.Redis(
         host=_REDIS_HOST, port=_REDIS_PORT, decode_responses=False

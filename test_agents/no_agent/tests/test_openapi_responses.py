@@ -1,7 +1,8 @@
-import pytest
-import requests
 import os
 import re
+
+import pytest
+import requests
 
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 OPENAPI_URL = f"{BASE_URL}/openapi.json"

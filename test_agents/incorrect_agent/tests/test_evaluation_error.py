@@ -81,5 +81,5 @@ def test_evaluation_returns_error():
         f"Expected error message to mention 'model=vision', got: {error_msg}"
     )
 
-    print(f"\n✅ Evaluation correctly returned 'error' status")
+    print("\n✅ Evaluation correctly returned 'error' status")
     print(f"Error message: {error_msg}")
