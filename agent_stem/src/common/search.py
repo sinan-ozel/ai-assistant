@@ -94,7 +94,9 @@ def ingestion_in_progress() -> bool:
         # Kept here to avoid forcing startup module initialization at import
         # time — these modules may not be ready when search.py is first loaded,
         # and the except below degrades gracefully if they are unavailable.
-        from startup.chunking_pipeline import _chunking_pipeline_state  # noqa: PLC0415
+        from startup.chunking_pipeline import (  # noqa: PLC0415
+            _chunking_pipeline_state,
+        )
         from startup.pdf_pipeline import _pdf_pipeline_state  # noqa: PLC0415
 
         with Memory() as memory:
