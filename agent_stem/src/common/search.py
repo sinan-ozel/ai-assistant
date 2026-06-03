@@ -23,8 +23,6 @@ import lancedb
 from fastembed import TextEmbedding
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as qmodels
-from startup.chunking_pipeline import _chunking_pipeline_state
-from startup.pdf_pipeline import _pdf_pipeline_state
 from synced_memory import Memory
 
 logger = logging.getLogger(__name__)
@@ -93,6 +91,12 @@ def ingestion_in_progress() -> bool:
     _ACTIVE_PDF = {"Queued", "Converting"}
     _ACTIVE_CHUNK = {"Queued", "Chunking"}
     try:
+        # Kept here to avoid forcing startup module initialization at import
+        # time — these modules may not be ready when search.py is first loaded,
+        # and the except below degrades gracefully if they are unavailable.
+        from startup.chunking_pipeline import _chunking_pipeline_state  # noqa: PLC0415
+        from startup.pdf_pipeline import _pdf_pipeline_state  # noqa: PLC0415
+
         with Memory() as memory:
             pdf_state: dict = getattr(memory, "pdf_pipeline_state", {}) or {}
             chunk_state: dict = (
