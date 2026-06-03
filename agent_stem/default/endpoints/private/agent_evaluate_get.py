@@ -1,5 +1,9 @@
 """GET /private/v1/agent/evaluate — poll evaluation status or fetch results."""
 
+from fastapi import HTTPException
+from fastapi.responses import JSONResponse
+from synced_memory import Memory
+
 _EVAL_STATE_KEY = "agent_evaluation_state"
 _EVAL_LAST_KEY = "agent_evaluation_last_completed"
 
@@ -11,9 +15,6 @@ async def handler():
     - 202 Accepted: a run is in progress — check back later.
     - 404 Not Found: no completed run exists yet.
     """
-    from fastapi.responses import JSONResponse
-    from synced_memory import Memory
-
     with Memory() as memory:
         state = getattr(memory, _EVAL_STATE_KEY, None)
         last_result = getattr(memory, _EVAL_LAST_KEY, None)
@@ -62,8 +63,6 @@ async def handler():
 
 
 def _not_found():
-    from fastapi import HTTPException
-
     return HTTPException(
         status_code=404,
         detail="No completed evaluation run found.",

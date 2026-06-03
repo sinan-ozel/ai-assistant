@@ -2,8 +2,16 @@
 
 import asyncio
 import logging
+from datetime import datetime
+from pathlib import Path
 
+import yaml
 from common.state import providers_state, workflows_state
+from fastapi import HTTPException
+from self.evaluation.parser import parse_evaluation_yaml
+from self.evaluation.runner import EvaluationCancelledError, run_all_evaluations
+from startup.workflows import json_schema_to_prompt_format
+from synced_memory import Memory
 
 logger = logging.getLogger(__name__)
 
@@ -20,14 +28,6 @@ async def handler(path: str):
     Raises:
         HTTPException: If workflow not found or evaluation already in progress
     """
-    from pathlib import Path
-
-    import yaml
-    from fastapi import HTTPException
-    from self.evaluation.parser import parse_evaluation_yaml
-    from self.evaluation.runner import run_all_evaluations
-    from synced_memory import Memory
-
     # Check if workflow exists
     workflow = workflows_state.get("workflows", {}).get(path)
     if not workflow:
@@ -63,8 +63,6 @@ async def handler(path: str):
         base_dir = Path("/app/cortex/workflows")
 
     # Mark evaluation as in progress
-    from datetime import datetime
-
     started_at_iso = datetime.now().isoformat()
     logger.info(
         f"Marking evaluation as running with started_at: {started_at_iso}"
@@ -155,9 +153,6 @@ async def handler(path: str):
 
         # Build system message from workflow (same logic as workflow handler)
         # This includes the prompt template + output schema instructions
-        from self.evaluation.runner import EvaluationCancelledError
-        from startup.workflows import json_schema_to_prompt_format
-
         # Get prompt from execution section or legacy root-level field
         if "execution" in workflow_data:
             exec_section = workflow_data["execution"]

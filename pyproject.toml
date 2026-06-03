@@ -70,7 +70,7 @@ profile = "black"
 line-length = 80
 
 [tool.ruff.lint]
-select = ["I", "F", "E", "W"]
+select = ["I", "F", "E", "W", "PLC0415"]
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]

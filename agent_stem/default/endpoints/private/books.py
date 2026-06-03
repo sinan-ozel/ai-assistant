@@ -3,6 +3,9 @@
 import logging
 import os
 
+import lancedb
+from qdrant_client import QdrantClient
+
 logger = logging.getLogger(__name__)
 
 QDRANT_HOST = os.environ.get("QDRANT_HOST", "qdrant")
@@ -12,8 +15,6 @@ _QDRANT_TIMEOUT = 1.0
 
 
 def _books_from_qdrant() -> list[dict]:
-    from qdrant_client import QdrantClient
-
     client = QdrantClient(
         host=QDRANT_HOST, port=QDRANT_PORT, timeout=_QDRANT_TIMEOUT
     )
@@ -56,8 +57,6 @@ def _books_from_qdrant() -> list[dict]:
 
 
 def _books_from_lancedb() -> list[dict]:
-    import lancedb
-
     db = lancedb.connect(LANCEDB_PATH)
     books: dict[str, dict] = {}
     for table_name in db.table_names():

@@ -19,6 +19,14 @@ import os
 import socket
 from typing import Any, Optional
 
+import lancedb
+from fastembed import TextEmbedding
+from qdrant_client import QdrantClient
+from qdrant_client.http import models as qmodels
+from startup.chunking_pipeline import _chunking_pipeline_state
+from startup.pdf_pipeline import _pdf_pipeline_state
+from synced_memory import Memory
+
 logger = logging.getLogger(__name__)
 
 
@@ -45,8 +53,6 @@ _embedding_model = None
 def _get_embedding_model():
     global _embedding_model
     if _embedding_model is None:
-        from fastembed import TextEmbedding
-
         _embedding_model = TextEmbedding(EMBEDDING_MODEL)
     return _embedding_model
 
@@ -87,10 +93,6 @@ def ingestion_in_progress() -> bool:
     _ACTIVE_PDF = {"Queued", "Converting"}
     _ACTIVE_CHUNK = {"Queued", "Chunking"}
     try:
-        from startup.chunking_pipeline import _chunking_pipeline_state
-        from startup.pdf_pipeline import _pdf_pipeline_state
-        from synced_memory import Memory
-
         with Memory() as memory:
             pdf_state: dict = getattr(memory, "pdf_pipeline_state", {}) or {}
             chunk_state: dict = (
@@ -118,8 +120,6 @@ def ingestion_in_progress() -> bool:
 
 def _list_qdrant_collections() -> list[str]:
     """Return the names of all Qdrant collections."""
-    from qdrant_client import QdrantClient
-
     client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
     return [c.name for c in client.get_collections().collections]
 
@@ -150,9 +150,6 @@ def _search_qdrant(
         Each dict contains ``score``, ``collection``, ``text`` (if present
         in the payload), and the remaining payload fields merged in.
     """
-    from qdrant_client import QdrantClient
-    from qdrant_client.http import models as qmodels
-
     client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
 
     qdrant_filter: Optional[qmodels.Filter] = None
@@ -203,8 +200,6 @@ def _search_qdrant(
 
 def _list_lancedb_tables() -> list[str]:
     """Return the names of all LanceDB tables."""
-    import lancedb
-
     db = lancedb.connect(LANCEDB_PATH)
     return db.table_names()
 
@@ -258,8 +253,6 @@ def _search_lancedb(
         Each dict contains ``score`` (as ``_distance`` mapped to
         ``score``), ``collection``, and the remaining row fields.
     """
-    import lancedb
-
     db = lancedb.connect(LANCEDB_PATH)
     existing = set(db.table_names())
     where_clause = _build_lancedb_where(filter_payload or {})
@@ -412,9 +405,6 @@ def _filter_only_qdrant(
     filter_payload: Optional[dict],
 ) -> list[dict[str, Any]]:
     """Scroll Qdrant by filter without a query vector."""
-    from qdrant_client import QdrantClient
-    from qdrant_client.http import models as qmodels
-
     client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
 
     qdrant_filter: Optional[qmodels.Filter] = None
@@ -453,8 +443,6 @@ def _filter_only_lancedb(
     filter_payload: Optional[dict],
 ) -> list[dict[str, Any]]:
     """Scan LanceDB by filter without a query vector."""
-    import lancedb
-
     db = lancedb.connect(LANCEDB_PATH)
     existing = set(db.table_names())
     where_clause = _build_lancedb_where(filter_payload or {})

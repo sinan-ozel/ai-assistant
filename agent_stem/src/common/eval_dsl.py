@@ -41,10 +41,17 @@ import logging
 import os
 import re
 import threading
+import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
+
+import litellm
+import requests
+from common.llm import call_llm_by_model
+from common.search import _embed_query
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -163,10 +170,6 @@ class StepContext:
 
 def _send_step(ctx: _CaseContext, step: StepContext) -> str:
     """Send a step's message to the agent and return the text response."""
-    import time
-
-    import requests
-
     if ctx.suite_config.delay > 0:
         time.sleep(ctx.suite_config.delay)
 
@@ -214,10 +217,6 @@ def _send_step(ctx: _CaseContext, step: StepContext) -> str:
 
 def _send_assume(ctx: _CaseContext, text: str) -> None:
     """Send a turn to the agent and discard the response."""
-    import time
-
-    import requests
-
     if ctx.suite_config.delay > 0:
         time.sleep(ctx.suite_config.delay)
 
@@ -286,11 +285,6 @@ def _run_judge(
     Retries up to ``_JUDGE_MAX_RETRIES`` times with exponential backoff on
     rate-limit errors.
     """
-    import time
-
-    import litellm
-    from common.llm import call_llm_by_model
-
     judge_model = _resolve_judge_model(
         ctx.providers_state, ctx.suite_config.judge_model
     )
@@ -426,8 +420,6 @@ def _make_expect_fn():
                     check["reason"] = reason
 
             elif getattr(value, "_is_similar_to", False):
-                from common.search import _embed_query
-
                 try:
                     ref_vec = _embed_query(value._reference_text)
                     resp_vec = _embed_query(response[:2000])
@@ -655,8 +647,6 @@ def run_eval_suite(
     Raises:
         EvalCancelledError: If cancelled.
     """
-    from datetime import datetime, timezone
-
     suite = parse_eval_script(script_path)
     default_provider = providers_state.get("default_provider", "default")
 

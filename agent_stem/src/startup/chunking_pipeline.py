@@ -25,9 +25,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+import lancedb
+import pyarrow as pa
 import tiktoken
 import yaml
 from common import CUSTOMIZATION_FOLDER
+from fastembed import TextEmbedding
+from qdrant_client import QdrantClient
+from qdrant_client.http import models as qmodels
 from synced_memory import Memory
 
 logger = logging.getLogger(__name__)
@@ -61,8 +66,6 @@ _embedding_model = None
 def _get_embedding_model():
     global _embedding_model
     if _embedding_model is None:
-        from fastembed import TextEmbedding
-
         _embedding_model = TextEmbedding(EMBEDDING_MODEL)
         logger.info(
             "Chunking pipeline: loaded fastembed model '%s'.", EMBEDDING_MODEL
@@ -153,8 +156,6 @@ def _validate_embedding_model_consistency() -> None:
 
 
 def _validate_qdrant_embedding_models() -> None:
-    from qdrant_client import QdrantClient
-
     client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
     collections = [c.name for c in client.get_collections().collections]
     if not collections:
@@ -181,8 +182,6 @@ def _validate_qdrant_embedding_models() -> None:
 
 
 def _validate_lancedb_embedding_models() -> None:
-    import lancedb
-
     db = lancedb.connect(LANCEDB_PATH)
     tables = db.table_names()
     if not tables:
@@ -304,8 +303,6 @@ def _lancedb_schema(vector_dim: int):
         Number of dimensions in the embedding vector (determines the
         ``FixedSizeList`` width for the ``vector`` column).
     """
-    import pyarrow as pa
-
     book_type = pa.struct(
         [
             pa.field("title", pa.string()),
@@ -1194,9 +1191,6 @@ def _write_to_qdrant(
     Creates the collection with cosine-distance vectors (dimension resolved
     from the embedding server) if it does not yet exist.
     """
-    from qdrant_client import QdrantClient
-    from qdrant_client.http import models as qmodels
-
     client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
     collection = _collection_for_path(source_key)
     file_path = _to_file_path(source_key)
@@ -1282,9 +1276,6 @@ def _write_to_lancedb(
     :func:`_lancedb_schema`, so nested fields such as ``book`` and
     ``section_hierarchy`` are stored as native Arrow structs / lists.
     """
-    import lancedb
-    import pyarrow as pa
-
     db = lancedb.connect(LANCEDB_PATH)
 
     file_path = _to_file_path(source_key)
@@ -1625,13 +1616,7 @@ async def run_chunking_pipeline() -> None:
     loop = asyncio.get_event_loop()
 
     # Fail fast if the vector store was built with a different embedding model.
-    try:
-        await loop.run_in_executor(None, _validate_embedding_model_consistency)
-    except RuntimeError as exc:
-        logger.error(
-            "Chunking pipeline: embedding model validation failed — %s", exc
-        )
-        raise
+    await loop.run_in_executor(None, _validate_embedding_model_consistency)
 
     while True:
         if not LIBRARY_DIR.exists():

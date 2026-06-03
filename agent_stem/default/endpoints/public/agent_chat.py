@@ -1,9 +1,11 @@
 """Agent chat endpoint with stateful conversation memory."""
 
+import ast as _ast
 import asyncio
 import json
 import logging
 import os
+import queue as _queue
 import time
 import uuid
 
@@ -240,8 +242,6 @@ async def handle_interactive_streaming(
     in ``accumulated_messages``; otherwise we skip saving (the DSL is
     responsible for the full response).
     """
-    import queue as _queue
-
     chunk_queue: _queue.SimpleQueue = _queue.SimpleQueue()
     loop = asyncio.get_event_loop()
     created = int(time.time())
@@ -709,8 +709,6 @@ async def handler(request: dict, headers: dict = None):
         # --- DSL path ---
         _script_path = find_prompt_script("/app/cortex")
         if _script_path:
-            import ast as _ast
-
             try:
                 _source = _script_path.read_text(encoding="utf-8")
                 _tree = _ast.parse(_source)

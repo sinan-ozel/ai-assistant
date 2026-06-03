@@ -2,8 +2,18 @@
 
 import asyncio
 import logging
+from datetime import datetime, timezone
+from pathlib import Path
 
+from common.eval_dsl import (
+    EvalCancelledError,
+    find_eval_script,
+    run_eval_suite,
+)
 from common.state import providers_state
+from fastapi import HTTPException
+from fastapi.responses import JSONResponse
+from synced_memory import Memory
 
 logger = logging.getLogger(__name__)
 
@@ -18,18 +28,6 @@ async def handler(request: dict):
     already in progress.  An optional ``case`` field restricts the run to a
     single named case.
     """
-    from datetime import datetime, timezone
-    from pathlib import Path
-
-    from common.eval_dsl import (
-        EvalCancelledError,
-        find_eval_script,
-        run_eval_suite,
-    )
-    from fastapi import HTTPException
-    from fastapi.responses import JSONResponse
-    from synced_memory import Memory
-
     script_path = find_eval_script("/app/cortex")
     if script_path is None:
         raise HTTPException(
@@ -68,8 +66,6 @@ async def handler(request: dict):
         )
 
     async def _run_background():
-        from synced_memory import Memory
-
         def _cancelled() -> bool:
             with Memory() as m:
                 s = getattr(m, _EVAL_STATE_KEY, None) or {}

@@ -3,6 +3,9 @@ run."""
 
 import logging
 
+from fastapi import HTTPException
+from synced_memory import Memory
+
 logger = logging.getLogger(__name__)
 
 _EVAL_STATE_KEY = "agent_evaluation_state"
@@ -14,9 +17,6 @@ async def handler():
     Gracefully signals the runner to stop after the current step completes.
     Returns 200 when cancellation is queued, or 404 if no run is active.
     """
-    from fastapi import HTTPException
-    from synced_memory import Memory
-
     with Memory() as memory:
         state = getattr(memory, _EVAL_STATE_KEY, None)
         if not state or state.get("status") != "running":

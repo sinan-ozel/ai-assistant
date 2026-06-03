@@ -50,7 +50,16 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
+import time as _time
+
 from common.search import DEFAULT_TOP_K, run_search
+from common.tools_dsl import (
+    DslRunContext,
+    make_mcp_server_class,
+    make_message_history_class,
+    make_notify_fn,
+    make_prompt_fn,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -263,14 +272,6 @@ def _run_interactive_script(
     ``print()`` output (if any) overrides the last ``prompt()`` return as the
     final response, allowing scripts to return static text without an LLM call.
     """
-    from common.tools_dsl import (
-        DslRunContext,
-        make_mcp_server_class,
-        make_message_history_class,
-        make_notify_fn,
-        make_prompt_fn,
-    )
-
     ctx = DslRunContext(
         messages=list(init_messages),
         providers_state=providers_state,
@@ -279,8 +280,6 @@ def _run_interactive_script(
         retry_on_rate_limit=retry_on_rate_limit,
         delta_fn=delta_fn,
     )
-
-    import time as _time
 
     McpServerClass = make_mcp_server_class(ctx)
     SearchClass = make_search_class(ctx)

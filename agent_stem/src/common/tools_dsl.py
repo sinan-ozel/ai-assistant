@@ -49,9 +49,13 @@ import asyncio
 import concurrent.futures
 import json
 import logging
+import time
 from typing import Callable, Optional
 
 import httpx
+import litellm
+from common.llm import call_llm_by_model, call_llm_by_model_streaming
+from situational.awareness import get_provider_context_window
 
 
 def _parse_mcp_response(response: httpx.Response) -> dict:
@@ -94,8 +98,6 @@ def _fit_to_context(messages: list, context_window: int) -> list:
         return messages
 
     try:
-        import litellm
-
         total = litellm.token_counter(model="gpt-3.5-turbo", messages=messages)
     except Exception:
         return messages
@@ -570,18 +572,11 @@ def make_prompt_fn(ctx: DslRunContext):
     calls, so subsequent calls always see a valid message sequence
     regardless of whether thinking is on.
     """
-    from common.llm import call_llm_by_model
-
     def prompt(
         text: Optional[str] = None,
         provider: str = "default",
         **kwargs,
     ) -> str:
-        import time
-
-        import litellm
-        from situational.awareness import get_provider_context_window
-
         call_messages = list(ctx.messages)
         if text is not None:
             call_messages.append({"role": "user", "content": text})
@@ -597,8 +592,6 @@ def make_prompt_fn(ctx: DslRunContext):
             kwargs.setdefault("tool_choice", "auto")
 
         if ctx.delta_fn is not None and not tools:
-            from common.llm import call_llm_by_model_streaming
-
             async def _stream_call():
                 text_parts = []
                 async for chunk in call_llm_by_model_streaming(

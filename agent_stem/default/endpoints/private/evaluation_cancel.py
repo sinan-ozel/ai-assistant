@@ -2,6 +2,9 @@
 
 import logging
 
+from fastapi import HTTPException
+from synced_memory import Memory
+
 logger = logging.getLogger(__name__)
 
 
@@ -17,9 +20,6 @@ async def handler(request: dict):
     Raises:
         HTTPException: If no evaluation is running
     """
-    from fastapi import HTTPException
-    from synced_memory import Memory
-
     path = request.get("workflow_path")
     if not path:
         raise HTTPException(

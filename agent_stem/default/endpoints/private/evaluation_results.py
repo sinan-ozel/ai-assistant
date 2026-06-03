@@ -1,5 +1,7 @@
 """Evaluation results endpoint."""
 
+from synced_memory import Memory
+
 
 async def handler(path: str):
     """Get evaluation results for a specific workflow.
@@ -10,8 +12,6 @@ async def handler(path: str):
     Returns:
         Dict with evaluation results or status
     """
-    from synced_memory import Memory
-
     # Get evaluation state for this workflow
     with Memory() as memory:
         try:

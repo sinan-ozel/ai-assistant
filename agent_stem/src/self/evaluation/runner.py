@@ -11,6 +11,7 @@ import time
 from typing import Any, Dict, List, Optional, Union
 
 from common.llm import call_llm_by_model
+from synced_memory import Memory
 
 logger = logging.getLogger(__name__)
 
@@ -258,8 +259,6 @@ def run_evaluation_case(
     for run_idx in range(repeat):
         # Check for cancellation
         if workflow_path:
-            from synced_memory import Memory
-
             with Memory() as memory:
                 if hasattr(memory, "workflow_evaluation_state"):
                     state = memory.workflow_evaluation_state.get(
@@ -286,8 +285,6 @@ def run_evaluation_case(
             for step_idx, step in enumerate(steps):
                 # Check for cancellation before each step
                 if workflow_path:
-                    from synced_memory import Memory
-
                     with Memory() as memory:
                         if hasattr(memory, "workflow_evaluation_state"):
                             state = memory.workflow_evaluation_state.get(

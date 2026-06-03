@@ -71,6 +71,16 @@ def chunk_reset():
         client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
         for c in client.get_collections().collections:
             client.delete_collection(c.name)
+    else:
+        import lancedb
+
+        lancedb_path = os.getenv("LANCEDB_PATH", "/app/data/lancedb")
+        try:
+            db = lancedb.connect(lancedb_path)
+            for table_name in db.table_names():
+                db.drop_table(table_name)
+        except Exception:
+            pass
 
     # Snapshot all visible Markdown files before the test runs
     snapshots: dict[Path, str] = {}
