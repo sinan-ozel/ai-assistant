@@ -239,8 +239,6 @@ def handle_workflow_streaming(
     output schemas, streaming returns raw content chunks that may need
     to be parsed as JSON after completion.
     """
-    import time
-
     created = int(time.time())
 
     def format_chunk(data: dict) -> str:

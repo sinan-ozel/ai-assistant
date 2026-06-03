@@ -46,11 +46,10 @@ import contextlib
 import io
 import logging
 import runpy
+import time as _time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
-
-import time as _time
 
 from common.search import DEFAULT_TOP_K, run_search
 from common.tools_dsl import (

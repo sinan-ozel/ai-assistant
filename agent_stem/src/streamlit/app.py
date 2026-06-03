@@ -4,9 +4,11 @@ import base64
 import json
 import time
 import uuid
+from datetime import datetime
 
 import requests
 import streamlit as st
+from synced_memory import Memory
 
 # Configuration
 API_BASE_URL = "http://localhost:8000"
@@ -364,8 +366,6 @@ def main():
     st.markdown("## 🔧 Tools")
 
     try:
-        from synced_memory import Memory
-
         with Memory() as _mem:
             _mcp_tools = _mem.mcp_tools if hasattr(_mem, "mcp_tools") else []
         if not isinstance(_mcp_tools, list) or not _mcp_tools:
@@ -556,8 +556,6 @@ def main():
                 )
 
             if data.get("started_at"):
-                from datetime import datetime
-
                 try:
                     ts = datetime.fromisoformat(data["started_at"])
                     st.caption(f"Started: {ts.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -576,8 +574,6 @@ def main():
                     f" {data.get('error', 'Unknown error')}"
                 )
             else:
-                from datetime import datetime
-
                 def _fmt_ts(iso: str) -> str:
                     try:
                         dt = datetime.fromisoformat(iso)
@@ -770,8 +766,6 @@ def main():
                                         )
 
                                         if results_data.get("started_at"):
-                                            from datetime import datetime
-
                                             try:
                                                 started_at = (
                                                     datetime.fromisoformat(

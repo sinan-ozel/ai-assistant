@@ -572,6 +572,7 @@ def make_prompt_fn(ctx: DslRunContext):
     calls, so subsequent calls always see a valid message sequence
     regardless of whether thinking is on.
     """
+
     def prompt(
         text: Optional[str] = None,
         provider: str = "default",
@@ -592,6 +593,7 @@ def make_prompt_fn(ctx: DslRunContext):
             kwargs.setdefault("tool_choice", "auto")
 
         if ctx.delta_fn is not None and not tools:
+
             async def _stream_call():
                 text_parts = []
                 async for chunk in call_llm_by_model_streaming(
