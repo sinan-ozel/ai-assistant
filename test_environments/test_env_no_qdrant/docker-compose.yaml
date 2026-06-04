@@ -99,7 +99,7 @@ services:
     volumes:
       - ${TEST_FOLDER:-.}:/tests
       - ${AGENT_FOLDER:-./cortex}:/app/cortex
-    command: ["pytest", "-v"]
+    command: ["pytest", "-v", "--tb=short"]
 
 networks:
   test-network:
