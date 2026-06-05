@@ -2,7 +2,7 @@
 
 Runs as a background task at startup. Continuously scans the cortex library
 folder for PDF files, converts new or changed PDFs to Markdown using
-pymupdf4llm, and tracks state in Redis.
+pymupdf4llm, and tracks state in Redis via a SyncedDict.
 
 Status values per PDF:
   Checking   - hash is currently being compared
@@ -10,7 +10,7 @@ Status values per PDF:
   Converting - conversion in progress
   Converted  - up-to-date Markdown exists
 
-A missing Redis entry means the file has never been seen before.
+A missing state entry means the file has never been seen before.
 """
 
 import asyncio
@@ -25,7 +25,7 @@ import pymupdf4llm
 import yaml
 from common import CUSTOMIZATION_FOLDER
 from pymupdf.mupdf import FzErrorLibrary
-from synced_memory import Memory
+from synced_memory import Memory, SyncedDict
 
 logger = logging.getLogger(__name__)
 
@@ -47,10 +47,10 @@ STATUS_QUEUED = "Queued"
 STATUS_CONVERTING = "Converting"
 STATUS_CONVERTED = "Converted"
 
-# In-process fallback for PDF pipeline state when Redis is unavailable.
-# Each with Memory() block is ephemeral without Redis, so we maintain state
-# here to prevent the pipeline from re-converting every PDF on every scan cycle.
-_pdf_pipeline_state: dict = {}
+_state_memory = Memory()
+if not hasattr(_state_memory, "pdf_pipeline_state"):
+    _state_memory.pdf_pipeline_state = {}
+_pdf_pipeline_state: SyncedDict = _state_memory.pdf_pipeline_state
 
 
 def _compute_hash(path: Path) -> str:
@@ -224,10 +224,10 @@ def _convert(pdf_path: Path) -> str:
 
 
 def _scan_and_queue_pdfs(library_dir: Path) -> list[Path]:
-    """Phase 1 (sync): find PDFs, hash-check, update Redis state.
+    """Phase 1 (sync): find PDFs, hash-check, update state.
 
     Returns the list of PDF paths that need conversion.  Runs entirely in a
-    thread executor so the event loop stays responsive while Redis and file I/O
+    thread executor so the event loop stays responsive while file I/O
     operations block.
     """
     pdf_files = sorted(
@@ -238,7 +238,9 @@ def _scan_and_queue_pdfs(library_dir: Path) -> list[Path]:
         )
     )
     logger.debug(
-        "PDF pipeline: check running, %d PDF(s) found.", len(pdf_files)
+        "PDF pipeline: scan starting — %d PDF(s) found, %d state entries.",
+        len(pdf_files),
+        len(_pdf_pipeline_state),
     )
 
     queued_paths: list[Path] = []
@@ -247,20 +249,10 @@ def _scan_and_queue_pdfs(library_dir: Path) -> list[Path]:
         pdf_key = str(pdf_path)
         current_hash = _compute_hash(pdf_path)
 
-        entry = _pdf_pipeline_state.get(pdf_key) or {}
-        with Memory() as memory:
-            redis_entry = (
-                getattr(memory, "pdf_pipeline_state", None) or {}
-            ).get(pdf_key) or {}
-            if redis_entry:
-                entry = {**redis_entry, **entry}
+        entry = dict(_pdf_pipeline_state.get(pdf_key) or {})
         stored_hash = entry.get("hash")
 
         _pdf_pipeline_state[pdf_key] = {**entry, "status": STATUS_CHECKING}
-        with Memory() as memory:
-            if not hasattr(memory, "pdf_pipeline_state"):
-                memory.pdf_pipeline_state = {}
-            memory.pdf_pipeline_state[pdf_key] = _pdf_pipeline_state[pdf_key]
 
         md_path = pdf_path.with_suffix(".md")
         output_missing = not md_path.exists()
@@ -274,36 +266,34 @@ def _scan_and_queue_pdfs(library_dir: Path) -> list[Path]:
 
         if reason:
             _pdf_pipeline_state[pdf_key] = {
-                **_pdf_pipeline_state.get(pdf_key, {}),
+                **dict(_pdf_pipeline_state.get(pdf_key, {})),
                 "status": STATUS_QUEUED,
                 "hash": current_hash,
             }
-            with Memory() as memory:
-                if not hasattr(memory, "pdf_pipeline_state"):
-                    memory.pdf_pipeline_state = {}
-                memory.pdf_pipeline_state[pdf_key] = _pdf_pipeline_state[
-                    pdf_key
-                ]
-
             queued_paths.append(pdf_path)
-            logger.info("PDF pipeline: %s queued — %s.", pdf_path.name, reason)
+            logger.info(
+                "PDF pipeline: %s queued — %s " "(stored=%s current=%s).",
+                pdf_path.name,
+                reason,
+                stored_hash[:8] if stored_hash else None,
+                current_hash[:8],
+            )
         else:
             _pdf_pipeline_state[pdf_key] = {
-                **_pdf_pipeline_state.get(pdf_key, {}),
+                **dict(_pdf_pipeline_state.get(pdf_key, {})),
                 "status": STATUS_CONVERTED,
             }
-            with Memory() as memory:
-                if not hasattr(memory, "pdf_pipeline_state"):
-                    memory.pdf_pipeline_state = {}
-                memory.pdf_pipeline_state[pdf_key] = _pdf_pipeline_state[
-                    pdf_key
-                ]
+            logger.debug(
+                "PDF pipeline: %s up to date (hash=%s).",
+                pdf_path.name,
+                current_hash[:8],
+            )
 
     return queued_paths
 
 
 def _convert_and_store_pdf(pdf_path: Path) -> None:
-    """Phase 2 (sync): convert one PDF and update Redis state.
+    """Phase 2 (sync): convert one PDF and update state.
 
     Runs in a thread executor.  Raises on conversion errors so the caller can
     log and skip to the next file.
@@ -314,14 +304,10 @@ def _convert_and_store_pdf(pdf_path: Path) -> None:
     started_at = start_dt.isoformat()
 
     _pdf_pipeline_state[pdf_key] = {
-        **(_pdf_pipeline_state.get(pdf_key) or {}),
+        **dict(_pdf_pipeline_state.get(pdf_key) or {}),
         "status": STATUS_CONVERTING,
         "lastConversionStart": started_at,
     }
-    with Memory() as memory:
-        if not hasattr(memory, "pdf_pipeline_state"):
-            memory.pdf_pipeline_state = {}
-        memory.pdf_pipeline_state[pdf_key] = _pdf_pipeline_state[pdf_key]
 
     logger.info(
         "PDF pipeline: converting %s — started at %s",
@@ -337,14 +323,10 @@ def _convert_and_store_pdf(pdf_path: Path) -> None:
     elapsed = (end_dt - start_dt).total_seconds()
 
     _pdf_pipeline_state[pdf_key] = {
-        **(_pdf_pipeline_state.get(pdf_key) or {}),
+        **dict(_pdf_pipeline_state.get(pdf_key) or {}),
         "status": STATUS_CONVERTED,
         "lastConversionComplete": completed_at,
     }
-    with Memory() as memory:
-        if not hasattr(memory, "pdf_pipeline_state"):
-            memory.pdf_pipeline_state = {}
-        memory.pdf_pipeline_state[pdf_key] = _pdf_pipeline_state[pdf_key]
 
     logger.info(
         "PDF pipeline: %s → %s — completed at %s (elapsed: %.1fs)",

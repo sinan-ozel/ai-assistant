@@ -14,7 +14,14 @@ services:
     volumes:
       - ${AGENT_FOLDER:-./cortex}:/app/cortex
       - logs:/logs
-
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2500M
+        reservations:
+          cpus: "0.25"
+          memory: 1G
   # Test runner starts as soon as the app container is created (not healthy,
   # since it will never be healthy). The test itself waits long enough for
   # the crash to complete before asserting.
@@ -32,10 +39,8 @@ services:
       - ${TEST_FOLDER:-.}:/tests
       - logs:/logs
     command: ["pytest", "-v"]
-
 networks:
   default:
     driver: bridge
-
 volumes:
   logs:

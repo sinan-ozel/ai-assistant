@@ -38,7 +38,7 @@ LANCEDB_PATH = os.environ.get("LANCEDB_PATH", "/app/data/lancedb")
 LANCEDB_TABLE = os.environ.get("LANCEDB_TABLE", "library")
 
 EMBEDDING_MODEL = os.environ.get(
-    "EMBEDDING_MODEL", "nomic-ai/nomic-embed-text-v1.5"
+    "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
 )
 
 DEFAULT_TOP_K = 5
@@ -281,7 +281,11 @@ def _search_lancedb(
                 table_name,
             )
             continue
-        query = tbl.search(query_vector).metric("l2").limit(top_k)
+        query = (
+            tbl.search(query_vector, vector_column_name="vector")
+            .metric("l2")
+            .limit(top_k)
+        )
         if where_clause:
             query = query.where(where_clause)
         rows = query.to_list()

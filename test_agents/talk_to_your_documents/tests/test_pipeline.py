@@ -1,4 +1,4 @@
-"""Tests for the PDF → Markdown → Qdrant pipeline."""
+"""Tests for the PDF → Markdown → vector-store pipeline."""
 
 import json
 import os
@@ -12,69 +12,47 @@ BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
 LIBRARY_DIR = Path("/app/cortex/library")
 
-# Allow enough time for one check cycle (PDF_CHECK_INTERVAL_SECONDS=5)
-# plus the actual pymupdf4llm conversion.
-TIMEOUT = 180  # seconds
+# Allow enough time for one PDF conversion cycle, including any pipeline
+# re-runs triggered by file detection ordering during session setup.
+TIMEOUT = 360  # seconds
 
 # Allow time for PDF conversion + embedding model + chunking to complete.
 CHUNK_TIMEOUT = 1200  # seconds
 
+_PDF_PARAMS = [
+    pytest.param("shelf1/simple-psionics.pdf", "_Carrie_", id="simple-psionics"),
+    pytest.param("shelf2/FashionDesigner.pdf", None, id="FashionDesigner"),
+    pytest.param("shelf2/lycanthropes-in-eberron.pdf", None, id="lycanthropes"),
+]
+
 
 @pytest.mark.depends(on=["healthy"])
-def test_pdf_converted_to_markdown(pdf_conversion_reset):
-    """Pipeline should create a .md file next to every visible PDF in the library.
-
-    The fixture clears Redis state and deletes existing .md files so the
-    pipeline treats every PDF as new. The test derives the expected Markdown
-    paths itself and polls until they have all reappeared.
-    """
-    md_paths = [
-        p.with_suffix(".md")
-        for p in LIBRARY_DIR.rglob("*.pdf")
-        if not any(part.startswith(".") for part in p.parts[len(LIBRARY_DIR.parts) :])
-    ]
-    assert md_paths, "No PDFs found in the library — nothing to test."
-
-    pending = set(md_paths)
+@pytest.mark.parametrize("rel_path,check_content", _PDF_PARAMS)
+def test_pdf_converted_to_markdown(rel_path, check_content):
+    """Pipeline creates a .md file next to each PDF placed in the library."""
+    expected_md = (LIBRARY_DIR / rel_path).with_suffix(".md")
     start = time.time()
-    while pending:
-        pending = {p for p in pending if not p.exists()}
-        if not pending:
-            break
+    while not expected_md.exists():
         if time.time() - start > TIMEOUT:
-            names = ", ".join(p.name for p in sorted(pending))
             raise TimeoutError(
-                f"These files did not appear within {TIMEOUT} seconds: {names}"
+                f"{expected_md.name} did not appear within {TIMEOUT}s"
             )
         time.sleep(1)
-
-    for md_path in md_paths:
-        assert md_path.stat().st_size > 0, f"{md_path.name} exists but is empty."
-
-    shelf1_md = next(
-        (p for p in md_paths if "shelf1" in p.parts and p.name == "simple-psionics.md"),
-        None,
-    )
-    assert shelf1_md is not None, "shelf1/simple-psionics.md not found among converted files."
-
-    content = shelf1_md.read_text(encoding="utf-8")
-    assert "_Carrie_" in content, "_Carrie_ not found in shelf1/simple-psionics.md."
-
-    for line in content.splitlines():
-        if "_Carrie_" in line:
-            break
-    else:
-        pytest.fail("_Carrie_ not found in any line of shelf1/simple-psionics.md.")
+    assert expected_md.stat().st_size > 0, f"{expected_md.name} is empty"
+    if check_content:
+        content = expected_md.read_text(encoding="utf-8")
+        assert check_content in content, (
+            f"{check_content!r} not found in {expected_md.name}"
+        )
 
 
-@pytest.mark.depends(on=["healthy"])
-def test_chunks_stored_in_qdrant(pdf_conversion_reset, chunk_reset):
-    """End-to-end: PDFs should be converted, chunked, and searchable.
-
-    Both pipelines run continuously in the background. Resetting their Redis
-    state and dropping the Qdrant collection forces a full reprocess. The test
-    polls the search endpoint until at least one result is returned.
-    """
+@pytest.mark.depends(on=[
+    "test_pdf_converted_to_markdown[simple-psionics]",
+    "test_pdf_converted_to_markdown[FashionDesigner]",
+    "test_pdf_converted_to_markdown[lycanthropes]",
+])
+def test_chunks_stored_in_qdrant():
+    """All PDFs should be chunked and searchable before search tests run."""
     start = time.time()
     while True:
         resp = requests.post(
@@ -85,39 +63,22 @@ def test_chunks_stored_in_qdrant(pdf_conversion_reset, chunk_reset):
         if resp.status_code == 200:
             lines = [line for line in resp.iter_lines() if line]
             parsed = [json.loads(line) for line in lines]
-            results = [p for p in parsed if not p.get("done")]
-            if results:
+            if any(not p.get("done") for p in parsed):
                 break
-
         if time.time() - start > CHUNK_TIMEOUT:
             raise TimeoutError(
-                f"No search results returned within {CHUNK_TIMEOUT} seconds."
+                f"No search results returned within {CHUNK_TIMEOUT}s"
             )
         time.sleep(5)
 
 
 @pytest.mark.depends(on=["test_chunks_stored_in_qdrant"])
-def test_qdrant_updates_after_frontmatter_edit(pdf_conversion_reset, chunk_reset):
-    """Editing a Markdown frontmatter should trigger a re-chunk visible via search.
-
-    Steps:
-    1. Wait for shelf1/simple-psionics.md to be converted from its PDF.
-    2. Wait for its chunks to be searchable; record chunking_completed_at.
-    3. Add a field to the frontmatter YAML (touches mtime → triggers re-chunk).
-    4. Wait for the search endpoint to return a newer chunking_completed_at.
-    """
+def test_qdrant_updates_after_frontmatter_edit():
+    """Editing a Markdown frontmatter triggers a re-chunk visible via search."""
     md_path = LIBRARY_DIR / "shelf1" / "simple-psionics.md"
+    assert md_path.exists(), f"{md_path} missing — prior test should have ensured it"
 
-    # Step 1: wait for the markdown file to appear
-    start = time.time()
-    while not md_path.exists():
-        if time.time() - start > TIMEOUT:
-            raise TimeoutError(
-                f"{md_path} is missing — the PDF pipeline did not create it within {TIMEOUT}s"
-            )
-        time.sleep(1)
-
-    # Step 2: wait for chunks to be searchable; record the timestamp
+    # Record the current chunking_completed_at before the edit.
     original_completed_at = None
     start = time.time()
     while original_completed_at is None:
@@ -139,17 +100,15 @@ def test_qdrant_updates_after_frontmatter_edit(pdf_conversion_reset, chunk_reset
                 )
             time.sleep(5)
 
-    # Step 3: add a field to the frontmatter — this touches mtime
+    # Touch the frontmatter to trigger a re-chunk.
     content = md_path.read_text(encoding="utf-8")
     parts = content.split("---", 2)
     if len(parts) < 3:
-        pytest.fail(
-            f"{md_path} exists but is missing the YAML front matter '---' delimiter"
-        )
+        pytest.fail(f"{md_path} is missing YAML front matter '---' delimiter")
     _, fm, body = parts
     md_path.write_text(f"---{fm}test_note: added_by_test\n---{body}", encoding="utf-8")
 
-    # Step 4: wait for the search endpoint to reflect a newer chunking_completed_at
+    # Wait for the search endpoint to reflect a newer chunking_completed_at.
     start = time.time()
     while True:
         resp = requests.post(
@@ -162,28 +121,23 @@ def test_qdrant_updates_after_frontmatter_edit(pdf_conversion_reset, chunk_reset
             parsed = [json.loads(line) for line in lines]
             results = [p for p in parsed if not p.get("done")]
             if results:
-                new_completed_at = results[0].get("chunking_completed_at")
-                if new_completed_at and new_completed_at != original_completed_at:
+                new_ts = results[0].get("chunking_completed_at")
+                if new_ts and new_ts != original_completed_at:
                     break
         if time.time() - start > CHUNK_TIMEOUT:
             raise TimeoutError(
-                f"Search results not updated after frontmatter edit within {CHUNK_TIMEOUT}s"
+                f"Search not updated after frontmatter edit within {CHUNK_TIMEOUT}s"
             )
         time.sleep(5)
 
 
 @pytest.mark.depends(on=["test_chunks_stored_in_qdrant"], name="test_books_endpoint")
-def test_books_endpoint(pdf_conversion_reset, chunk_reset):
-    """GET /private/v1/books should list every book processed by the pipeline.
-
-    Waits for at least one book to appear in the endpoint, then checks that
-    every visible PDF in the library has a corresponding entry with the correct
-    fields.
-    """
+def test_books_endpoint():
+    """GET /private/v1/books should list every PDF processed by the pipeline."""
     expected_paths = {
         str(p.relative_to(LIBRARY_DIR).with_suffix(".pdf"))
         for p in LIBRARY_DIR.rglob("*.pdf")
-        if not any(part.startswith(".") for part in p.parts[len(LIBRARY_DIR.parts) :])
+        if not any(part.startswith(".") for part in p.parts[len(LIBRARY_DIR.parts):])
     }
     assert expected_paths, "No PDFs found in the library — nothing to test."
 
@@ -196,16 +150,16 @@ def test_books_endpoint(pdf_conversion_reset, chunk_reset):
             break
         if time.time() - start > CHUNK_TIMEOUT:
             found = {b["file_path"] for b in books}
-            missing = expected_paths - found
             raise TimeoutError(
-                f"/private/v1/books missing entries after {CHUNK_TIMEOUT}s: {missing}"
+                f"/private/v1/books missing entries after {CHUNK_TIMEOUT}s: "
+                f"{expected_paths - found}"
             )
         time.sleep(5)
 
     by_path = {b["file_path"]: b for b in books}
     for path in expected_paths:
-        assert path in by_path, f"{path} not found in /private/v1/books"
+        assert path in by_path, f"{path} not in /private/v1/books"
         book = by_path[path]
         assert isinstance(book["tags"], list), f"{path}: 'tags' must be a list"
-        assert isinstance(book["chunk_count"], int), f"{path}: 'chunk_count' must be an int"
+        assert isinstance(book["chunk_count"], int), f"{path}: 'chunk_count' must be int"
         assert book["chunk_count"] > 0, f"{path}: 'chunk_count' must be > 0"

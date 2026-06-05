@@ -32,7 +32,11 @@ RUN pip install --no-cache-dir $(python -c \
 # Pre-download tiktoken BPE data so containers without internet access can start.
 RUN python -c "import tiktoken; tiktoken.get_encoding('cl100k_base')"
 
-# Pre-download the fastembed embedding model so containers without internet access can start.
+# Pre-download embedding models so containers without internet access can start.
+# Default (lightweight): sentence-transformers/all-MiniLM-L6-v2 (~90 MB in memory, fits within 2500 Mi limit).
+# Optional (higher quality): nomic-ai/nomic-embed-text-v1.5 (~1.1 GB in memory — raise memory limit to 4 Gi when using this).
+# Set EMBEDDING_MODEL env var to switch at runtime; both models are cached in the image.
+RUN python -c "from fastembed import TextEmbedding; TextEmbedding('sentence-transformers/all-MiniLM-L6-v2')"
 RUN python -c "from fastembed import TextEmbedding; TextEmbedding('nomic-ai/nomic-embed-text-v1.5')"
 
 # Copy all agent_stem contents

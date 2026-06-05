@@ -12,7 +12,14 @@ services:
       - redis
       - qdrant
       - business-hours
-
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2500M
+        reservations:
+          cpus: "0.25"
+          memory: 1G
   business-hours:
     image: sinanozel/business-hours-mcp:0.1.0
     environment:
@@ -24,9 +31,31 @@ services:
       - HOURS_FRI=08:00-18:00
       - HOURS_SAT=08:00-18:00
       - HOURS_SUN=08:00-18:00
-
+    deploy:
+      resources:
+        limits:
+          cpus: "0.20"
+          memory: 128M
+        reservations:
+          cpus: "0.05"
+          memory: 64M
   redis:
     image: redis:7-alpine
-
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+        reservations:
+          cpus: "0.10"
+          memory: 128M
   qdrant:
     image: qdrant/qdrant:v1.12.1
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.10"
+          memory: 256M

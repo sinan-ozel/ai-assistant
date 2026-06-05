@@ -11,7 +11,14 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+        reservations:
+          cpus: "0.10"
+          memory: 128M
   qdrant-test:
     image: qdrant/qdrant:v1.12.1
     container_name: qdrant-test-mistral
@@ -22,7 +29,14 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.10"
+          memory: 256M
   eberron-mcp-server:
     image: sinanozel/eberron-mcp-server:0.1.2
     container_name: eberron-mcp-server-mistral
@@ -34,7 +48,14 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
-
+    deploy:
+      resources:
+        limits:
+          cpus: "0.20"
+          memory: 128M
+        reservations:
+          cpus: "0.05"
+          memory: 64M
   # Application under test
   app:
     build:
@@ -57,23 +78,21 @@ services:
       qdrant-test:
         condition: service_healthy
     healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import json,urllib.request,sys; \
-          r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); \
-          d=json.load(r); \
-          sys.exit(0 if not d.get('providers_loading') else 1)"
-        ]
+      test: ["CMD", "python", "-c", "import json,urllib.request,sys; r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); d=json.load(r); sys.exit(0 if not d.get('providers_loading') else 1)"]
       interval: 5s
       timeout: 3s
       retries: 20
       start_period: 60s
     volumes:
       - ${AGENT_FOLDER:-./cortex}:/app/cortex
-
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2500M
+        reservations:
+          cpus: "0.25"
+          memory: 1G
   # Test runner
   tests:
     build:
@@ -92,10 +111,8 @@ services:
     volumes:
       - ${TEST_FOLDER:-.}:/tests
     command: ["pytest", "-v"]
-
 networks:
   test-network:
     driver: bridge
-
 volumes:
   test-results:

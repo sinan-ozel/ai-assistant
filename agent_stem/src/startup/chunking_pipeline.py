@@ -53,7 +53,7 @@ LANCEDB_PATH = os.environ.get("LANCEDB_PATH", "/app/data/lancedb")
 LANCEDB_TABLE = os.environ.get("LANCEDB_TABLE", "library")
 
 EMBEDDING_MODEL = os.environ.get(
-    "EMBEDDING_MODEL", "nomic-ai/nomic-embed-text-v1.5"
+    "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
 )
 
 # Resolved at first use — call _get_embedding_dim() to obtain.

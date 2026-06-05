@@ -11,7 +11,14 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+        reservations:
+          cpus: "0.10"
+          memory: 128M
   qdrant-test:
     image: qdrant/qdrant:v1.12.1
     container_name: qdrant-test-self-hosted-llm
@@ -22,7 +29,14 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.10"
+          memory: 256M
   # Application under test
   app:
     build:
@@ -45,23 +59,21 @@ services:
       qdrant-test:
         condition: service_healthy
     healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import json,urllib.request,sys; \
-          r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); \
-          d=json.load(r); \
-          sys.exit(0)"
-        ]
+      test: ["CMD", "python", "-c", "import json,urllib.request,sys; r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); d=json.load(r); sys.exit(0)"]
       interval: 15s
       timeout: 2s
       retries: 20
       start_period: 60s
     volumes:
       - ${AGENT_FOLDER:-./cortex}:/app/cortex
-
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2500M
+        reservations:
+          cpus: "0.25"
+          memory: 1G
   # Test runner
   tests:
     build:
@@ -85,7 +97,6 @@ services:
       - ${TEST_FOLDER:-.}:/tests
       - ${AGENT_FOLDER:-./cortex}:/app/cortex
     command: ["pytest", "--openapi=http://app:8000", "--openapi-no-strict-example-checking", "--openapi-markdown-output=report.md", "--openapi-no-stdout", "--openapi-timeout=315", "-vv", "--maxfail=1"]
-
 networks:
   test-network:
     driver: bridge

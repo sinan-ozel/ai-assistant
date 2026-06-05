@@ -11,7 +11,14 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+        reservations:
+          cpus: "0.10"
+          memory: 128M
   qdrant-test:
     image: qdrant/qdrant:v1.12.1
     container_name: qdrant-test-no-mcp
@@ -22,7 +29,14 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.10"
+          memory: 256M
   ollama-test:
     image: sinanozel/ollama.0.12.11:gemma3-270m
     container_name: ollama-test-no-mcp
@@ -37,7 +51,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
   # Application under test — no eberron-mcp-server in this environment
   app:
     build:
@@ -61,23 +74,21 @@ services:
       ollama-test:
         condition: service_healthy
     healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import json,urllib.request,sys; \
-          r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); \
-          d=json.load(r); \
-          sys.exit(0 if not d.get('providers_loading') else 1)"
-        ]
+      test: ["CMD", "python", "-c", "import json,urllib.request,sys; r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); d=json.load(r); sys.exit(0 if not d.get('providers_loading') else 1)"]
       interval: 5s
       timeout: 3s
       retries: 20
       start_period: 60s
     volumes:
       - ${AGENT_FOLDER:-./cortex}:/app/cortex
-
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2500M
+        reservations:
+          cpus: "0.25"
+          memory: 1G
   tests:
     build:
       context: ../..
@@ -97,7 +108,6 @@ services:
     volumes:
       - ${TEST_FOLDER:-.}:/tests
     command: ["pytest", "--mcp-tools=http://app:8001", "-v"]
-
 networks:
   test-network:
     driver: bridge

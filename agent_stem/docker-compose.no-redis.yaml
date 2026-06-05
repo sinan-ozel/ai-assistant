@@ -9,7 +9,14 @@ services:
       - ${DEV_DATA_FOLDER:-./dev-data}/qdrant:/qdrant/storage
     networks:
       - agent-dev-network
-
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.10"
+          memory: 256M
   llamacpp:
     image: sinanozel/llama.cuda:qwen3-0.6b
     networks:
@@ -25,7 +32,6 @@ services:
       timeout: 5s
       retries: 20
       start_period: 120s
-
   ollama:
     image: sinanozel/ollama.0.12.11:gemma3-270m
     container_name: ollama
@@ -40,7 +46,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
   agent-stem-dev:
     build:
       context: ..
@@ -55,14 +60,20 @@ services:
       - "8501:8501"
       - "11434:11434"
     environment:
-      # - CONVERSATION_WINDOW_LIMIT=4096
-      # - LOG_LEVEL=DEBUG
+    # - CONVERSATION_WINDOW_LIMIT=4096
+    # - LOG_LEVEL=DEBUG
     networks:
       - agent-dev-network
     depends_on:
       - qdrant
-
-
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2500M
+        reservations:
+          cpus: "0.25"
+          memory: 1G
 networks:
   agent-dev-network:
     driver: bridge

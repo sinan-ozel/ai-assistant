@@ -11,7 +11,14 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+        reservations:
+          cpus: "0.10"
+          memory: 128M
   # Cleans up generated .md files and Redis pipeline state before the app
   # starts so the PDF pipeline always begins from a known-clean state and
   # the chunking pipeline never processes stale files from a previous run.
@@ -34,15 +41,14 @@ services:
       - sh
       - -c
       - |
-          find /app/cortex/library -name '*.md' 2>/dev/null | grep -v '/\.' |
-          while IFS= read -r f; do
-            pdf=$$(echo "$$f" | sed 's/\.md$$/\.pdf/');
-            [ -f "$$pdf" ] && rm "$$f";
-          done;
-          redis-cli -h redis-test DEL memory:pdf_pipeline_state memory:chunking_pipeline_state memory:library;
-          touch /tmp/init_done;
-          tail -f /dev/null
-
+        find /app/cortex/library -name '*.md' 2>/dev/null | grep -v '/\.' |
+        while IFS= read -r f; do
+          pdf=$$(echo "$$f" | sed 's/\.md$$/\.pdf/');
+          [ -f "$$pdf" ] && rm "$$f";
+        done;
+        redis-cli -h redis-test DEL memory:pdf_pipeline_state memory:chunking_pipeline_state memory:library;
+        touch /tmp/init_done;
+        tail -f /dev/null
   # Application under test
   app:
     build:
@@ -62,23 +68,21 @@ services:
       redis-test:
         condition: service_healthy
     healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import json,urllib.request,sys; \
-          r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); \
-          d=json.load(r); \
-          sys.exit(0 if not d.get('providers_loading') else 1)"
-        ]
+      test: ["CMD", "python", "-c", "import json,urllib.request,sys; r=urllib.request.urlopen('http://localhost:8000/health',timeout=2); d=json.load(r); sys.exit(0 if not d.get('providers_loading') else 1)"]
       interval: 5s
       timeout: 3s
       retries: 20
       start_period: 60s
     volumes:
       - ${AGENT_FOLDER:-./cortex}:/app/cortex
-
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2500M
+        reservations:
+          cpus: "0.25"
+          memory: 1G
   # Test runner
   tests:
     build:
@@ -100,7 +104,6 @@ services:
       - ${TEST_FOLDER:-.}:/tests
       - ${AGENT_FOLDER:-./cortex}:/app/cortex
     command: ["pytest", "-v", "--tb=short"]
-
 networks:
   test-network:
     driver: bridge

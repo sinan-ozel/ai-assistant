@@ -18,8 +18,12 @@ env:
   # Maximum tokens in the conversation context window.
   # Leave empty for no limit (uses the model's full context).
   conversationWindowLimit: ""
-  # fastembed model name for in-process embeddings. Override to use a different
-  # sentence-transformers model supported by fastembed.
+  # fastembed model for in-process embeddings.
+  # Default (lightweight, fits within 2500 Mi memory limit):
+  #   sentence-transformers/all-MiniLM-L6-v2  (~90 MB in memory)
+  # Higher-quality option (raise resources.limits.memory to 4Gi when using):
+  #   nomic-ai/nomic-embed-text-v1.5          (~1.1 GB in memory)
+  # Both models are pre-cached in the image; no internet access needed at runtime.
   embeddingModel: "sentence-transformers/all-MiniLM-L6-v2"
 
 # Resource requests and limits for the main application container.

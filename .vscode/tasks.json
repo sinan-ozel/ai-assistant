@@ -255,12 +255,12 @@
             "problemMatcher": []
         },
         {
-            "label": "Run Integration Tests: talk_to_your_documents @ self_hosted_llm",
+            "label": "Run Integration Tests: talk_to_your_documents @ openapi",
             "type": "shell",
             "command": "bash",
             "args": [
                 "-c",
-                "F='${workspaceFolder}/test_environments/test_env_self_hosted_llm/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+                "F='${workspaceFolder}/test_environments/test_env_openapi/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
             ],
             "options": {
                 "env": {

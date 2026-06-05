@@ -23,7 +23,14 @@ services:
       - redis
       - qdrant
       - business-hours
-
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2500M
+        reservations:
+          cpus: "0.25"
+          memory: 1G
   redis:
     image: redis:7.4.2-alpine
     container_name: redis
@@ -34,7 +41,14 @@ services:
     command: redis-server
     networks:
       - agent-dev-network
-
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+        reservations:
+          cpus: "0.10"
+          memory: 128M
   qdrant:
     image: qdrant/qdrant:v1.12.1
     container_name: qdrant
@@ -45,7 +59,14 @@ services:
       - ${DEV_DATA_FOLDER:-./dev-data}/qdrant:/qdrant/storage
     networks:
       - agent-dev-network
-
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.10"
+          memory: 256M
   llamacpp:
     image: sinanozel/llama.cuda:qwen3-0.6b
     networks:
@@ -61,7 +82,6 @@ services:
       timeout: 5s
       retries: 20
       start_period: 120s
-
   ollama:
     image: sinanozel/ollama.0.12.11:gemma3-270m
     container_name: ollama
@@ -76,7 +96,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
   eberron-mcp-server:
     image: sinanozel/eberron-mcp-server:0.1.2
     container_name: eberron-mcp-server
@@ -88,7 +107,14 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
-
+    deploy:
+      resources:
+        limits:
+          cpus: "0.20"
+          memory: 128M
+        reservations:
+          cpus: "0.05"
+          memory: 64M
   business-hours:
     image: sinanozel/business-hours-mcp:0.1.0
     environment:
@@ -102,8 +128,14 @@ services:
       - HOURS_SUN=08:00-18:00
     networks:
       - agent-dev-network
-
-
+    deploy:
+      resources:
+        limits:
+          cpus: "0.20"
+          memory: 128M
+        reservations:
+          cpus: "0.05"
+          memory: 64M
 networks:
   agent-dev-network:
     driver: bridge
