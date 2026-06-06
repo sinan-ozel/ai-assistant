@@ -60,7 +60,15 @@ def _books_from_lancedb() -> list[dict]:
     db = lancedb.connect(LANCEDB_PATH)
     books: dict[str, dict] = {}
     for table_name in db.table_names():
-        tbl = db.open_table(table_name)
+        try:
+            tbl = db.open_table(table_name)
+        except ValueError:
+            logger.warning(
+                "LanceDB table %r listed by table_names() but could not be opened "
+                "(likely mid-write by chunking pipeline); skipping.",
+                table_name,
+            )
+            continue
         df = tbl.to_pandas()
         for _, row in df.iterrows():
             fp = row.get("file_path")
