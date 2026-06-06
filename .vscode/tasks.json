@@ -616,7 +616,7 @@
             "command": "bash",
             "args": [
                 "-c",
-                "F='${workspaceFolder}/test_environments/test_env_bad_agent/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+                "F='${workspaceFolder}/test_environments/test_env_bad_agent/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build; EC=$(docker inspect --format='{{.State.ExitCode}}' tests-runner-bad-agent 2>/dev/null); [ \"${EC:-1}\" -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit ${EC:-1}"
             ],
             "options": {
                 "env": {
