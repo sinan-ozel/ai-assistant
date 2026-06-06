@@ -21,10 +21,26 @@ resolution for post-release tests is computed from `pyproject.toml` +
 
 # Coding Practices
 
-Do not use try ... catch except (1) in small blocks around endpoints, where
-they are used for HTTP errors and (2) to log an informed error message before
-raising the original message and crashing. Only use a general Exception to
-catch if you intended to add something to the log message before crashing.
+## Error handling
+
+Use try...except around small blocks and with specific errors.
+
+Make sure that errors related to configuration and devops concerns such as hostnames
+fail at started with an exit 1, after logging the error.
+If you rewrite the error, make sure that it is facing devops operations
+and includes an actionable item.
+
+Make sure that the errors during API calls that are originating from user behaviour are caught
+and responded with a 400 message. The message should clarify what went wrong specifically,
+and explain the responses expected from the user, including even an example
+In general, errors that are created because of the user behaviour should respond
+include an action suggestion, and an example if applicable.
+Do not do a general catch-all here, we want to catch fails through the test harness.
+
+If there is an async process within the server, catch the exceptions with the particular
+error, log the error, and continue execution. General catches can be fine, but if
+there is something important to add the to logging message, first catch the specific
+error that the additonal info is related to.
 
 Do not use print, use existing patterns in the code to log.
 
