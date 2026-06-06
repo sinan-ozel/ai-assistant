@@ -23,7 +23,7 @@ resolution for post-release tests is computed from `pyproject.toml` +
 
 ## Error handling
 
-Use try...except around small blocks and with specific errors.
+Use try...except only around very small blocks and with specific errors.
 
 Make sure that errors related to configuration and devops concerns such as hostnames
 fail at started with an exit 1, after logging the error.
@@ -42,10 +42,16 @@ error, log the error, and continue execution. General catches can be fine, but i
 there is something important to add the to logging message, first catch the specific
 error that the additonal info is related to.
 
+## Logging
+
 Do not use print, use existing patterns in the code to log.
+
+## Async Processes
 
 For all async processes running in the executor, make sure that there is a
 callback to print the errors.
+
+## Object Classes
 
 For all classes and objects with inheritance, do not go any levels
 deeper than one parent, one child.
