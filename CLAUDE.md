@@ -26,11 +26,11 @@ resolution for post-release tests is computed from `pyproject.toml` +
 Use try...except only around very small blocks and with specific errors.
 
 Make sure that errors related to configuration and devops concerns such as hostnames
-fail at started with an exit 1, after logging the error.
+fail at startup with an exit 1, after logging the error.
 If you rewrite the error, make sure that it is facing devops operations
 and includes an actionable item.
 
-Make sure that the errors during API calls that are originating from user behaviour are caught
+Make sure that the errors during inbound API calls that are originating from user behaviour are caught
 and responded with a 400 message. The message should clarify what went wrong specifically,
 and explain the responses expected from the user, including even an example
 In general, errors that are created because of the user behaviour should respond
