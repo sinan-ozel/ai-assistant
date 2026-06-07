@@ -35,62 +35,41 @@ not block the event loop or each other.
 
 ---
 
-## LLM call flow (`call_read_only` / `call_all`)
+## LLM call flow (inside `prompt()`)
+
+Tool dispatch is handled internally by `prompt()` in `tools_dsl.py`. The DSL
+does not call `call_read_only()`, `call_all()`, or `wait()` — those methods do
+not exist. The full tool loop runs inside a single `prompt()` call:
 
 ```
 DSL thread
   │
-  ├─ call_read_only() / call_all()
-  │     │
-  │     ├─ build tool list from MCP tool cache
-  │     │
-  │     └─ _llm_with_tools(tools)
-  │           │
-  │           ├─ asyncio.run_coroutine_threadsafe(
-  │           │       asyncio.wait_for(call_llm_by_model(...), timeout=100s),
-  │           │       event_loop
-  │           │   ).result()                      ← blocks DSL thread
-  │           │
-  │           ├─ parse tool_calls from response
-  │           │
-  │           ├─ append assistant message with tool_calls to ctx.messages
-  │           │
-  │           └─ for each tool_call:
-  │                 executor.submit(_invoke_tool, name, args)
-  │                   → stores Future in self._pending
-  │
-  └─ (returns immediately; tool calls running concurrently on executor threads)
-```
-
-`call_read_only()` pre-filters the tool list to those whose MCP annotation
-carries `readOnlyHint: true`.  `call_all()` sends every available tool.
-
-If the LLM returns no tool calls the assistant message is not appended (the
-message list must always end in a user or tool message before the next LLM
-call).
-
----
-
-## Tool execution flow (`wait`)
-
-```
-DSL thread
-  │
-  └─ wait()
+  └─ prompt()
         │
-        ├─ for each (tool_call_id, Future) in self._pending:
-        │     result = fut.result()               ← blocks until that tool done
-        │     append {"role": "tool",
-        │             "tool_call_id": tool_call_id,
-        │             "content": result}
-        │     to ctx.messages
+        ├─ build tool list from all registered McpServer instances
+        │     (filtered by _can_handle() — currently all tools from all servers)
         │
-        └─ clears self._pending
+        ├─ asyncio.run_coroutine_threadsafe(
+        │       asyncio.wait_for(call_llm_by_model(...), timeout=100s),
+        │       event_loop
+        │   ).result()                            ← blocks DSL thread
+        │
+        ├─ if response contains tool_calls:
+        │     ├─ append assistant message with tool_calls to ctx.messages
+        │     ├─ for each tool_call:
+        │     │     executor.submit(_invoke_tool, name, args)
+        │     │       → collects result, appends tool message to ctx.messages
+        │     └─ loop back to LLM call (until no tool_calls in response)
+        │
+        └─ return final assistant response text
 ```
 
-Tool calls run concurrently on the executor.  `wait()` collects them in
-submission order but does not impose any sequencing on the concurrent
-executions.
+`readOnlyHint` and `idempotentHint` are stored in tool schema annotations and
+displayed in the Streamlit UI, but they are not used for runtime pre-filtering —
+all registered tools are sent to the LLM on every `prompt()` call.
+
+If the LLM returns no tool calls the loop exits immediately and the assistant
+message is returned.
 
 ---
 

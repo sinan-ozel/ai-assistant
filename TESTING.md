@@ -29,16 +29,14 @@ docker compose -f test_environments/<env>/docker-compose.yaml up --build --exit-
 Each environment is a `docker-compose.yaml` under `test_environments/`. The **app** container
 is always built from `agent_stem/Dockerfile`. The **tests** container runs `pytest` against it.
 
-| Environment | Redis | Qdrant | Embedding | LLM | Notes |
-|---|---|---|---|---|---|
-| `test_env_default` | ✓ | ✓ | ✓ (all-minilm:33m) | ✓ (gemma3-270m) | Bridge network. `LOG_LEVEL=DEBUG` on app. Cortex mounted to app only. |
-| `test_env_self_hosted_llm` | ✓ | ✓ | ✓ (all-minilm:33m) | external | Host network. Cortex mounted to both app and tests containers. LLM provided by `OLLAMA_HOST`. |
-| `test_env_mistral` | ✓ | ✓ | ✓ (all-minilm:33m) | external | Mistral API via `MISTRAL_API_KEY`. `DEFAULT_PROVIDER=mistral-7b`. |
-| `test_env_no_llm` | ✓ | ✓ | ✓ (all-minilm:33m) | ✗ | App starts in no-LLM mode. Tests infrastructure and non-LLM paths. |
-| `test_env_no_qdrant` | ✓ | ✗ | ✓ (all-minilm:33m) | external | LanceDB fallback active. Cortex mounted to both app and tests containers. |
-| `test_env_no_redis` | ✗ | ✓ | ✗ | external | No conversation memory. Embedding points to external server. |
-| `test_env_local_llm` | ✓ | ✓ | ✓ (all-minilm:33m) | ✓ (llama.cpp + gemma3-270m) | llama.cpp GPU container + Ollama. Requires CUDA. |
-| `test_env_nothing` | ✗ | ✗ | ✗ | ✗ | Bare app only. Tests graceful degradation with no services. |
+| Environment | Redis | Qdrant | LLM | Notes |
+|---|---|---|---|---|
+| `test_env_default` | ✓ | ✓ | ✓ (Ollama gemma3-270m) | Standard integration tests. Includes `eberron-mcp-server` sidecar for agents that use `McpServer`. |
+| `test_env_openapi` | ✓ | ✓ | via `.env` | OpenAPI contract validation (`--openapi` flag). No Ollama container — LLM provided via `.env`. Includes `eberron-mcp-server`. |
+| `test_env_mcp` | ✓ | ✓ | ✓ (Ollama gemma3-270m) | Tests the agent's built-in MCP server at port 8001 (`--mcp-tools` flag). No external MCP sidecar. |
+| `test_env_bad_agent` | — | — | — | App is expected to crash at startup. Tests misconfigured-agent failure paths. |
+
+Embedding runs in-process via `fastembed` in all environments — no separate embedding container is needed.
 
 ---
 
@@ -73,10 +71,6 @@ Tasks defined in `.vscode/tasks.json` under **Run All Agent Integration Tests**:
 
 | Task | Agent | Environment |
 |---|---|---|
-| Run Integration Tests: text_workflows @ self_hosted_llm | `text_workflows` | `test_env_self_hosted_llm` |
-| Run Integration Tests: image_workflows @ self_hosted_llm | `image_workflows` | `test_env_self_hosted_llm` |
-| Run Integration Tests: son_of_anton @ self_hosted_llm | `son_of_anton` | `test_env_self_hosted_llm` |
-| Run Integration Tests: talk_to_your_documents @ self_hosted_llm | `talk_to_your_documents` | `test_env_self_hosted_llm` |
 | Run Integration Tests: talk_to_your_documents @ no_qdrant | `talk_to_your_documents` | `test_env_no_qdrant` |
 | Run Integration Tests: agent_with_only_a_system_message @ default | `agent_with_only_a_system_message` | `test_env_default` |
 | Run Integration Tests: agent_with_temperature @ default | `agent_with_temperature` | `test_env_default` |
@@ -86,9 +80,6 @@ Tasks defined in `.vscode/tasks.json` under **Run All Agent Integration Tests**:
 | Run Integration Tests: agent_with_incorrect_eval @ default | `agent_with_incorrect_eval` | `test_env_default` |
 | Run Integration Tests: agent_with_tools @ default | `agent_with_tools` | `test_env_default` |
 | Run Integration Tests: agent_with_tools_advanced @ default | `agent_with_tools_advanced` | `test_env_default` |
-
-`talk_to_your_documents` is run against two environments to verify that the search layer falls
-back correctly from Qdrant to LanceDB when Qdrant is unavailable.
 
 `agent_with_tools` and `agent_with_tools_advanced` both require `test_env_default` because that
 environment includes the `eberron-mcp-server` sidecar that the agents connect to via `McpServer`.
@@ -115,33 +106,21 @@ directly (no PDF conversion step).
 
 ---
 
-## DevOps notes
+## Environment file (`.env`)
 
-### Embedding server requirements when the document pipeline is active
+Each test environment reads a `.env` file from its directory for LLM provider credentials. The `.env` is loaded by the `app` container; infrastructure variables (`REDIS_HOST`, `QDRANT_HOST`, etc.) are set directly in `docker-compose.yaml`.
 
-The document pipeline (PDF → Markdown conversion → chunking → embedding → vector store) uses
-the same embedding server as the search path (query embedding at inference time).  When both
-run concurrently against a **single Ollama instance with `OLLAMA_NUM_PARALLEL: 1`**, the
-pipeline's batch embedding requests monopolise the server, causing search query embedding
-requests to time out.
+Create a `.env` in the environment directory and fill in the credentials for any providers your cortex configuration uses:
 
-**Consequences in test environments:**
+```
+# LLM provider credentials — fill in at least one
 
-- `test_env_no_qdrant` runs agents that do both document ingestion and live search queries.
-  If the environment provisions only one Ollama container, library-chat tests that fire while
-  ingestion is still embedding documents will fail with `EmbeddingUnavailableError`.
+ANTHROPIC_API_KEY=sk-ant-api...
+MISTRAL_API_KEY=...
+OLLAMA_HOST=ollama-test:11434
+LLAMA_CPP_HOST=http://localhost:8080/v1
+```
 
-**Solutions (pick one):**
+`test_env_default` and `test_env_mcp` use the bundled `ollama-test` container (gemma3-270m) — no external LLM credentials are required for those environments. `test_env_openapi` has no Ollama container and requires a provider configured via `.env`.
 
-1. **Dedicated embedding containers** — deploy a separate Ollama instance for the pipeline
-   (set `EMBEDDING_BASE_URL` for the pipeline) and a separate one for query embedding.  This
-   is the most reliable option: each path gets its own server with no contention.
-
-2. **`OLLAMA_NUM_PARALLEL: N`** — set this env var on the shared Ollama container.  For BERT
-   embedding models this enables true batching (`n_seq_max=N`), allowing multiple concurrent
-   embedding requests.  It reduces contention but does not eliminate it under heavy load.
-
-The test dependency chain (`healthy` → `test_books_ingested` → library chat tests) ensures
-library-chat tests do not start until ingestion is complete, which eliminates the race in
-normal sequential runs.  A dedicated embedding server is required only when pipeline ingestion
-and search queries must run truly in parallel.
+`test_env_openapi` additionally accepts `OPENAI_API_KEY` if the cortex uses an OpenAI-compatible provider.

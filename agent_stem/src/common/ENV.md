@@ -50,7 +50,7 @@ All variables consumed by the application. Groups below reflect where each varia
 
 | Variable | Default | Description |
 |---|---|---|
-| `EMBEDDING_MODEL` | `nomic-ai/nomic-embed-text-v1.5` | fastembed model name. Runs in-process — no external server required. |
+| `EMBEDDING_MODEL` | `sentence-transformers/all-MiniLM-L6-v2` | fastembed model name. Runs in-process — no external server required. |
 
 ---
 

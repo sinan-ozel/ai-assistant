@@ -119,7 +119,7 @@ Streamlit UI renders them in a collapsible **🤔** expander.
 
 `/v1/agent/chat` is the only endpoint that supports agent customization. The other two endpoints (`/v1/chat/completions` and `/v1/api/generate`) are straightforward LiteLLM proxies with no customization layer.
 
-Place a file at `cortex/chat/prompt.py` to customize the agent. Currently one customization is implemented:
+Place a file at `cortex/chat/prompt.py` to customize the agent. The module-level docstring becomes the system message, and the rest of the file is a Python script that runs on every request with access to the full prompt DSL.
 
 **System message via docstring.** The module-level docstring becomes the system message for every conversation:
 
@@ -131,53 +131,52 @@ You are a helpful assistant called "Son of Anton".
 When your name is asked, respond with "I am Son of Anton, your ever-faithful assistant."
 You were designed in Silicon Valley and specialize in debugging code and finding low-cost hamburgers.
 """
-
-# The rest of the file is executed but not used yet.
-# The input message is passed through unchanged.
 ```
 
 If `cortex/chat/prompt.py` is absent, the endpoint uses a built-in default system message: `"You are a helpful assistant. You have access to conversation history and can maintain context across messages."`
 
 The `DEFAULT_SYSTEM_MESSAGE` environment variable can also override the default without creating a file.
 
-#### Interactive mode — MCP tools
+#### Prompt DSL
 
-When `prompt.py` contains any of `llm`, `notify`, `McpServer`, or `mcp`, the
-endpoint runs in **interactive mode**.  The script drives the LLM calls and
-tool invocations explicitly.
+The body of `prompt.py` is a Python script that runs on every request. The following globals are injected at request time:
+
+| Name | Description |
+|---|---|
+| `prompt(...)` | Call the LLM and stream the response. Accepts optional `temperature`, `model`, `max_tokens`, `images`, `system_message`. Handles tool dispatch internally. |
+| `notify(text)` | Stream `text` to the client immediately as an intermediate chunk. |
+| `Search(query, collection?, top_k?)` | Context manager. Retrieves relevant documents and injects them into the LLM context for the enclosed `prompt()` call. |
+| `McpServer(url)` | Context manager. Connects to an external MCP server; its tools are available to `prompt()` calls within the block. |
+| `MessageHistory(n?)` | Context manager. Injects the last `n` conversation turns into the LLM context. |
+| `delay(seconds)` | Sleep for the given number of seconds. |
+| `logger` | Standard Python logger for the agent module. |
+| `input_text` / `input()` | The current user message. |
+
+Example — MCP tool agent:
 
 ```python
 # cortex/chat/prompt.py
 
 """You are a guide to the world of Eberron."""
 
-with McpServer("http://tool-server:8000") as tools:
-    tools.call_read_only()
-    tools.wait()
-    response = llm()
-
-notify(response)
+with McpServer("http://tool-server:8000"):
+    prompt()
 ```
 
-Injected globals available only in interactive mode:
+Example — search-augmented agent with intermediate notification:
 
-| Name         | Description                                                         |
-|--------------|---------------------------------------------------------------------|
-| `llm()`      | Call the LLM; returns the assistant response as a string            |
-| `notify(text)`| Stream `text` to the client immediately; last call sets final response |
-| `McpServer(url)` | Context manager; connects to an MCP server and manages tool calls |
-| `mcp`        | Alias for `McpServer`                                               |
+```python
+# cortex/chat/prompt.py
 
-`McpServer` methods:
+"""You are a research assistant."""
 
-| Method             | Description                                                          |
-|--------------------|----------------------------------------------------------------------|
-| `call_read_only()` | Submit tools annotated `readOnlyHint=true` concurrently             |
-| `call_all()`       | Submit all available tools concurrently                              |
-| `wait()`           | Wait for pending tool calls; appends results to message history      |
+notify("Searching the library...")
+with Search(input()):
+    prompt()
+```
 
 The agent validates all `McpServer` URLs at startup and refuses to start if
-any are unreachable or return zero tools.  Discovered tools are listed in the
+any are unreachable or return zero tools. Discovered tools are listed in the
 Streamlit UI under "External Tools".
 
 ---

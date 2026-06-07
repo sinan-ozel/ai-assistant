@@ -142,16 +142,6 @@ with Search(input_text):
     response = prompt()
 ```
 
-### Accessing results directly
-
-The context manager yields the result list, allowing inspection:
-
-```python
-with Search(input_text, collection="shelf1", top_k=3) as results:
-    logger.info("search returned %d results", len(results))
-    response = prompt()
-```
-
 ### Result format
 
 Each result dict contains at minimum:
@@ -432,7 +422,7 @@ def remembers_name():
 
 | Name | Description |
 |---|---|
-| `eval(...)` | Suite-level config: `repeat`, `threshold`, `model`, `judge_model` |
+| `eval(...)` | Suite-level config: `repeat`, `threshold`, `model`, `judge_model`, `delay` |
 | `step(text?, image?, audio?, **kwargs)` | Context manager: send a turn, scope expectations |
 | `question(...)` | Alias for `step` |
 | `response_to(...)` | Alias for `step` |
@@ -478,7 +468,3 @@ The eval DSL runtime lives in `agent_stem/src/common/eval_dsl.py`:
    window into history.  The plan is to expose a mutable list so scripts can add, remove, or reorder
    turns before passing them to the LLM.
 
-4. **Accessible search results** — When used as a context manager (`with Search(...) as results:`),
-   `results` will be a list of result dicts (matching the format documented above) rather than a
-   `Search` object, making it easy to inspect scores, filter by collection, or incorporate individual
-   chunks into the prompt manually.

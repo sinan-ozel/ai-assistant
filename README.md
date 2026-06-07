@@ -368,11 +368,12 @@ The module docstring becomes the system prompt. `prompt()` is the only function 
 
 ### Process model
 
-Each container runs two processes under supervisord:
+Each container runs three processes under supervisord:
 
 | Process | Role | Restart policy |
 |---|---|---|
 | **FastAPI** (port 8000) | Production backend | No restart — container exits when it exits |
+| **MCP server** (port 8001) | Built-in tool server | No restart — shares FastAPI's lifecycle |
 | **Streamlit** (port 8501) | Dev/test UI | Restarts automatically on crash |
 
 FastAPI is the only process that matters in production. Any fatal condition at startup — unreachable MCP server, missing provider, misconfigured cortex — exits the container immediately with a non-zero exit code. Kubernetes will show `Reason: Error` and stop the restart loop rather than silently spinning up a broken agent.
@@ -391,7 +392,7 @@ Two background processes run concurrently at startup:
 
 **Stage 1 — PDF pipeline** (polls every 5 s): detects new or changed PDFs under `cortex/library/` by SHA-256 hash, converts them to Markdown using `pymupdf4llm` (with Tesseract OCR fallback for image-based PDFs), and prepends YAML front matter with file metadata and tags derived from the folder path.
 
-**Stage 2 — Chunking pipeline** (polls every 10 s): reads Markdown files, segments them by ATX heading, embeds each chunk via an Ollama-compatible embedding server, and writes chunks to Qdrant (preferred) or LanceDB (fallback). The top-level subfolder under `library/` becomes the collection name.
+**Stage 2 — Chunking pipeline** (polls every 10 s): reads Markdown files, segments them by ATX heading, embeds each chunk in-process via `fastembed` (`sentence-transformers/all-MiniLM-L6-v2` by default), and writes chunks to Qdrant (preferred) or LanceDB (fallback). The top-level subfolder under `library/` becomes the collection name.
 
 Both pipelines track state in Redis. A missing Redis connection causes them to silently skip, keeping the API available.
 

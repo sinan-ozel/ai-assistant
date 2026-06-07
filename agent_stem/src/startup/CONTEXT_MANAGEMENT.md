@@ -28,7 +28,9 @@ Known context window values from test environments:
 
 ## Stage 2: Fitting Conversation History
 
-On every request, `fit_messages_to_context()` in `agent_chat.py` trims the message history to fit within the resolved context window:
+Context history trimming happens at two layers:
+
+**Before the DSL runs** — `fit_messages_to_context()` in `agent_chat.py` trims the stored conversation history before passing it to the DSL execution context:
 
 1. Counts system prompt tokens using `tiktoken` (`cl100k_base` encoding)
 2. Reserves 1,000 tokens for the LLM response buffer
@@ -36,6 +38,12 @@ On every request, `fit_messages_to_context()` in `agent_chat.py` trims the messa
 4. If fewer than 100 tokens remain, returns empty history
 5. Works **backwards** from the most recent messages, keeping as many as fit
 6. Strips base64-encoded image content to prevent overflow
+
+**Inside each `prompt()` call** — `_fit_to_context()` in `tools_dsl.py` trims the message list assembled by the DSL just before each LLM call:
+
+1. Reserves 1,024 tokens (`_CONTEXT_RESPONSE_RESERVE`) for the response
+2. Works **backwards** through the message list, dropping oldest non-system messages until the remainder fits
+3. Uses `litellm.token_counter()` (gpt-3.5-turbo encoding) for token counting
 
 The **full conversation history is always retained in Redis**. Only the subset of messages sent to the LLM on a given request is trimmed. Long-term memory survives even when old turns exceed the context window.
 
