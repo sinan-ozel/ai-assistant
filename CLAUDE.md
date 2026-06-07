@@ -71,6 +71,14 @@ need to be graceful if these services do not exist. This is black-box testing,
 everything is being test through request bodies and the responses.
 
 
+# Redis
+
+All Redis communication must go through synced-memory — never import the
+`redis` client directly, read `REDIS_HOST`/`REDIS_PORT` env vars, or
+instantiate `Redis()` anywhere in `agent_stem/`. If synced-memory does not
+support a required behaviour, fix it in synced-memory rather than working
+around it with a direct Redis connection.
+
 # synced-memory examples:
 
 ```

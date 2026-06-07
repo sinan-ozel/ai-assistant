@@ -73,11 +73,6 @@ def _get_embedding_model():
     return _embedding_model
 
 
-# In-process fallback for chunking state when Redis is unavailable.
-# Each with Memory() block is ephemeral without Redis, so we maintain state
-# here to prevent the pipeline from re-chunking every file on every scan cycle.
-_chunking_pipeline_state: dict = {}
-
 # Tiktoken encoder for token counting (cl100k_base covers GPT-3.5/4 vocab)
 _tokenizer = tiktoken.get_encoding("cl100k_base")
 
@@ -1460,35 +1455,29 @@ async def process_markdown_file(path: "Path | str") -> tuple[list, list, str]:
 
 def _set_chunking_start(md_key: str, started_at: str) -> None:
     """Mark a Markdown file as Chunking in Redis (sync, runs in executor)."""
-    entry = _chunking_pipeline_state.get(md_key) or {}
-    _chunking_pipeline_state[md_key] = {
-        **entry,
-        "status": STATUS_CHUNKING,
-        "lastChunkingStart": started_at,
-    }
     with Memory() as memory:
         if not hasattr(memory, "chunking_pipeline_state"):
             memory.chunking_pipeline_state = {}
-        memory.chunking_pipeline_state[md_key] = _chunking_pipeline_state[
-            md_key
-        ]
+        entry = memory.chunking_pipeline_state.get(md_key) or {}
+        memory.chunking_pipeline_state[md_key] = {
+            **entry,
+            "status": STATUS_CHUNKING,
+            "lastChunkingStart": started_at,
+        }
 
 
 def _set_chunking_done(md_key: str, completed_at: str) -> None:
     """Mark a Markdown file as Chunked in Redis (sync, runs in executor)."""
-    entry = _chunking_pipeline_state.get(md_key) or {}
-    _chunking_pipeline_state[md_key] = {
-        **entry,
-        "status": STATUS_CHUNKED,
-        "chunking_completed_at": completed_at,
-        "lastChunkingComplete": completed_at,
-    }
     with Memory() as memory:
         if not hasattr(memory, "chunking_pipeline_state"):
             memory.chunking_pipeline_state = {}
-        memory.chunking_pipeline_state[md_key] = _chunking_pipeline_state[
-            md_key
-        ]
+        entry = memory.chunking_pipeline_state.get(md_key) or {}
+        memory.chunking_pipeline_state[md_key] = {
+            **entry,
+            "status": STATUS_CHUNKED,
+            "chunking_completed_at": completed_at,
+            "lastChunkingComplete": completed_at,
+        }
 
 
 def _scan_and_queue_markdowns(library_dir: Path) -> list[Path]:
@@ -1522,24 +1511,14 @@ def _scan_and_queue_markdowns(library_dir: Path) -> list[Path]:
             )
             continue
 
-        entry = _chunking_pipeline_state.get(md_key) or {}
-        _chunking_pipeline_state[md_key] = {**entry, "status": STATUS_CHECKING}
         with Memory() as memory:
             if not hasattr(memory, "chunking_pipeline_state"):
                 memory.chunking_pipeline_state = {}
-            redis_entry = memory.chunking_pipeline_state.get(md_key) or {}
-            if redis_entry:
-                # Redis has an entry — merge it into the global so a restarted
-                # process can pick up the last-chunked timestamp from Redis.
-                _chunking_pipeline_state[md_key] = {
-                    **_chunking_pipeline_state[md_key],
-                    **redis_entry,
-                    "status": STATUS_CHECKING,
-                }
-                entry = _chunking_pipeline_state[md_key]
-            memory.chunking_pipeline_state[md_key] = _chunking_pipeline_state[
-                md_key
-            ]
+            entry = memory.chunking_pipeline_state.get(md_key) or {}
+            memory.chunking_pipeline_state[md_key] = {
+                **entry,
+                "status": STATUS_CHECKING,
+            }
 
         completed_at_str = entry.get("chunking_completed_at")
         if completed_at_str:
@@ -1560,32 +1539,21 @@ def _scan_and_queue_markdowns(library_dir: Path) -> list[Path]:
             needs_processing = True
             reason = "never chunked"
 
-        if needs_processing:
-            _chunking_pipeline_state[md_key] = {
-                **(_chunking_pipeline_state.get(md_key) or {}),
-                "status": STATUS_QUEUED,
+        new_status = STATUS_QUEUED if needs_processing else STATUS_CHUNKED
+        with Memory() as memory:
+            if not hasattr(memory, "chunking_pipeline_state"):
+                memory.chunking_pipeline_state = {}
+            entry = memory.chunking_pipeline_state.get(md_key) or {}
+            memory.chunking_pipeline_state[md_key] = {
+                **entry,
+                "status": new_status,
             }
-            with Memory() as memory:
-                if not hasattr(memory, "chunking_pipeline_state"):
-                    memory.chunking_pipeline_state = {}
-                memory.chunking_pipeline_state[md_key] = (
-                    _chunking_pipeline_state[md_key]
-                )
+
+        if needs_processing:
             queued_paths.append(md_path)
             logger.info(
                 "Chunking pipeline: %s queued — %s.", md_path.name, reason
             )
-        else:
-            _chunking_pipeline_state[md_key] = {
-                **(_chunking_pipeline_state.get(md_key) or {}),
-                "status": STATUS_CHUNKED,
-            }
-            with Memory() as memory:
-                if not hasattr(memory, "chunking_pipeline_state"):
-                    memory.chunking_pipeline_state = {}
-                memory.chunking_pipeline_state[md_key] = (
-                    _chunking_pipeline_state[md_key]
-                )
 
     return queued_paths
 
