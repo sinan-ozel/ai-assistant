@@ -46,6 +46,12 @@ _CORTEX_TOOLS_DIR = Path("/app/cortex/mcp/tools")
 # The merge order keeps cortex overriding default for any duplicate name.
 _cortex_tools = discover_tools([_CORTEX_TOOLS_DIR], source="cortex")
 _default_tools = discover_tools([_DEFAULT_TOOLS_DIR], source="default")
+for _name in _cortex_tools:
+    if _name in _default_tools:
+        logger.warning(
+            "MCP server: cortex tool '%s' overrides a default tool with the same name.",
+            _name,
+        )
 _tools = {**_default_tools, **_cortex_tools}
 logger.info("MCP server: %d tool(s) loaded: %s", len(_tools), sorted(_tools))
 
