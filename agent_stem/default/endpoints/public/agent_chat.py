@@ -635,6 +635,32 @@ async def handler(request: dict, headers: dict = None):
     if len(message.strip()) == 0:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
+    for i, item in enumerate(media):
+        if not isinstance(item, dict) or item.get("type") != "image_url":
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"media[{i}]: each item must be an object with "
+                    f'type "image_url". Example: {{"type": "image_url", '
+                    f'"image_url": {{"url": "data:image/jpeg;base64,..."}}}}.'
+                ),
+            )
+        url = (item.get("image_url") or {}).get("url", "")
+        if not isinstance(url, str) or not (
+            url.startswith("data:image/")
+            or url.startswith("http://")
+            or url.startswith("https://")
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"media[{i}].image_url.url is not a valid URL. "
+                    f"Expected a base64 data URL (data:image/<mime>;base64,...) "
+                    f"or an http/https URL. "
+                    f'Example: "data:image/jpeg;base64,/9j/4AAQ..."'
+                ),
+            )
+
     # Generate conversation_id if not provided
     if not conversation_id:
         conversation_id = str(uuid.uuid4())
