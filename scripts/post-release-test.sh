@@ -87,7 +87,7 @@ create_api_secret() {
 
     local args=()
     while IFS='=' read -r key value; do
-        [[ "$key" =~ ^(MISTRAL_API_KEY|ANTHROPIC_API_KEY)$ ]] || continue
+        [[ "$key" =~ ^(MISTRAL_API_KEY|ANTHROPIC_API_KEY|SERPER_API_KEY)$ ]] || continue
         [[ -n "$value" ]] || continue
         args+=("--from-literal=${key}=${value}")
     done < <(grep -v '^[[:space:]]*#' "$env_file" | grep -v '^[[:space:]]*$')

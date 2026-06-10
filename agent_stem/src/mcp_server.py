@@ -60,7 +60,41 @@ app = FastAPI(title="ai-assistant-mcp", version="0.1.0")
 
 @app.post("/mcp")
 async def mcp_endpoint(request: Request):
-    body = await request.json()
+    raw = await request.body()
+    if not raw:
+        return JSONResponse(
+            {
+                "jsonrpc": "2.0",
+                "id": None,
+                "error": {
+                    "code": -32700,
+                    "message": (
+                        "Parse error: request body is empty. "
+                        "Send a JSON-RPC 2.0 object, e.g. "
+                        '{"jsonrpc":"2.0","id":1,"method":"tools/list"}.'
+                    ),
+                },
+            },
+            status_code=400,
+        )
+    try:
+        body = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        return JSONResponse(
+            {
+                "jsonrpc": "2.0",
+                "id": None,
+                "error": {
+                    "code": -32700,
+                    "message": (
+                        f"Parse error: invalid JSON — {exc}. "
+                        "Send a JSON-RPC 2.0 object, e.g. "
+                        '{"jsonrpc":"2.0","id":1,"method":"tools/list"}.'
+                    ),
+                },
+            },
+            status_code=400,
+        )
     method = body.get("method", "")
     params = body.get("params")
     req_id = body.get("id")
