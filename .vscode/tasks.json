@@ -942,6 +942,16 @@
             "problemMatcher": []
         },
         {
+            "label": "_Release (Dev) (Do not run directly)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "${workspaceFolder}/scripts/release.sh",
+                "--dev"
+            ],
+            "problemMatcher": []
+        },
+        {
             "label": "Release (Dev)",
             "type": "shell",
             "command": "bash",
@@ -953,7 +963,20 @@
                 "Assert Main Branch",
                 "Run Checks",
                 "Assert Head is Clean",
-                "Run Quick & Costless Agent Integration Tests"
+                "Run Quick & Costless Agent Integration Tests",
+                "_Release (Dev) (Do not run directly)",
+                "Publish Helm Chart (Dev)",
+                "Run Post-Release Tests",
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "_Release (Do not run directly)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "${workspaceFolder}/scripts/release.sh"
             ],
             "dependsOrder": "sequence",
             "problemMatcher": []
@@ -966,11 +989,14 @@
                 "${workspaceFolder}/scripts/release.sh"
             ],
             "dependsOn": [
-                "Run Pre-Release Tests",
-                "Release (Dev)",
-                "Publish Helm Chart (Dev)",
+                "Assert Main Branch",
+                "Run Checks",
+                "Assert Head is Clean",
+                "Run Quick & Costless Agent Integration Tests",
                 "Run Post-Release Tests",
+                "_Release (Do not run directly)",
                 "Publish Helm Chart",
+                "Run Post-Release Tests",
             ],
             "dependsOrder": "sequence",
             "problemMatcher": []
