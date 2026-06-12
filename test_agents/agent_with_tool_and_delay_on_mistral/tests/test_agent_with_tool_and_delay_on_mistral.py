@@ -19,6 +19,31 @@ def test_health_endpoint():
 
 
 @pytest.mark.depends(on="healthy")
+def test_cortex_tool_names_accepted_by_mistral():
+    """Cortex tool names (localhost.module.function) must be accepted by Mistral.
+
+    Asks for the current time so the LLM must call get_current_time via the
+    internal MCP server.  If tool names use an invalid format (e.g. containing
+    '/'), Mistral rejects the request and the agent returns 500.
+    """
+    response = requests.post(
+        f"{BASE_URL}/v1/agent/chat",
+        json={
+            "message": "What is the current date and time in UTC?",
+            "user_id": "test-delay-mistral-toolname",
+        },
+        timeout=120,
+    )
+    assert response.status_code == 200, (
+        f"Agent returned {response.status_code} — "
+        "Mistral may have rejected cortex tool names; check agent logs"
+    )
+    data = response.json()
+    assert isinstance(data["message"], str)
+    assert len(data["message"]) > 0
+
+
+@pytest.mark.depends(on="healthy")
 def test_tool_call_with_delay_does_not_hit_rate_limit():
     """A request that triggers a tool call must not return 429.
 

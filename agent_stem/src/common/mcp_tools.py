@@ -24,8 +24,8 @@ Validation rules — the process crashes if any rule is violated:
 - Every parameter must have a description in the Args section of the docstring.
 - Parameters of type ``dict`` must not contain nested dicts in their default.
 
-The tool ``name`` in the MCP schema is ``localhost/{module}.{function}``, e.g.
-``localhost/search.library_search`` for ``library_search`` defined in ``search.py``.
+The tool ``name`` in the MCP schema is ``localhost.{module}.{function}``, e.g.
+``localhost.search.library_search`` for ``library_search`` defined in ``search.py``.
 
 MCP hint kwargs use snake_case and are converted to camelCase automatically:
   read_only_hint=True  →  readOnlyHint: true
@@ -129,7 +129,7 @@ def validate_and_build_schema(func: Callable, module_stem: str = "") -> dict:
     Raises ``ValueError`` with an informative message on any violation.
     """
     func_name = func.__name__
-    name = f"localhost/{module_stem}.{func_name}" if module_stem else func_name
+    name = f"localhost.{module_stem}.{func_name}" if module_stem else func_name
 
     mcp_title = getattr(func, "_mcp_title", None)
     if not mcp_title:

@@ -7,6 +7,31 @@ import requests
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 
+def test_cortex_tool_names_accepted_by_anthropic(anthropic_api_key_available):
+    """Cortex tool names (localhost.module.function) must be accepted by Anthropic.
+
+    Asks for the current time so the LLM must call get_current_time via the
+    internal MCP server.  If tool names use an invalid format, Anthropic rejects
+    the request and the agent returns 500.
+    """
+    response = requests.post(
+        f"{BASE_URL}/v1/agent/chat",
+        json={
+            "message": "What is the current date and time in UTC?",
+            "user_id": "test-anthropic-toolname",
+            "max_tokens": 128,
+        },
+        timeout=120,
+    )
+    assert response.status_code == 200, (
+        f"Agent returned {response.status_code} — "
+        "Anthropic may have rejected cortex tool names; check agent logs"
+    )
+    data = response.json()
+    assert isinstance(data["message"], str)
+    assert len(data["message"]) > 0
+
+
 def test_anthropic_agent_simple_message(anthropic_api_key_available):
     """Test sending a simple message to the Anthropic agent."""
     response = requests.post(

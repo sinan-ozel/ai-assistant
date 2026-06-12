@@ -54,11 +54,11 @@ def test_mcp_server_lists_cortex_tools():
     )
     assert response.status_code == 200
     names = [t["name"] for t in response.json()["result"]["tools"]]
-    assert "localhost/time_tool.get_current_time" in names, (
-        f"Expected 'localhost/time_tool.get_current_time' in tool list; got: {names}"
+    assert "localhost.time_tool.get_current_time" in names, (
+        f"Expected 'localhost.time_tool.get_current_time' in tool list; got: {names}"
     )
-    assert "localhost/web_search.web_search" in names, (
-        f"Expected 'localhost/web_search.web_search' in tool list; got: {names}"
+    assert "localhost.web_search.web_search" in names, (
+        f"Expected 'localhost.web_search.web_search' in tool list; got: {names}"
     )
 
 
@@ -72,7 +72,7 @@ def test_mcp_get_current_time_tool_call():
             "id": 2,
             "method": "tools/call",
             "params": {
-                "name": "localhost/time_tool.get_current_time",
+                "name": "localhost.time_tool.get_current_time",
                 "arguments": {"timezone": "UTC"},
             },
         },
@@ -98,7 +98,7 @@ def test_mcp_web_search_tool_call_returns_string():
             "id": 3,
             "method": "tools/call",
             "params": {
-                "name": "localhost/web_search.web_search",
+                "name": "localhost.web_search.web_search",
                 "arguments": {"query": "Python programming language"},
             },
         },
@@ -158,7 +158,7 @@ def test_mcp_tool_annotations_present():
 
 @pytest.mark.depends(on=["mcp_lists_cortex_tools"])
 def test_mcp_get_current_time_annotations():
-    """localhost/time_tool.get_current_time must declare readOnlyHint=True."""
+    """localhost.time_tool.get_current_time must declare readOnlyHint=True."""
     response = requests.post(
         f"{MCP_URL}/mcp",
         json={"jsonrpc": "2.0", "id": 11, "method": "tools/list", "params": {}},
@@ -167,17 +167,17 @@ def test_mcp_get_current_time_annotations():
     )
     assert response.status_code == 200
     tools = {t["name"]: t for t in response.json()["result"]["tools"]}
-    assert "localhost/time_tool.get_current_time" in tools
-    annotations = tools["localhost/time_tool.get_current_time"]["annotations"]
+    assert "localhost.time_tool.get_current_time" in tools
+    annotations = tools["localhost.time_tool.get_current_time"]["annotations"]
     assert annotations.get("title") == "Get Current Time"
     assert annotations.get("readOnlyHint") is True, (
-        "localhost/time_tool.get_current_time should declare readOnlyHint=True"
+        "localhost.time_tool.get_current_time should declare readOnlyHint=True"
     )
 
 
 @pytest.mark.depends(on=["mcp_lists_cortex_tools"])
 def test_mcp_web_search_annotations():
-    """localhost/web_search.web_search must declare readOnlyHint=True and openWorldHint=True."""
+    """localhost.web_search.web_search must declare readOnlyHint=True and openWorldHint=True."""
     response = requests.post(
         f"{MCP_URL}/mcp",
         json={"jsonrpc": "2.0", "id": 12, "method": "tools/list", "params": {}},
@@ -186,14 +186,14 @@ def test_mcp_web_search_annotations():
     )
     assert response.status_code == 200
     tools = {t["name"]: t for t in response.json()["result"]["tools"]}
-    assert "localhost/web_search.web_search" in tools
-    annotations = tools["localhost/web_search.web_search"]["annotations"]
+    assert "localhost.web_search.web_search" in tools
+    annotations = tools["localhost.web_search.web_search"]["annotations"]
     assert annotations.get("title") == "Web Search"
     assert annotations.get("readOnlyHint") is True, (
-        "localhost/web_search.web_search should declare readOnlyHint=True"
+        "localhost.web_search.web_search should declare readOnlyHint=True"
     )
     assert annotations.get("openWorldHint") is True, (
-        "localhost/web_search.web_search should declare openWorldHint=True (calls external API)"
+        "localhost.web_search.web_search should declare openWorldHint=True (calls external API)"
     )
 
 
