@@ -993,7 +993,7 @@
                 "Run Checks",
                 "Assert Head is Clean",
                 "Run Quick & Costless Agent Integration Tests",
-                "Run Post-Release Tests",
+                // "Run Post-Release Tests",
                 "_Release (Do not run directly)",
                 "Publish Helm Chart",
                 "Run Post-Release Tests",
