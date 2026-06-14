@@ -954,11 +954,11 @@
         {
             "label": "Release (Dev)",
             "type": "shell",
-            "command": "bash",
-            "args": [
-                "${workspaceFolder}/scripts/release.sh",
-                "--dev"
-            ],
+            // "command": "bash",
+            // "args": [
+            //     "${workspaceFolder}/scripts/release.sh",
+            //     "--dev"
+            // ],
             "dependsOn": [
                 "Assert Main Branch",
                 "Run Checks",
@@ -984,16 +984,16 @@
         {
             "label": "Release",
             "type": "shell",
-            "command": "bash",
-            "args": [
-                "${workspaceFolder}/scripts/release.sh"
-            ],
+            // "command": "bash",
+            // "args": [
+            //     "${workspaceFolder}/scripts/release.sh"
+            // ],
             "dependsOn": [
                 "Assert Main Branch",
                 "Run Checks",
                 "Assert Head is Clean",
-                "Run Quick & Costless Agent Integration Tests",
-                // "Run Post-Release Tests",
+                "Run Quick & Costly Agent Integration Tests",
+                // "Run Pre-Release Tests",
                 "_Release (Do not run directly)",
                 "Publish Helm Chart",
                 "Run Post-Release Tests",
