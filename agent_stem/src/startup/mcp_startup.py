@@ -86,8 +86,8 @@ def _resolve_mcp_arg(arg: ast.expr) -> str:
 
     raise RuntimeError(
         f"MCP startup: unsupported McpServer() argument at line "
-        f"{getattr(arg, 'lineno', '?')} — only string literals and "
-        "os.environ lookups are supported."
+        f"{getattr(arg, 'lineno', '?')} — only string literals, lists of "
+        "string literals, and os.environ lookups are supported."
     )
 
 
@@ -98,7 +98,7 @@ def _extract_mcp_urls(source: str) -> list:
     """Walk the AST of *source* and return all McpServer() URLs.
 
     ``McpServer()`` with no arguments resolves to the built-in MCP server at
-    ``http://localhost:8001``.
+    ``http://localhost:8001``.  A list argument is expanded element by element.
     """
     tree = ast.parse(source)
     urls = []
@@ -110,6 +110,9 @@ def _extract_mcp_urls(source: str) -> list:
         ):
             if not node.args:
                 urls.append(_LOCAL_MCP_URL)
+            elif isinstance(node.args[0], ast.List):
+                for elt in node.args[0].elts:
+                    urls.append(_resolve_mcp_arg(elt))
             else:
                 urls.append(_resolve_mcp_arg(node.args[0]))
     return urls
