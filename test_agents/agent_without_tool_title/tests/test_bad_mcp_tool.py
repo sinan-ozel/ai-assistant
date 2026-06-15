@@ -1,6 +1,6 @@
 """Verify that a tool missing @tool.mcp(title=...) crashes the MCP server.
 
-The test agent mounts a single cortex tool (bad_tool.untitled_tool) that has
+The test agent mounts a single cortex tool (bad_tool__untitled_tool) that has
 no @tool.mcp decorator. The expected sequence is:
 
   1. mcp_server.py fails to import the tool (ValueError logged immediately).
@@ -42,8 +42,8 @@ def test_missing_title_logs_error_and_crashes():
         "Expected 'a title is required' in app logs.\n"
         f"Log tail:\n{log[-1500:]}"
     )
-    assert "bad_tool.untitled_tool" in log, (
-        "Expected the offending tool name 'bad_tool.untitled_tool' in app logs.\n"
+    assert "bad_tool__untitled_tool" in log, (
+        "Expected the offending tool name 'bad_tool__untitled_tool' in app logs.\n"
         f"Log tail:\n{log[-1500:]}"
     )
     assert "@tool.mcp(title='...')" in log, (
