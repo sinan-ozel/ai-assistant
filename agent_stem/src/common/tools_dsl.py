@@ -591,6 +591,12 @@ def make_prompt_fn(ctx: DslRunContext):
         if tools:
             kwargs.setdefault("tools", tools)
             kwargs.setdefault("tool_choice", "auto")
+        elif any(msg.get("tool_calls") for msg in call_messages):
+            # Anthropic (and some providers) require `tools=` whenever
+            # `tool_calls` appear in the message history, even when no tools
+            # are active.  LiteLLM's modify_params injects a dummy tool to
+            # satisfy this constraint without altering the response.
+            kwargs.setdefault("modify_params", True)
 
         if ctx.delta_fn is not None and not tools:
 
