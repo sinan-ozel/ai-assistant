@@ -24,8 +24,8 @@ Validation rules — the process crashes if any rule is violated:
 - Every parameter must have a description in the Args section of the docstring.
 - Parameters of type ``dict`` must not contain nested dicts in their default.
 
-The tool ``name`` in the MCP schema is ``localhost.{module}.{function}``, e.g.
-``localhost.search.library_search`` for ``library_search`` defined in ``search.py``.
+The tool ``name`` in the MCP schema is ``{module}__{function}``, e.g.
+``search__library_search`` for ``library_search`` defined in ``search.py``.
 
 MCP hint kwargs use snake_case and are converted to camelCase automatically:
   read_only_hint=True  →  readOnlyHint: true

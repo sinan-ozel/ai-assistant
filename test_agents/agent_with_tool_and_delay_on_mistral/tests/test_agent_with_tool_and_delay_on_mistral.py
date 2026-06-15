@@ -20,7 +20,7 @@ def test_health_endpoint():
 
 @pytest.mark.depends(on="healthy")
 def test_cortex_tool_names_accepted_by_mistral():
-    """Cortex tool names (localhost.module.function) must be accepted by Mistral.
+    """Cortex tool names (module__function) must be accepted by Mistral.
 
     Asks for the current time so the LLM must call get_current_time via the
     internal MCP server.  If tool names use an invalid format (e.g. containing

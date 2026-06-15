@@ -8,7 +8,7 @@ BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 
 def test_cortex_tool_names_accepted_by_anthropic(anthropic_api_key_available):
-    """Cortex tool names (localhost.module.function) must be accepted by Anthropic.
+    """Cortex tool names (module__function) must be accepted by Anthropic.
 
     Asks for the current time so the LLM must call get_current_time via the
     internal MCP server.  If tool names use an invalid format, Anthropic rejects
