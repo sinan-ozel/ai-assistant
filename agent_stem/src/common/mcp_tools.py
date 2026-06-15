@@ -129,7 +129,7 @@ def validate_and_build_schema(func: Callable, module_stem: str = "") -> dict:
     Raises ``ValueError`` with an informative message on any violation.
     """
     func_name = func.__name__
-    name = f"localhost.{module_stem}.{func_name}" if module_stem else func_name
+    name = f"{module_stem}__{func_name}" if module_stem else func_name
 
     mcp_title = getattr(func, "_mcp_title", None)
     if not mcp_title:

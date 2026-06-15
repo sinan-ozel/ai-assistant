@@ -774,6 +774,14 @@ async def handler(request: dict, headers: dict = None):
                     notify_fn=_notifications.append,
                     retry_on_rate_limit=(user_id == "__eval__"),
                 )
+            except litellm.BadRequestError as e:
+                logger.error(
+                    "Agent chat (DSL): bad request to LLM for user=%s conversation=%s: %s",
+                    user_id,
+                    conversation_id,
+                    e,
+                )
+                raise HTTPException(status_code=400, detail=f"LLM call failed: {e}")
             except litellm.RateLimitError as e:
                 logger.error(
                     "Agent chat (DSL): rate limit hit for user=%s conversation=%s: %s",
@@ -920,6 +928,14 @@ async def handler(request: dict, headers: dict = None):
                 max_tokens=max_tokens,
                 temperature=temperature,
             )
+        except litellm.BadRequestError as e:
+            logger.error(
+                "Agent chat: bad request to LLM for user=%s conversation=%s: %s",
+                user_id,
+                conversation_id,
+                e,
+            )
+            raise HTTPException(status_code=400, detail=f"LLM call failed: {e}")
         except litellm.RateLimitError as e:
             logger.error(
                 "Agent chat: rate limit hit for user=%s conversation=%s: %s",
