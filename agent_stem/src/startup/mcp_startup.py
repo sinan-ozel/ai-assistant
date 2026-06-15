@@ -98,7 +98,8 @@ def _extract_mcp_urls(source: str) -> list:
     """Walk the AST of *source* and return all McpServer() URLs.
 
     ``McpServer()`` with no arguments resolves to the built-in MCP server at
-    ``http://localhost:8001``.  A list argument is expanded element by element.
+    ``http://localhost:8001``.
+    A list argument is expanded element by element.
     """
     tree = ast.parse(source)
     urls = []
