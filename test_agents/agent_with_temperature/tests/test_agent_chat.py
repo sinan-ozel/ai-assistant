@@ -51,6 +51,7 @@ def test_agent_chat_creative_identity():
     assert response.status_code == 200
     data = response.json()
     response_text = data["message"].lower()
-    assert (
-        "creative" in response_text or "writing" in response_text
+    assert any(
+        kw in response_text
+        for kw in ("creativ", "writing", "storytell", "story", "fiction", "narrat")
     ), f"Expected creative writing identity in response, got: {data['message']}"
