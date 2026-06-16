@@ -61,6 +61,20 @@ from common.llm import (
 )
 from situational.awareness import get_provider_context_window
 
+# Anthropic requires `tools=` whenever tool_calls appear in message history,
+# even when the current turn should not invoke any tool.  Passing this dummy
+# satisfies the constraint without altering the response; tool_choice="auto"
+# is used so the model can still decline to call it (which it always does when
+# it only needs to synthesise an answer from a tool result already in context).
+_ANTHROPIC_DUMMY_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "_placeholder",
+        "description": "Placeholder — not callable in this turn.",
+        "parameters": {"type": "object", "properties": {}},
+    },
+}
+
 
 def _parse_mcp_response(response: httpx.Response) -> dict:
     """Parse an MCP response: JSON, SSE, or NDJSON streaming."""
@@ -597,19 +611,27 @@ def make_prompt_fn(ctx: DslRunContext):
             kwargs.setdefault("tool_choice", "auto")
         elif any(msg.get("tool_calls") for msg in call_messages):
             # Anthropic requires `tools=` whenever tool_calls appear in the
-            # message history, even when no tools are active; LiteLLM's
-            # modify_params injects a dummy tool to satisfy that constraint.
-            # Other providers (e.g. Mistral) accept tool results in history
-            # without active tools and reject modify_params as an unknown
-            # field — so only set it when the resolved model is Anthropic.
+            # message history, even when no tools are active in this turn.
+            # litellm.modify_params (global flag) would inject a dummy tool
+            # automatically, but passing modify_params=True as a per-call
+            # kwarg is not consumed by LiteLLM — it would be forwarded to
+            # the provider API and cause a 422 on Mistral.  We inject the
+            # dummy tool ourselves, scoped to Anthropic/Claude only; other
+            # providers (Mistral, OpenAI) accept tool results in history
+            # without requiring an active tools list.
             _resolved_model, _ = get_provider_config(
                 ctx.providers_state, requested_model
             )
-            if _resolved_model and (
-                "anthropic" in _resolved_model.lower()
-                or "claude" in _resolved_model.lower()
-            ):
-                kwargs.setdefault("modify_params", True)
+            _m = (_resolved_model or "").lower()
+            # LiteLLM v1.84.0 raises UnsupportedParamsError for two providers
+            # when tool_calls appear in history without an active tools= list:
+            #   - Anthropic (anthropic/chat/transformation.py)
+            #   - Bedrock Converse (bedrock/chat/converse_transformation.py),
+            #     which covers ALL Bedrock models (Claude, Llama, Nova, Mistral).
+            # Vertex AI and OpenAI-compatible endpoints do not have this check.
+            if "anthropic" in _m or "claude" in _m or "bedrock" in _m:
+                kwargs.setdefault("tools", [_ANTHROPIC_DUMMY_TOOL])
+                kwargs.setdefault("tool_choice", "auto")
 
         if ctx.delta_fn is not None and not tools:
 
