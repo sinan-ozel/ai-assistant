@@ -54,7 +54,11 @@ from typing import Callable, Optional
 
 import httpx
 import litellm
-from common.llm import call_llm_by_model, call_llm_by_model_streaming
+from common.llm import (
+    call_llm_by_model,
+    call_llm_by_model_streaming,
+    get_provider_config,
+)
 from situational.awareness import get_provider_context_window
 
 
@@ -592,11 +596,20 @@ def make_prompt_fn(ctx: DslRunContext):
             kwargs.setdefault("tools", tools)
             kwargs.setdefault("tool_choice", "auto")
         elif any(msg.get("tool_calls") for msg in call_messages):
-            # Anthropic (and some providers) require `tools=` whenever
-            # `tool_calls` appear in the message history, even when no tools
-            # are active.  LiteLLM's modify_params injects a dummy tool to
-            # satisfy this constraint without altering the response.
-            kwargs.setdefault("modify_params", True)
+            # Anthropic requires `tools=` whenever tool_calls appear in the
+            # message history, even when no tools are active; LiteLLM's
+            # modify_params injects a dummy tool to satisfy that constraint.
+            # Other providers (e.g. Mistral) accept tool results in history
+            # without active tools and reject modify_params as an unknown
+            # field — so only set it when the resolved model is Anthropic.
+            _resolved_model, _ = get_provider_config(
+                ctx.providers_state, requested_model
+            )
+            if _resolved_model and (
+                "anthropic" in _resolved_model.lower()
+                or "claude" in _resolved_model.lower()
+            ):
+                kwargs.setdefault("modify_params", True)
 
         if ctx.delta_fn is not None and not tools:
 
