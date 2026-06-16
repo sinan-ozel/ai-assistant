@@ -188,7 +188,9 @@ model: ollama/gemma3:270m
 
 ```yaml
 # Local llama.cpp (OpenAI-compatible server)
-api_base: http://localhost:8080/v1
+# Run: docker run sinanozel/llama.cuda.6gb:gemma4-e2b
+# Set LLAMA_CPP_HOST=http://<host>/v1 in your .env
+api_base: ${LLAMA_CPP_HOST}
 model: openai/gemma4:e2b
 api_key: dummy
 timeout: 150

@@ -67,7 +67,7 @@ def test_agent_chat_conversation_continuity(clear_test_memory):
     response2 = requests.post(
         f"{BASE_URL}/v1/agent/chat",
         json={
-            "message": "What is my favorite programming language?",
+            "message": "What programming language did I say is my favorite earlier in our conversation?",
             "conversation_id": conversation_id,
             "user_id": user_id,
         }

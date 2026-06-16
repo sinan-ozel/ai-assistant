@@ -109,3 +109,22 @@ Instead, look into pyproject.toml for the source of truth for libraries.
 Use bash whenever possible, jq and yq are also there.
 If something needs to be part of the CI/CD pipeline,
 create containerized scripts.
+
+# Primary test LLM: gemma4:e2b
+
+The development and test LLM is a gemma4:e2b model running on an external
+host outside this machine. It is accessed via an OpenAI-compatible
+(llama.cpp) endpoint. The hostname is set in `.env` as `LLAMA_CPP_HOST`.
+
+Provider YAML for any test agent or test environment that needs a local LLM:
+
+```yaml
+api_base: ${LLAMA_CPP_HOST}
+model: openai/gemma4:e2b
+api_key: dummy
+timeout: 150
+```
+
+The Docker image that serves this model is `sinanozel/llama.cuda.6gb:gemma4-e2b`.
+Do NOT use `ollama/gemma3:1b` or any other gemma3 model for tests — those are
+outdated and have been replaced by this host.

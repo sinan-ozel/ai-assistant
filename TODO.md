@@ -22,6 +22,21 @@
 - [ ] Add useful tools, current time, etc..
 - [ ] Very basic multi-agent support
 
+Upgrade to Gemma4
+- [ ] test_agents/agent_with_incorrect_eval/cortex/providers/default.yaml
+- [ ] test_agents/text_workflows/cortex/providers/default.yaml
+- [ ] test_agents/no_agent/cortex/providers/default.yaml
+- [ ] test_agents/agent_with_memory/cortex/providers/default.yaml
+- [ ] test_agents/agent_with_temperature/cortex/providers/default.yaml
+- [ ] test_agents/agent_with_eval/cortex/providers/default.yaml
+- [ ] test_agents/bad_agent/cortex/providers/default.yaml
+- [ ] test_agents/son_of_anton/cortex/providers/default.yaml
+- [ ] test_environments/test_env_no_redis/cortex/providers/default.yaml
+
+Test overrides with Gemma3
+- [ ] test_agents/no_agent/tests/test_chat.py (6 occurrences)
+- [ ] test_environments/test_env_no_redis/test_chat.py (6 occurrences)
+- [ ] test_environments/test_env_local_llm/test_chat.py (9 occurrences)
 
 0.2.0
 - [ ] Multiple conversations (Need conversations endpoint?)
