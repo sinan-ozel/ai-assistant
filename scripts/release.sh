@@ -205,7 +205,9 @@ if [[ -f "$CHART" ]]; then
     sed -i '' "s/^version:.*/version: ${VERSION}/" "$CHART"
     sed -i '' "s/^appVersion:.*/appVersion: \"${VERSION}\"/" "$CHART"
     git add "$CHART"
-    git commit -m "chore: sync Helm chart version to $VERSION"
+    if ! git diff --cached --quiet; then
+        git commit -m "chore: sync Helm chart version to $VERSION"
+    fi
 else
     echo "WARNING: $CHART not found — skipping Helm version sync."
 fi
