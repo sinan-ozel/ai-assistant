@@ -2,6 +2,14 @@
 
 
 0.1.0
+- [ ] Fix thread-safety bug in prompt_dsl.py: `contextlib.redirect_stdout` is
+      process-wide, but `_run_interactive_script` runs in executor threads —
+      two concurrent /v1/agent/chat requests can capture each other's print()
+      output. Fix: inject a per-request `print` into the DSL globals (same
+      pattern as the `input` override) and drop the redirect.
+- [ ] Document the cortex trust boundary: whoever can edit the cortex
+      (ConfigMap in k8s) executes arbitrary Python in the pod. State
+      explicitly in docs that cortex changes need code-level review and RBAC.
 - [x] Chat window: multple conversations,
 - [ ] Chat window should increase in height as the browser window changes?
 - [ ] Make sure that different tenants work on the streamlit interface
@@ -17,6 +25,11 @@
 
 
 0.1.1
+- [ ] Add dedicated test coverage around the sync↔async bridge (DSL script
+      runs sync in an executor thread, bridges back to the event loop for
+      streaming LLM calls via DslRunContext.event_loop). This is the most
+      fragile seam — cover concurrent requests, streaming + tools, and
+      mid-stream errors.
 - [ ] Add chunk information to the interface.
 - [x] Raise error if embedding server changes.
 - [ ] Add useful tools, current time, etc..
@@ -39,6 +52,16 @@ Test overrides with Gemma3
 - [ ] test_environments/test_env_local_llm/test_chat.py (9 occurrences)
 
 0.2.0
+- [ ] IDE support for injected DSL globals: ship a .pyi stub (or an optional
+      no-op `import` header the runtime ignores) so agent authors get
+      autocompletion and type checking for prompt(), Search, McpServer, etc.
+      Same for the injected `tool` in mcp/tools/*.py (currently a ruff F821
+      per-file-ignore).
+- [ ] Move library ingestion out of the request pods: the PDF and chunking
+      pipelines run in every replica against shared storage, so multi-pod
+      deployments race on markdown rewrite and re-chunking. Single writer —
+      a separate job or leader election. (Supersedes the markdown-ingestion
+      note under In Consideration.)
 - [ ] Multiple conversations (Need conversations endpoint?)
 - [x] Local MCP tools
 - [ ] Add conversation summarization feature, and memory support in cortex
@@ -55,6 +78,11 @@ Test overrides with Gemma3
 
 
 Anytime
+- [ ] Refactor endpoint registration (api.py) to restore framework-level
+      request validation: generate Pydantic models from the endpoint spec
+      dicts instead of Dict[str, Any] + inspect.Signature surgery, so the
+      user-facing 400s (with action suggestion + example) come from one place
+      instead of hand-written checks in every handler.
 - [ ] Refactor: move the env and constant assignments to one place under common
   - [ ] Refactor: move default_providers global from under api.py to somewher reasonable under common
 - [ ] Refactor: under each agent, write the tests that they need to run with each environment: tests/ --> tests/default, tests/no_qdrant, tests/no_mcp
