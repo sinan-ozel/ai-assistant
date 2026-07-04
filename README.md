@@ -142,6 +142,8 @@ The `cortex/` directory is not configuration — it **is** the application. Choo
 
 This means the cortex travels with the code, not with the cluster. Docker Compose mounts it as a local directory; Kubernetes delivers it as a ConfigMap. The container image, Redis, Qdrant, and the model servers are infrastructure — interchangeable and replaceable. The cortex is what makes your agent *your* agent.
 
+**Security note — the cortex is code, treat it like code.** `prompt.py` and the files under `mcp/tools/` are executed as Python inside the container: whoever can edit the cortex (the mounted directory locally, the ConfigMap in Kubernetes) can run arbitrary code in the pod. Put cortex changes through the same review process as application code, and restrict write access to the ConfigMap with RBAC in production.
+
 ---
 
 ## Quick start — a working agent in two minutes

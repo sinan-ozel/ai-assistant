@@ -1,6 +1,7 @@
 """Tests for the Anthropic agent chat endpoint."""
 
 import os
+import uuid
 
 import requests
 
@@ -65,7 +66,7 @@ def test_anthropic_agent_conversation(
     anthropic_api_key_available, clear_test_memory
 ):
     """Test a multi-turn conversation with the Anthropic agent."""
-    conversation_id = "test-anthropic-conv-1"
+    conversation_id = f"test-anthropic-conv-{uuid.uuid4()}"
     user_id = "test-anthropic-conv-user"
 
     response1 = requests.post(

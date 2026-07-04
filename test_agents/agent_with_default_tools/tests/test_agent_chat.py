@@ -13,6 +13,7 @@ gracefully, not on retrieval quality.
 import json
 import os
 import time
+import uuid
 
 import pytest
 import requests
@@ -145,7 +146,7 @@ def test_agent_streaming(clear_test_memory):
 @pytest.mark.depends(on=["test_basic_response"])
 def test_agent_multi_turn_with_tools(clear_test_memory):
     """Agent maintains conversation history across turns while using tools."""
-    conv_id = "test-default-tools-multi-turn"
+    conv_id = f"test-default-tools-multi-turn-{uuid.uuid4()}"
 
     first = requests.post(
         f"{BASE_URL}/v1/agent/chat",

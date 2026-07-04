@@ -11,14 +11,17 @@ caught at the earliest possible step.
 """
 
 import os
+import uuid
 
 import pytest
 import requests
 
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
-_BODY_CONV = "test-mt-body-conv"
-_HEADER_CONV = "test-mt-header-conv"
+# Unique per test run so history never accumulates across runs; the isolation
+# tests only need the two users to share the same string within one run.
+_BODY_CONV = f"test-mt-body-conv-{uuid.uuid4()}"
+_HEADER_CONV = f"test-mt-header-conv-{uuid.uuid4()}"
 
 _BODY_ALICE = "test-mt-body-alice"
 _BODY_BOB = "test-mt-body-bob"

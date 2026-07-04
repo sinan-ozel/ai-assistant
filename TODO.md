@@ -1,15 +1,17 @@
-- [ ] Write a script to make sure: (1) not print in prod code (2) no imports below the top.
+- [x] Write a script to make sure: (1) not print in prod code (2) no imports below the top.
+      (lint/check_no_print.py covers prints; ruff PLC0415 covers imports.)
 
 
 0.1.0
-- [ ] Fix thread-safety bug in prompt_dsl.py: `contextlib.redirect_stdout` is
+- [x] Fix thread-safety bug in prompt_dsl.py: `contextlib.redirect_stdout` is
       process-wide, but `_run_interactive_script` runs in executor threads —
       two concurrent /v1/agent/chat requests can capture each other's print()
       output. Fix: inject a per-request `print` into the DSL globals (same
       pattern as the `input` override) and drop the redirect.
-- [ ] Document the cortex trust boundary: whoever can edit the cortex
+- [x] Document the cortex trust boundary: whoever can edit the cortex
       (ConfigMap in k8s) executes arbitrary Python in the pod. State
       explicitly in docs that cortex changes need code-level review and RBAC.
+      (README, "The cortex is your application" section.)
 - [x] Chat window: multple conversations,
 - [ ] Chat window should increase in height as the browser window changes?
 - [ ] Make sure that different tenants work on the streamlit interface
@@ -132,7 +134,10 @@ tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet im
 - [ ] (0.2.0) Force workflows to be streaming ndjson only.
 - [ ] (0.2.0) Register workflows as MCP tools
 - [ ] Give a better way to develop edit the system message dependgin on context.
-- [ ] (0.1.0) Something is weird with the tests. The conversations sizes seem to keep growing: (1) add some additinal info lines abouth the last message, and a median message. (2) Are the tests using the same conversation id? (3) How does conversation ids work?
+- [x] (0.1.0) Something is weird with the tests. The conversations sizes seem to keep growing: (1) add some additinal info lines abouth the last message, and a median message. (2) Are the tests using the same conversation id? (3) How does conversation ids work?
+      (Root cause: hard-coded conversation ids reused across runs/repeats while
+      redis-test kept data between `up` invocations. All test conversation ids
+      now carry a uuid4 suffix, so each run starts with empty history.)
 
 
 - [ ] Bug: See the following, this is a problem. The model is missing from the server, but we got a non-descript 400 error.

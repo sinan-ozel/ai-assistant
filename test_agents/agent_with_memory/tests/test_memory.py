@@ -1,6 +1,7 @@
 """Tests for agent_with_memory — verifies MessageHistory retains conversation context."""
 
 import os
+import uuid
 
 import requests
 
@@ -9,7 +10,7 @@ BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000")
 
 def test_memory_retention(clear_test_memory):
     """Agent recalls facts stated earlier in the same conversation."""
-    conversation_id = "test-mem-conv"
+    conversation_id = f"test-mem-conv-{uuid.uuid4()}"
     user_id = "test-mem-user"
 
     response1 = requests.post(

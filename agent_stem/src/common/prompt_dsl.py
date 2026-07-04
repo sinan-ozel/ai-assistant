@@ -42,7 +42,7 @@ Tool use example::
 """
 
 import asyncio
-import contextlib
+import builtins
 import io
 import logging
 import runpy
@@ -218,6 +218,22 @@ def _make_input(input_text: str):
     return input
 
 
+def _make_print(buffer: io.StringIO):
+    """Return a ``print()`` override that writes to *buffer*.
+
+    Scripts run concurrently in executor threads, and
+    ``contextlib.redirect_stdout`` swaps ``sys.stdout`` process-wide — two
+    concurrent requests would capture each other's output. A per-script
+    ``print`` global keeps the capture scoped to this request.
+    """
+
+    def print(*args, **kwargs):  # noqa: A001
+        kwargs.setdefault("file", buffer)
+        builtins.print(*args, **kwargs)
+
+    return print
+
+
 def find_prompt_script(cortex_path: str) -> Optional[Path]:
     """Return the path to the prompt DSL script, or ``None`` if not found."""
     if not cortex_path:
@@ -263,6 +279,9 @@ def _run_interactive_script(
         Signature: ``prompt(text=None, provider="default", **kwargs) -> str``
     ``notify``
         Callable — sends a streaming message to the frontend.
+    ``print``
+        Override that captures output into a per-request buffer instead of
+        process-wide stdout, so concurrent scripts cannot mix output.
     ``delay``
         ``time.sleep`` alias.
     ``logger``
@@ -288,23 +307,23 @@ def _run_interactive_script(
     script_logger = logging.getLogger(f"prompt_dsl.script.{script_path.stem}")
 
     captured_output = io.StringIO()
-    with contextlib.redirect_stdout(captured_output):
-        module_globals = runpy.run_path(
-            str(script_path),
-            init_globals={
-                "input_text": input_text,
-                "user_message": input_text,
-                "user_query": input_text,
-                "input": _make_input(input_text),
-                "Search": SearchClass,
-                "MessageHistory": MessageHistoryClass,
-                "McpServer": McpServerClass,
-                "prompt": prompt_fn,
-                "notify": notify_dsl_fn,
-                "delay": _time.sleep,
-                "logger": script_logger,
-            },
-        )
+    module_globals = runpy.run_path(
+        str(script_path),
+        init_globals={
+            "input_text": input_text,
+            "user_message": input_text,
+            "user_query": input_text,
+            "input": _make_input(input_text),
+            "print": _make_print(captured_output),
+            "Search": SearchClass,
+            "MessageHistory": MessageHistoryClass,
+            "McpServer": McpServerClass,
+            "prompt": prompt_fn,
+            "notify": notify_dsl_fn,
+            "delay": _time.sleep,
+            "logger": script_logger,
+        },
+    )
 
     # print() output takes priority over the last prompt() return value.
     stdout_text = captured_output.getvalue().strip()

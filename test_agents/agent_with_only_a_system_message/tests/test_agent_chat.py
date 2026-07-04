@@ -7,6 +7,7 @@ and validating responses.
 
 import json
 import os
+import uuid
 
 import pytest
 import requests
@@ -46,7 +47,7 @@ def test_agent_chat_basic_response():
 @pytest.mark.depends(on='test_agent_chat_basic_response')
 def test_agent_chat_conversation_continuity(clear_test_memory):
     """Test that agent maintains conversation context."""
-    conversation_id = "test-son-conv-001"
+    conversation_id = f"test-son-conv-{uuid.uuid4()}"
     user_id = "test-son-user-001"
 
     # First message: provide information

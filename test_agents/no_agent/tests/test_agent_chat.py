@@ -1,6 +1,7 @@
 """Tests for agent chat endpoint."""
 
 import os
+import uuid
 
 import pytest
 import requests
@@ -42,7 +43,7 @@ def test_agent_chat_simple_message():
 @pytest.mark.depends(on=['test_agent_chat_simple_message'])
 def test_agent_chat_with_conversation_id(clear_test_memory):
     """Test sending messages in the same conversation."""
-    conversation_id = "test-conv-123"
+    conversation_id = f"test-conv-{uuid.uuid4()}"
     user_id = "test-user-2"
 
     # First message
@@ -83,7 +84,7 @@ def test_agent_chat_with_conversation_id(clear_test_memory):
 @pytest.mark.repeated(times=3, threshold=1)
 def test_agent_chat_memory_retention(clear_test_memory):
     """Test that agent remembers context from earlier in the conversation."""
-    conversation_id = "test-memory-conv"
+    conversation_id = f"test-memory-conv-{uuid.uuid4()}"
     user_id = "test-user-memory"
 
     # First message: provide information

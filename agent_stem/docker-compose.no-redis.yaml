@@ -59,9 +59,9 @@ services:
       - "8000:8000"
       - "8501:8501"
       - "11434:11434"
-    environment:
-    # - CONVERSATION_WINDOW_LIMIT=4096
-    # - LOG_LEVEL=DEBUG
+    # environment:
+    #   - CONVERSATION_WINDOW_LIMIT=4096
+    #   - LOG_LEVEL=DEBUG
     networks:
       - agent-dev-network
     depends_on:

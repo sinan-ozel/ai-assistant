@@ -11,6 +11,7 @@ These are used to verify that tool invocation actually worked end-to-end.
 
 import json
 import os
+import uuid
 
 import pytest
 import requests
@@ -59,7 +60,7 @@ def test_agent_tools_response_uses_tool_context(clear_test_memory):
         json={
             "message": "What can you tell me using your available tools?",
             "user_id": "test-tools-2",
-            "conversation_id": "test-tools-conv-001",
+            "conversation_id": f"test-tools-conv-{uuid.uuid4()}",
         },
         timeout=120,
     )
