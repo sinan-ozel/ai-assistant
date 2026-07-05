@@ -7,7 +7,7 @@ cd "$WORKSPACE_ROOT"
 DOCKER_IMAGE="sinanozel/ai-assistant"
 BASE=$(grep '^version = ' pyproject.toml | awk -F'"' '{print $2}')
 
-if [ "$1" = "--dev" ]; then
+if [ "${1:-}" = "--dev" ]; then
     BUILD_NUMBER_FILE="$WORKSPACE_ROOT/build_number.txt"
     [[ -f "$BUILD_NUMBER_FILE" ]] || { echo "ERROR: build_number.txt not found" >&2; exit 1; }
 
