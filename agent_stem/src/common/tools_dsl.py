@@ -416,11 +416,32 @@ class McpServer(Tools):
             base_url,
             arguments,
         )
-        response = self._client.post(
-            f"{base_url}/mcp",
-            json=payload,
-            headers=self._session_headers(base_url),
-        )
+        try:
+            response = self._client.post(
+                f"{base_url}/mcp",
+                json=payload,
+                headers=self._session_headers(base_url),
+            )
+        except httpx.TransportError as e:
+            # The shared client's keep-alive connection can go stale while a
+            # minutes-long LLM call runs between tools/list and tools/call.
+            # Retry once on a dedicated fresh connection; self._client is
+            # left untouched because other executor threads may be using it.
+            logger.warning(
+                "McpServer: tool %s at %s failed (%s); retrying on a "
+                "fresh connection",
+                name,
+                base_url,
+                e,
+            )
+            with httpx.Client(
+                timeout=30.0, headers=self._MCP_HEADERS
+            ) as retry_client:
+                response = retry_client.post(
+                    f"{base_url}/mcp",
+                    json=payload,
+                    headers=self._session_headers(base_url),
+                )
         response.raise_for_status()
         data = _parse_mcp_response(response)
         if "error" in data:

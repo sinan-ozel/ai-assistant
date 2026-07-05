@@ -62,7 +62,10 @@ def test_agent_adv_two_phase_response(clear_test_memory):
             "user_id": "test-adv-2",
             "conversation_id": f"test-adv-conv-{uuid.uuid4()}",
         },
-        timeout=180,
+        # The two-phase script makes 4 sequential LLM calls (100s ceiling
+        # each, see _LLM_CALL_TIMEOUT) plus tool rounds (30s each) — 180s
+        # is structurally too short on a slow self-hosted model.
+        timeout=480,
     )
     assert response.status_code == 200
     data = response.json()
