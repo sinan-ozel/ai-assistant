@@ -140,11 +140,14 @@ tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet im
       now carry a uuid4 suffix, so each run starts with empty history.)
 
 
-- [ ] Bug: A transient upstream Mistral error surfaced as a bare 500
+- [x] Bug: A transient upstream Mistral error surfaced as a bare 500
       "Internal Server Error" on /v1/agent/chat (post-release run, 2026-07-06,
       mistral_example; passed on rerun). Some provider-error path still leaks
       an unhandled exception instead of a descriptive 4xx/5xx with an action
       suggestion. Related to the non-descript 400 bug below.
+      (Fixed: InternalServerError / ServiceUnavailableError / non-timeout
+      APIConnectionError now return 503 "try again later" and log a warning,
+      on the DSL, override, and direct LLM paths in agent_chat.py.)
 - [ ] Consider: post-release-test.sh says "leaving release installed for
       inspection" on failure, but the next example's install replaces it and
       destroys the evidence — capture `kubectl logs deploy/ai-assistant` to a

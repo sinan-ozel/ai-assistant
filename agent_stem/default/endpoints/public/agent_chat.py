@@ -804,6 +804,28 @@ async def handler(request: dict, headers: dict = None):
                     status_code=504,
                     detail="LLM call timed out — try again later.",
                 )
+            except (
+                litellm.InternalServerError,
+                litellm.ServiceUnavailableError,
+                litellm.APIConnectionError,
+            ) as e:
+                # Transient upstream/provider problem — not a defect in the
+                # request or the agent, so warn (not error) and tell the
+                # caller to retry.
+                logger.warning(
+                    "Agent chat (DSL): transient LLM provider error for "
+                    "user=%s conversation=%s: %s",
+                    user_id,
+                    conversation_id,
+                    e,
+                )
+                raise HTTPException(
+                    status_code=503,
+                    detail=(
+                        "The LLM provider returned a temporary error — "
+                        "try again later."
+                    ),
+                )
 
             # _override escape hatch: execute messages directly via LLM.
             if _dsl_result.full_override:
@@ -822,6 +844,25 @@ async def handler(request: dict, headers: dict = None):
                         raise HTTPException(
                             status_code=429,
                             detail="Rate limit exceeded — try again later.",
+                        )
+                    except (
+                        litellm.InternalServerError,
+                        litellm.ServiceUnavailableError,
+                        litellm.APIConnectionError,
+                    ) as e:
+                        logger.warning(
+                            "Agent chat (override): transient LLM provider "
+                            "error for user=%s conversation=%s: %s",
+                            user_id,
+                            conversation_id,
+                            e,
+                        )
+                        raise HTTPException(
+                            status_code=503,
+                            detail=(
+                                "The LLM provider returned a temporary "
+                                "error — try again later."
+                            ),
                         )
                     _assistant_msg = _resp.choices[0].message.content or ""
                     memory.messages.append({"role": "user", "content": message})
@@ -998,14 +1039,42 @@ async def handler(request: dict, headers: dict = None):
                         "the model supports image input."
                     ),
                 )
-            # Otherwise, re-raise to be handled by outer exception handler
-            raise
-        except litellm.InternalServerError as e:
-            # Log the error and crash to expose the issue
-            logger.error(
-                f"InternalServerError from LLM provider in agent chat: {e}"
+            # Otherwise: transient connectivity problem with the provider —
+            # warn (not error) and tell the caller to retry.
+            logger.warning(
+                "Agent chat: LLM provider unreachable for user=%s "
+                "conversation=%s: %s",
+                user_id,
+                conversation_id,
+                e,
             )
-            raise
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "The LLM provider could not be reached — "
+                    "try again later."
+                ),
+            )
+        except (
+            litellm.InternalServerError,
+            litellm.ServiceUnavailableError,
+        ) as e:
+            # Transient upstream/provider error — not a defect in the
+            # request, so warn (not error) and tell the caller to retry.
+            logger.warning(
+                "Agent chat: transient LLM provider error for user=%s "
+                "conversation=%s: %s",
+                user_id,
+                conversation_id,
+                e,
+            )
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "The LLM provider returned a temporary error — "
+                    "try again later."
+                ),
+            )
 
         # Extract response
         choice = response.choices[0]
