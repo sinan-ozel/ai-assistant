@@ -1,0 +1,11 @@
+# Helm values for the web_researcher_agent example.
+# API keys are read from examples/web_researcher_agent/.env by the post-release
+# scripts and created as the 'ai-assistant-api-keys' secret.
+# Required keys: MISTRAL_API_KEY, SERPER_API_KEY
+
+cortex:
+  hostPath: /mnt/ai-assistant-cortex
+
+replicaCount: 1
+
+extraEnvFromSecret: ai-assistant-api-keys
