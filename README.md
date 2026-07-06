@@ -388,7 +388,7 @@ Streamlit is a convenience tool for local development and evaluation. It should 
 
 `agent_stem/` and `test_environments/` docker-compose files use `build:` directly — no registry image for the app container. Docker Compose builds from `agent_stem/Dockerfile` using the local source.
 
-`examples/` and the Helm chart always pull `sinanozel/ai-assistant:<TAG>` from Docker Hub. Post-release tests resolve the tag from `pyproject.toml` + `build_number.txt` (`VERSION-dev.(BUILD_NUMBER-1)` for dev releases).
+`examples/` and the Helm chart always pull `sinanozel/ai-assistant:<TAG>` from Docker Hub. Post-release tests deploy the most recently released tag, resolved from the newest `v*` git tag — dev or stable, whichever was released last (override with `IMAGE_TAG`).
 
 ### Document pipeline
 
@@ -426,6 +426,38 @@ To contribute:
 6. After all tests pass, push and open a pull request.
 
 See `TESTING.md` for the full test matrix.
+
+### Releasing
+
+Releases run **only** through the VS Code tasks — never call the scripts in
+`scripts/` directly; the tasks chain the checks and tests around the publish
+steps.
+
+`pyproject.toml` `[project].version` is the single source of truth for the
+version — bump it before a production release. Dev releases append
+`-dev.<build number>` from `build_number.txt`, which auto-increments after
+each dev release.
+
+The **Release** task runs, in order:
+
+1. Assert on `main` with a clean working tree; run checks (examples, format,
+   lint, docs build).
+2. Integration tests (the costless suite, then the costly cloud-provider
+   suite).
+3. `release.sh` — builds the image, pushes `sinanozel/ai-assistant:<version>`
+   to Docker Hub, and pushes the `v<version>` git tag.
+4. `publish-helm-chart.sh` — packages `helm/ai-assistant` and pushes it to
+   `oci://registry-1.docker.io/sinanozel`.
+5. `post-release-test.sh` — deploys each cloud-provider example to minikube
+   with the published chart and runs the black-box suite in
+   `test_environments/helm_test/`. The image tag is resolved from the newest
+   `v*` git tag, i.e. whatever was just released (override with
+   `IMAGE_TAG=<tag>`). These tests are deliberately *post*-release: they
+   detect a broken release; they do not gate it.
+
+**Release (Dev)** follows the same sequence with the dev variants
+(`release.sh --dev`, dev Helm chart) and only the costless integration
+tests.
 
 Do not use `print()` — use the existing logging patterns. Do not install packages outside Docker — all dependencies are managed through the container build. Do not add `try/except` except around HTTP endpoint handlers or to enrich a log message before re-raising.
 

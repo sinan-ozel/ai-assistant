@@ -140,6 +140,16 @@ tests-runner-self-hosted-llm  |   Actual [501]: {"detail": "Streaming not yet im
       now carry a uuid4 suffix, so each run starts with empty history.)
 
 
+- [ ] Bug: A transient upstream Mistral error surfaced as a bare 500
+      "Internal Server Error" on /v1/agent/chat (post-release run, 2026-07-06,
+      mistral_example; passed on rerun). Some provider-error path still leaks
+      an unhandled exception instead of a descriptive 4xx/5xx with an action
+      suggestion. Related to the non-descript 400 bug below.
+- [ ] Consider: post-release-test.sh says "leaving release installed for
+      inspection" on failure, but the next example's install replaces it and
+      destroys the evidence — capture `kubectl logs deploy/ai-assistant` to a
+      file on failure before continuing (the printed hint also references the
+      wrong deployment name).
 - [ ] Bug: See the following, this is a problem. The model is missing from the server, but we got a non-descript 400 error.
 tests-runner-default    |     def test_nutrition_information_extraction():
 tests-runner-default    |         """Test nutrition information extraction from food label image."""

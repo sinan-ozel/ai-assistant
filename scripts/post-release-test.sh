@@ -20,7 +20,7 @@
 #   bash scripts/post-release-test.sh
 #
 # Environment:
-#   IMAGE_TAG     Docker image tag to deploy (computed from pyproject.toml + build_number.txt if unset)
+#   IMAGE_TAG     Docker image tag to deploy (latest v* git tag if unset)
 #   KEEP_RELEASE  Set to "1" to keep the last Helm release after a successful test run
 
 set -euo pipefail
@@ -38,15 +38,20 @@ TEST_IMAGE="ai-assistant-helm-test"
 PF_PID=""
 
 # ---------------------------------------------------------------------------
-# Resolve IMAGE_TAG from pyproject.toml + build_number.txt.
+# Resolve IMAGE_TAG from the most recently created release tag (v*), so the
+# suite tests whatever was released last — dev or stable.
 # Override by setting IMAGE_TAG in the environment.
 # ---------------------------------------------------------------------------
 
 resolve_image_tag() {
-    local version build_number
-    version="$(grep -m1 '^version' "$WORKSPACE/pyproject.toml" | sed 's/.*= *"\(.*\)"/\1/')"
-    build_number="$(cat "$WORKSPACE/build_number.txt")"
-    echo "${version}-dev.$((build_number - 1))"
+    local tag
+    tag="$(git -C "$WORKSPACE" tag --list 'v*' --sort=-creatordate | head -1)"
+    if [[ -z "$tag" ]]; then
+        echo "ERROR: no release tags (v*) found — run a release first," \
+             "or set IMAGE_TAG explicitly." >&2
+        exit 1
+    fi
+    echo "${tag#v}"
 }
 
 IMAGE_TAG="${IMAGE_TAG:-$(resolve_image_tag)}"

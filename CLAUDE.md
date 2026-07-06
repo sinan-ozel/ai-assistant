@@ -14,10 +14,11 @@ Container" task tags the image as `ai-assistant-dev:latest` for inspection or
 sharing; it is not a prerequisite for running the agent.
 
 **`examples/`** always pull from Docker Hub:
-`image: sinanozel/ai-assistant:<TAG>`. The Helm charts do the same. Tag
-resolution for post-release tests is computed from `pyproject.toml` +
-`build_number.txt`: `VERSION-dev.(BUILD_NUMBER-1)` for dev releases, bare
-`VERSION` for production releases.
+`image: sinanozel/ai-assistant:<TAG>`. The Helm charts do the same. Post-release
+tests resolve the image tag from the most recently created `v*` git tag —
+dev or stable, whichever was released last (override with `IMAGE_TAG`).
+Releases run only through the VS Code tasks ("Release" / "Release (Dev)"),
+never by calling the scripts in `scripts/` directly.
 
 # Coding Practices
 
