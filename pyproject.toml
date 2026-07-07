@@ -1,6 +1,6 @@
 [project]
 name = "ai-assistant"
-version = "0.1.0"
+version = "0.1.1"
 description = "A container-based agent framework"
 readme = "README.md"
 authors = [
