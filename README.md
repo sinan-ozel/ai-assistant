@@ -447,13 +447,14 @@ The **Release** task runs, in order:
 3. `release.sh` — builds the image, pushes `sinanozel/ai-assistant:<version>`
    to Docker Hub, and pushes the `v<version>` git tag.
 4. `publish-helm-chart.sh` — packages `helm/ai-assistant` and pushes it to
-   `oci://registry-1.docker.io/sinanozel`.
+   `oci://registry-1.docker.io/sinanozel`. The chart version always equals
+   the image version, so every release ships one image + chart pair.
 5. `post-release-test.sh` — deploys each cloud-provider example to minikube
-   with the published chart and runs the black-box suite in
-   `test_environments/helm_test/`. The image tag is resolved from the newest
-   `v*` git tag, i.e. whatever was just released (override with
-   `IMAGE_TAG=<tag>`). These tests are deliberately *post*-release: they
-   detect a broken release; they do not gate it.
+   using the *published* chart (`--version` = image tag) and runs the
+   black-box suite in `test_environments/helm_test/`. The image tag is
+   resolved from the newest `v*` git tag, i.e. whatever was just released
+   (override with `IMAGE_TAG=<tag>`). These tests are deliberately
+   *post*-release: they detect a broken release; they do not gate it.
 
 **Release (Dev)** follows the same sequence with the dev variants
 (`release.sh --dev`, dev Helm chart) and only the costless integration

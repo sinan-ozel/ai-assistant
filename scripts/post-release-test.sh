@@ -6,7 +6,8 @@
 #   2. For each example in EXAMPLES:
 #      a. Create a Kubernetes Secret from examples/<example>/.env (if present)
 #      b. Copy its cortex/ directory into the minikube node via SSH+tar
-#      c. Helm install the ai-assistant chart with cortex.hostPath + helm/values.yaml
+#      c. Helm install the *published* chart (version = IMAGE_TAG) with
+#         cortex.hostPath + helm/values.yaml
 #      d. Port-forward :8000 and :8501 to the host
 #      e. Run the containerised pytest suite (test_environments/helm_test/)
 #      f. Tear down port-forward and Helm release
@@ -31,6 +32,7 @@ SECRET_NAME="ai-assistant-api-keys"
 
 WORKSPACE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CHART_DIR="$WORKSPACE/helm/ai-assistant"
+CHART_OCI="oci://registry-1.docker.io/sinanozel/ai-assistant-helm"
 TEST_DIR="$WORKSPACE/test_environments/helm_test"
 RELEASE="ai-assistant"
 TEST_IMAGE="ai-assistant-helm-test"
@@ -200,8 +202,12 @@ for EXAMPLE in "${EXAMPLES[@]}"; do
     minikube ssh -- "sudo mkdir -p $NODE_CORTEX_PATH && sudo tar --warning=no-unknown-keyword -xf /tmp/cortex.tar -C $NODE_CORTEX_PATH && sudo rm /tmp/cortex.tar"
     echo "    Cortex copied."
 
-    echo ">>> Installing chart (image tag: $IMAGE_TAG)..."
-    if ! helm upgrade --install "$RELEASE" "$CHART_DIR" \
+    # Install the *published* chart, not the local chart source — the chart
+    # version always equals the image tag, so this validates the exact
+    # image + chart pair that was just released.
+    echo ">>> Installing published chart ${CHART_OCI} --version ${IMAGE_TAG}..."
+    if ! helm upgrade --install "$RELEASE" "$CHART_OCI" \
+        --version "$IMAGE_TAG" \
         --set "image.tag=${IMAGE_TAG}" \
         -f "$HELM_VALUES" \
         --wait --timeout 600s; then

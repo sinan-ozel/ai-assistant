@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# scripts/publish-helm-chart.sh — Package and push the Helm chart.
+#
+# One artifact pair per release: the chart always carries the same version as
+# the Docker image released moments earlier by release.sh, so image and chart
+# ship together.
+#
+#   --dev   Chart version = the v<BASE>-dev.<build> tag release.sh --dev just
+#           created (from pyproject.toml + build_number.txt, the two sources
+#           of truth). release.sh owns the single build-number increment.
+#   (none)  Chart version = <BASE> from pyproject.toml (stable release).
+
 set -euo pipefail
 
 WORKSPACE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -8,57 +19,25 @@ DOCKER_IMAGE="sinanozel/ai-assistant"
 BASE=$(grep '^version = ' pyproject.toml | awk -F'"' '{print $2}')
 
 if [ "${1:-}" = "--dev" ]; then
-    BUILD_NUMBER_FILE="$WORKSPACE_ROOT/build_number.txt"
-    [[ -f "$BUILD_NUMBER_FILE" ]] || { echo "ERROR: build_number.txt not found" >&2; exit 1; }
-
-    # Skip publish if neither helm/ai-assistant/ nor this script has changed
-    # since the last dev tag
-    LAST_TAG=$(git tag --sort=-version:refname | grep "^v${BASE}-dev\." | head -1)
-    if [[ -n "$LAST_TAG" ]]; then
-        if git diff --quiet "${LAST_TAG}" HEAD -- helm/ai-assistant/ scripts/publish-helm-chart.sh; then
-            echo ">>> No changes to helm/ai-assistant/ or publish-helm-chart.sh since ${LAST_TAG} — skipping."
-            exit 0
-        fi
-        echo ">>> Changes detected since ${LAST_TAG} — publishing."
+    LAST_TAG=$(git tag --list "v${BASE}-dev.*" --sort=-creatordate | head -1)
+    if [[ -z "$LAST_TAG" ]]; then
+        echo "ERROR: no v${BASE}-dev.* tag found — run the dev Docker" \
+             "release first (release.sh --dev, via the Release (Dev) task)." >&2
+        exit 1
     fi
-
-    # Helm chart version: current build_number (source of truth: build_number - 1 after publish)
-    BUILD_NUMBER=$(tr -d '[:space:]' < "$BUILD_NUMBER_FILE")
-    [[ "$BUILD_NUMBER" =~ ^[0-9]+$ ]] || { echo "ERROR: build_number.txt contains '$BUILD_NUMBER'" >&2; exit 1; }
-    CHART_VERSION="${BASE}-dev.${BUILD_NUMBER}"
-
-    # appVersion: latest git tag = the Docker image that actually exists
-    APP_VERSION=$(git tag --sort=-version:refname | grep "^v${BASE}-dev\." | head -1 | sed 's/^v//')
-    if [[ -z "$APP_VERSION" ]]; then
-        APP_VERSION="${BASE}"
-    fi
-
-    echo ">>> Chart version : ${CHART_VERSION}"
-    echo ">>> App version   : ${APP_VERSION} (Docker image)"
-
-    helm package helm/ai-assistant \
-        --version "${CHART_VERSION}" \
-        --app-version "${APP_VERSION}"
-    helm push "ai-assistant-helm-${CHART_VERSION}.tgz" oci://registry-1.docker.io/sinanozel
-    rm -f "ai-assistant-helm-${CHART_VERSION}.tgz"
-
-    NEXT_BUILD=$(( BUILD_NUMBER + 1 ))
-    echo "$NEXT_BUILD" > "$BUILD_NUMBER_FILE"
-    git add "$BUILD_NUMBER_FILE"
-    git commit -m "chore: bump build number to ${NEXT_BUILD} after dev Helm release ${CHART_VERSION}"
-    git push origin main
-
-    echo ""
-    echo "Published Helm chart ${CHART_VERSION} (deploys ${DOCKER_IMAGE}:${APP_VERSION})"
-    echo "  Build number incremented to ${NEXT_BUILD}."
+    CHART_VERSION="${LAST_TAG#v}"
 else
-    VERSION="${BASE}"
-    APP_VERSION=$(git tag --sort=-version:refname | grep "^v${BASE}$" | head -1 | sed 's/^v//')
-    [[ -z "$APP_VERSION" ]] && APP_VERSION="${BASE}"
-    helm package helm/ai-assistant \
-        --version "${VERSION}" \
-        --app-version "${APP_VERSION}"
-    helm push "ai-assistant-helm-${VERSION}.tgz" oci://registry-1.docker.io/sinanozel
-    rm -f "ai-assistant-helm-${VERSION}.tgz"
-    echo "Published ai-assistant ${VERSION} (deploys ${DOCKER_IMAGE}:${APP_VERSION})"
+    CHART_VERSION="${BASE}"
 fi
+APP_VERSION="${CHART_VERSION}"
+
+echo ">>> Chart version : ${CHART_VERSION}"
+echo ">>> App version   : ${APP_VERSION} (Docker image)"
+
+helm package helm/ai-assistant \
+    --version "${CHART_VERSION}" \
+    --app-version "${APP_VERSION}"
+helm push "ai-assistant-helm-${CHART_VERSION}.tgz" oci://registry-1.docker.io/sinanozel
+rm -f "ai-assistant-helm-${CHART_VERSION}.tgz"
+
+echo "Published Helm chart ${CHART_VERSION} (deploys ${DOCKER_IMAGE}:${APP_VERSION})"

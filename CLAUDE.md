@@ -20,6 +20,13 @@ dev or stable, whichever was released last (override with `IMAGE_TAG`).
 Releases run only through the VS Code tasks ("Release" / "Release (Dev)"),
 never by calling the scripts in `scripts/` directly.
 
+`pyproject.toml` `[project].version` is the ONLY source of truth for the
+current version. `build_number.txt` is the ONLY source of truth for the build
+number — a global counter, incremented once per dev release, never reset on
+version bumps. A dev release produces one image + chart pair versioned
+`VERSION-dev.BUILD`; a stable release produces the pair versioned `VERSION`.
+Git tags record what was released; they are not a competing source of truth.
+
 # Coding Practices
 
 ## Error handling
