@@ -47,6 +47,7 @@ Typical multi-step pattern::
 
 import asyncio
 import concurrent.futures
+import fnmatch
 import json
 import logging
 import time
@@ -312,16 +313,33 @@ class McpServer(Tools):
 
         with McpServer(["http://server-a:8000", "http://server-b:8000"]):
             ...
+
+    The *tools* keyword limits which of the server's tools are offered to the
+    LLM inside the block.  Entries are tool names or ``fnmatch`` patterns::
+
+        with McpServer(tools=["search__library_search", "web_search__*"]):
+            ...
+
+    Tools not matching any pattern are neither offered to the LLM nor
+    dispatchable from this context.  A pattern that matches nothing is logged
+    as an error (it is a prompt.py configuration mistake), but the block still
+    runs with whatever did match.
     """
 
     _MCP_HEADERS = {
         "Accept": "application/json, text/event-stream, application/x-ndjson"
     }
 
-    def __init__(self, url_or_urls, ctx: DslRunContext):
+    def __init__(
+        self,
+        url_or_urls,
+        ctx: DslRunContext,
+        tools: Optional[list] = None,
+    ):
         super().__init__(ctx)
         urls = url_or_urls if isinstance(url_or_urls, list) else [url_or_urls]
         self._urls = [u.rstrip("/") for u in urls]
+        self._tool_filter: Optional[list] = list(tools) if tools else None
         self._client = httpx.Client(timeout=30.0, headers=self._MCP_HEADERS)
         self._tools_cache: Optional[list] = None
         self._tool_url_map: dict = {}
@@ -397,9 +415,35 @@ class McpServer(Tools):
                             },
                         }
                     )
-        return self._tools_cache
+        if self._tool_filter is None:
+            return self._tools_cache
+
+        all_names = [t["function"]["name"] for t in self._tools_cache]
+        for pattern in self._tool_filter:
+            if not any(fnmatch.fnmatchcase(n, pattern) for n in all_names):
+                logger.error(
+                    "McpServer: tools= pattern %r matched no tool on %s. "
+                    "Fix the pattern in cortex/chat/prompt.py — available "
+                    "tools: %s",
+                    pattern,
+                    ", ".join(self._urls),
+                    sorted(all_names),
+                )
+        return [
+            t
+            for t in self._tools_cache
+            if any(
+                fnmatch.fnmatchcase(t["function"]["name"], pattern)
+                for pattern in self._tool_filter
+            )
+        ]
 
     def _can_handle(self, tool_name: str) -> bool:
+        if self._tool_filter is not None:
+            # Only dispatch tools this context actually registered, so a
+            # sibling McpServer context with a different filter cannot be
+            # short-circuited by this one.
+            return tool_name in self._registered_tool_names
         return tool_name in self._tool_url_map
 
     def _invoke_tool(self, name: str, arguments: dict) -> str:
@@ -483,10 +527,10 @@ def make_mcp_server_class(ctx: DslRunContext):
     class _McpServer(McpServer):
         _DEFAULT_URL = "http://localhost:8001"
 
-        def __init__(self, url_or_urls=None):
+        def __init__(self, url_or_urls=None, tools=None):
             if url_or_urls is None:
                 url_or_urls = self._DEFAULT_URL
-            super().__init__(url_or_urls, ctx)
+            super().__init__(url_or_urls, ctx, tools=tools)
 
     _McpServer.__name__ = "McpServer"
     _McpServer.__qualname__ = "McpServer"

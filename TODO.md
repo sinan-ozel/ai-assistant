@@ -32,6 +32,18 @@
       streaming LLM calls via DslRunContext.event_loop). This is the most
       fragile seam — cover concurrent requests, streaming + tools, and
       mid-stream errors.
+- [ ] Bug (observed once, 2026-07-08, eberron_dm_assistant local test, not
+      yet reproduced): a stream=true /v1/agent/chat request wedged the whole
+      FastAPI event loop — the request produced zero log lines (never reached
+      the DSL), /private/v1/books hung too, and the container could not be
+      stopped (`docker restart` → "did not receive an exit event", needed
+      `rm -f`). A later identical streaming request worked fine. Suspect a
+      synchronous Redis/synced-memory read blocking the event loop (endpoint
+      reads conversation memory on the loop before spawning the DSL task),
+      not the DSL/ladder code. Related to the sync↔async bridge item above —
+      when adding that coverage, include a repro attempt: rapid sequential
+      requests where a non-streaming multi-tool turn is immediately followed
+      by a streaming one on a fresh conversation_id.
 - [ ] Add chunk information to the interface.
 - [x] Raise error if embedding server changes.
 - [ ] Add useful tools, current time, etc..

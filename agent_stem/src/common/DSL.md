@@ -195,6 +195,24 @@ with McpServer("http://tool-server:8000"):
 response = prompt()  # no tool schemas — LLM synthesises from tool results
 ```
 
+### Scoping tools with `tools=`
+
+The `tools` keyword limits which of the server's tools are offered inside the
+block. Entries are exact tool names or `fnmatch` patterns:
+
+```python
+with McpServer(tools=["search__library_search"]):
+    prompt()  # LLM sees only the library search tool
+
+with McpServer(tools=["web_search__*", "read_web_page__read_web_page"]):
+    prompt()  # LLM sees the web tools only
+```
+
+This makes staged tool ladders deterministic: each stage exposes only its own
+tools instead of relying on the system prompt to keep the LLM away from the
+rest. A pattern that matches no tool is logged as an error (it is a prompt.py
+configuration mistake) but the block still runs with whatever did match.
+
 ### Startup validation
 
 At startup the agent scans `prompt.py` for `McpServer(...)` calls, extracts
