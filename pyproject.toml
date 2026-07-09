@@ -87,5 +87,5 @@ in-place = true
 recursive = true
 
 [project.urls]
-Homepage = "https://github.com/sinan-ozel/<MODULE-NAME>"
-Issues = "https://github.com/sinan-ozel/<MODULE-NAME>/issues"
+Homepage = "https://github.com/sinan-ozel/ai-assistant"
+Issues = "https://github.com/sinan-ozel/ai-assistant/issues"

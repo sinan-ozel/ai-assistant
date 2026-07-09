@@ -36,6 +36,25 @@ resources:
     cpu: "1"
     memory: 2500Mi
 
+# Health probes for the main application container.
+# Document ingestion (PDF conversion, OCR, in-process embedding) runs inside
+# the same container as the API and can starve /health under the CPU limit
+# above. The liveness defaults are deliberately forgiving so a busy agent is
+# never mistaken for a dead one: with the values below the container is only
+# restarted after /health has failed to answer within 10s, 8 times in a row
+# (~2 minutes). Readiness only pauses traffic, so it can stay snappier.
+probes:
+  liveness:
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 8
+  readiness:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 10
+
 # API keys injected as a Kubernetes Secret.
 # Leave empty to omit the Secret entirely (e.g. when using only local servers).
 secrets:
