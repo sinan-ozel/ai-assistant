@@ -14,3 +14,4 @@ _*/
 **/report.md
 .ruff_cache
 ai-assistant-helm*.tgz
+examples/eberron_dm_assistant/cortex/library

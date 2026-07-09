@@ -1,0 +1,35 @@
+# Helm values for the Eberron DM assistant.
+#
+# API keys come from a Kubernetes Secret injected wholesale via
+# extraEnvFromSecret. Required keys: MISTRAL_API_KEY, SERPAPI_API_KEY.
+#   kubectl create secret generic ai-assistant-api-keys \
+#     --from-literal=MISTRAL_API_KEY=... \
+#     --from-literal=SERPAPI_API_KEY=...
+
+llamacpp:
+  enabled: false
+
+cortex:
+  hostPath: /home/sinan/config/eberron-dm-assistant/cortex
+
+replicaCount: 1
+
+extraEnvFromSecret: ai-assistant-api-keys
+
+extraEnv:
+  # 'default' (Mistral) or 'local' (external llama.cpp gemma4:e2b).
+  - name: AGENT_PROVIDER
+    value: "default"
+  # Turn pairs of history the LLM sees; lower for small-context models.
+  - name: AGENT_HISTORY_TURNS
+    value: "8"
+  # Canonical library collections (folder names under the cortex library),
+  # searched in priority order; the fallback is consulted only when the
+  # primary tags have no strong match.
+  - name: LIBRARY_TAGS_PRIMARY
+    value: "eberron_5e24_kanon,eberron_5e_kanon,eberron_5e_canon,my_eberron"
+  - name: LIBRARY_TAGS_FALLBACK
+    value: "eberron_3e"
+  # Sampling temperature for stage 3, where invention is allowed.
+  - name: AGENT_INVENTION_TEMPERATURE
+    value: "0.2"

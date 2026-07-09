@@ -1,0 +1,56 @@
+services:
+  agent:
+    image: sinanozel/ai-assistant:0.1.1-dev.21
+    ports:
+      - "8000:8000"
+      - "8501:8501"
+    volumes:
+      - ./cortex:/app/cortex
+    environment:
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - SERPAPI_API_KEY=${SERPAPI_API_KEY}
+      # External llama.cpp server for the 'local' provider, e.g.
+      # http://your-llm-host:8080/v1 — leave unset to use Mistral only.
+      - LLAMA_CPP_HOST=${LLAMA_CPP_HOST:-}
+      # 'default' (Mistral) or 'local' (llama.cpp gemma4:e2b).
+      - AGENT_PROVIDER=${AGENT_PROVIDER:-default}
+      # Turn pairs of history the LLM sees; lower it for small-context models.
+      - AGENT_HISTORY_TURNS=${AGENT_HISTORY_TURNS:-8}
+      # Canonical library collections (folder names under cortex/library/),
+      # searched in priority order; the fallback is consulted only when the
+      # primary tags have no strong match.
+      - LIBRARY_TAGS_PRIMARY=${LIBRARY_TAGS_PRIMARY:-eberron_5e24_kanon,eberron_5e_kanon,eberron_5e_canon,my_eberron}
+      - LIBRARY_TAGS_FALLBACK=${LIBRARY_TAGS_FALLBACK:-eberron_3e}
+      # Sampling temperature for stage 3, where invention is allowed.
+      - AGENT_INVENTION_TEMPERATURE=${AGENT_INVENTION_TEMPERATURE:-0.2}
+    depends_on:
+      - redis
+      - qdrant
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2500M
+        reservations:
+          cpus: "0.25"
+          memory: 1G
+  redis:
+    image: redis:7-alpine
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+        reservations:
+          cpus: "0.10"
+          memory: 128M
+  qdrant:
+    image: qdrant/qdrant:v1.12.1
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.10"
+          memory: 256M

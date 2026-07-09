@@ -1103,6 +1103,28 @@
                 "rm -rf '${workspaceFolder}/examples/${input:example_agent}/dev-data/redis' && echo 'Redis data cleared for ${input:example_agent}.'"
             ],
             "problemMatcher": []
+        },
+        {
+            "label": "Sync Eberron Library from Config",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "SRC=\"$HOME/config/ai-assistant/eberron/cortex/library\"; DST='${workspaceFolder}/examples/eberron_dm_assistant/cortex/library'; [ -d \"$SRC\" ] || { echo \"ERROR: $SRC not found.\"; exit 1; }; rsync -a --delete \"$SRC/\" \"$DST/\" && echo \"Library synced from config into the example.\""
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Sync Eberron Cortex to Config",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "SRC='${workspaceFolder}/examples/eberron_dm_assistant/cortex'; DST=\"$HOME/config/ai-assistant/eberron/cortex\"; [ -d \"$DST\" ] || { echo \"ERROR: $DST not found.\"; exit 1; }; rsync -a \"$SRC/\" \"$DST/\" && echo \"Example cortex synced back to config.\""
+            ],
+            "dependsOn": ["Sync Eberron Library from Config"],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
         }
     ],
     "inputs": [
