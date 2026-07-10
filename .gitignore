@@ -15,3 +15,4 @@ _*/
 .ruff_cache
 ai-assistant-helm*.tgz
 examples/eberron_dm_assistant/cortex/library
+examples/eberron_dm_assistant/kubeconfig.yaml
