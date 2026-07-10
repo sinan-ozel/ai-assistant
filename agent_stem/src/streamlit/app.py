@@ -128,10 +128,10 @@ def _fetch_books_with_retry(
 ):
     """GET /private/v1/books, retrying with backoff on connection errors.
 
-    While the books API is slow to answer (e.g. during heavy book
-    ingestion), shows a per-second countdown in *status_slot* between
-    attempts. Clears the slot and returns the response on success; re-raises
-    the last ``RequestException`` once all attempts are exhausted.
+    While the books API is slow to answer (e.g. during heavy book ingestion),
+    shows a per-second countdown in *status_slot* between attempts. Clears the
+    slot and returns the response on success; re-raises the last
+    ``RequestException`` once all attempts are exhausted.
     """
     delay = initial_delay
     for attempt in range(1, max_attempts + 1):

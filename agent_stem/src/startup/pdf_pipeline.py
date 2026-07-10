@@ -17,6 +17,7 @@ import asyncio
 import hashlib
 import logging
 import os
+from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from pathlib import Path
 
@@ -51,6 +52,12 @@ _state_memory = Memory()
 if not hasattr(_state_memory, "pdf_pipeline_state"):
     _state_memory.pdf_pipeline_state = {}
 _pdf_pipeline_state: SyncedDict = _state_memory.pdf_pipeline_state
+
+# PyMuPDF/Tesseract are C extensions that do not release the GIL during
+# rendering or OCR, so running _convert() in a thread executor still stalls
+# every other coroutine (health checks included) for the full page-by-page
+# conversion time. A separate process gives the event loop its own GIL.
+_pdf_conversion_pool = ProcessPoolExecutor(max_workers=1)
 
 
 def _compute_hash(path: Path) -> str:
@@ -292,11 +299,13 @@ def _scan_and_queue_pdfs(library_dir: Path) -> list[Path]:
     return queued_paths
 
 
-def _convert_and_store_pdf(pdf_path: Path) -> None:
-    """Phase 2 (sync): convert one PDF and update state.
+async def _convert_and_store_pdf(pdf_path: Path) -> None:
+    """Phase 2: convert one PDF and update state.
 
-    Runs in a thread executor.  Raises on conversion errors so the caller can
-    log and skip to the next file.
+    The Redis state writes run directly on the event loop (small, fast round
+    trips); the actual conversion runs in ``_pdf_conversion_pool`` so GIL-
+    holding OCR work can't stall the event loop. Raises on conversion errors so
+    the caller can log and skip to the next file.
     """
     pdf_key = str(pdf_path)
     md_path = pdf_path.with_suffix(".md")
@@ -315,7 +324,10 @@ def _convert_and_store_pdf(pdf_path: Path) -> None:
         started_at,
     )
 
-    md_text = _convert(pdf_path)
+    loop = asyncio.get_event_loop()
+    md_text = await loop.run_in_executor(
+        _pdf_conversion_pool, _convert, pdf_path
+    )
     md_path.write_text(md_text, encoding="utf-8")
 
     end_dt = datetime.now()
@@ -365,12 +377,10 @@ async def run_pdf_pipeline() -> None:
             await asyncio.sleep(PDF_CHECK_INTERVAL_SECONDS)
             continue
 
-        # ── Phase 2: convert each queued PDF in a thread ────────────────────
+        # ── Phase 2: convert each queued PDF (conversion runs in a process) ──
         for pdf_path in queued_paths:
             try:
-                await loop.run_in_executor(
-                    None, _convert_and_store_pdf, pdf_path
-                )
+                await _convert_and_store_pdf(pdf_path)
             except pymupdf.mupdf.FzErrorLibrary as e:
                 logger.error(
                     "PDF pipeline: failed to convert %s — %s: %s",
