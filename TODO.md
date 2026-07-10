@@ -116,6 +116,9 @@ In Consideration
 - [ ] Add some sort of agent_id and use as a prefix. agent:short-term-memory:<user_id>:<convo_id>
 - [ ] Markdown ingestion: may have an issue, it may rewrite the same file in deployments with multiple pods.
 - [ ] Update the chunking pipeline to delete files if the md does not exist, same for PDF. (Think on this: I want the markdown files to be the source of truth, but there will be a race condition if this is implemented.)
+  - [ ] Currently there is no reconciliation at all: `_scan_and_queue_pdfs` and `_scan_and_queue_markdowns` only add/update state for files found on disk; nothing ever removes a Redis state entry, a Qdrant point, or a LanceDB row for a file (or a whole shelf) that was deleted from the library. Vector-store deletes today only happen when a *surviving* file is re-processed (hash changed), to clear its own stale chunks before rewriting — never for files that vanished.
+  - [ ] Race condition to design around: a PDF is deleted right after its .md is (re)written but before chunking picks it up, or a shelf folder is deleted mid-conversion/mid-chunking for one of its files — need to make sure a deletion doesn't get treated as a fresh "no md yet" state and pull the reconciliation delete in front of, or in place of, work already in flight for that same path.
+  - [ ] Decide the reconciliation trigger: diff at the end of each scan cycle (set of `file_path`s on disk vs. entries in state/vector stores) vs. a periodic sweep, and whether a grace period is needed before deleting to avoid acting on a transient/mid-write absence.
 
 
 
