@@ -1,5 +1,6 @@
 """Library books endpoint."""
 
+import asyncio
 import logging
 import os
 
@@ -69,8 +70,15 @@ def _books_from_lancedb() -> list[dict]:
                 table_name,
             )
             continue
-        df = tbl.to_pandas()
-        for _, row in df.iterrows():
+        # Project only the columns needed — to_pandas() would pull every
+        # embedding vector into memory, which is prohibitively slow while
+        # the chunking pipeline is writing large tables.
+        rows = (
+            tbl.to_lance()
+            .to_table(columns=["file_path", "book"])
+            .to_pylist()
+        )
+        for row in rows:
             fp = row.get("file_path")
             if not fp:
                 continue
@@ -95,10 +103,16 @@ def _books_from_lancedb() -> list[dict]:
 
 
 async def handler():
-    """Return the list of books indexed by the chunking pipeline."""
+    """Return the list of books indexed by the chunking pipeline.
+
+    The vector-store scans are blocking (network round trips / disk reads),
+    so they run in the thread executor — otherwise they stall the event loop
+    and every other endpoint times out while ingestion keeps the store busy.
+    """
+    loop = asyncio.get_event_loop()
     if QDRANT_HOST:
         try:
-            return _books_from_qdrant()
+            return await loop.run_in_executor(None, _books_from_qdrant)
         except Exception as e:
             logger.warning(
                 "Qdrant unreachable at %s:%s (%s); falling back to LanceDB.",
@@ -106,7 +120,7 @@ async def handler():
                 QDRANT_PORT,
                 e,
             )
-    return _books_from_lancedb()
+    return await loop.run_in_executor(None, _books_from_lancedb)
 
 
 spec = {

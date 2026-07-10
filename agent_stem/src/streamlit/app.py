@@ -123,6 +123,37 @@ def _api_ready() -> bool:
         return False
 
 
+def _fetch_books_with_retry(
+    status_slot, max_attempts: int = 5, initial_delay: int = 2
+):
+    """GET /private/v1/books, retrying with backoff on connection errors.
+
+    While the books API is slow to answer (e.g. during heavy book
+    ingestion), shows a per-second countdown in *status_slot* between
+    attempts. Clears the slot and returns the response on success; re-raises
+    the last ``RequestException`` once all attempts are exhausted.
+    """
+    delay = initial_delay
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = requests.get(
+                f"{API_BASE_URL}/private/v1/books", timeout=5
+            )
+            status_slot.empty()
+            return response
+        except requests.exceptions.RequestException as e:
+            if attempt == max_attempts:
+                raise
+            for remaining in range(delay, 0, -1):
+                status_slot.warning(
+                    f"Could not reach books API: {e} — trying again in"
+                    f" {remaining} second(s)"
+                    f" (attempt {attempt}/{max_attempts})."
+                )
+                time.sleep(1)
+            delay = min(delay * 2, 30)
+
+
 def main():
     """Main Streamlit application."""
     st.set_page_config(
@@ -304,10 +335,9 @@ def main():
     st.markdown("## 📚 Library")
     st.markdown("Books indexed by the document pipeline.")
 
+    books_status_slot = st.empty()
     try:
-        books_response = requests.get(
-            f"{API_BASE_URL}/private/v1/books", timeout=5
-        )
+        books_response = _fetch_books_with_retry(books_status_slot)
         if books_response.status_code == 200:
             books = books_response.json()
             if not books:
@@ -358,8 +388,10 @@ def main():
             )
         else:
             st.warning(f"Could not fetch books: {books_response.status_code}")
-    except Exception as e:
-        st.warning(f"Could not reach books API: {e}")
+    except requests.exceptions.RequestException as e:
+        books_status_slot.warning(
+            f"Could not reach books API after several attempts: {e}"
+        )
 
     # Tools Section
     st.divider()
