@@ -10,8 +10,13 @@ Status values per Markdown file:
   Queued    - file is newer than last chunking_completed_at, awaiting processing
   Chunking  - chunking in progress
   Chunked   - up-to-date chunks exist in the vector store
+  Missing   - file vanished from disk; reconciliation grace period running
 
 A missing Redis entry means the file has never been processed before.
+
+The set of Markdown files on disk is the source of truth for the vector
+store: when a file stays missing past the reconciliation grace period, its
+chunks, its library-index entry, and its state entry are all removed.
 """
 
 import asyncio
@@ -56,6 +61,14 @@ EMBEDDING_MODEL = os.environ.get(
     "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
 )
 
+# How long a Markdown file must stay missing from disk before its chunks and
+# state are removed. Shared with the PDF pipeline so a deleted PDF cascades:
+# first the generated .md is removed, then (one grace period later) the
+# chunks. Protects against transient absences from file-sync tools.
+RECONCILIATION_GRACE_SECONDS = int(
+    os.environ.get("LIBRARY_RECONCILIATION_GRACE_SECONDS", "60")
+)
+
 # Resolved at first use — call _get_embedding_dim() to obtain.
 _embedding_dim: Optional[int] = None
 
@@ -81,6 +94,7 @@ STATUS_CHECKING = "Checking"
 STATUS_QUEUED = "Queued"
 STATUS_CHUNKING = "Chunking"
 STATUS_CHUNKED = "Chunked"
+STATUS_MISSING = "Missing"
 
 
 # ---------------------------------------------------------------------------
@@ -1176,6 +1190,90 @@ def write_chunked_markdown(
         _write_to_lancedb(source_key, chunks, vectors)
 
 
+def _delete_qdrant_points(
+    client: QdrantClient, collection: str, file_path: str
+) -> None:
+    """Delete every point in *collection* whose payload matches *file_path*."""
+    client.delete(
+        collection_name=collection,
+        points_selector=qmodels.FilterSelector(
+            filter=qmodels.Filter(
+                must=[
+                    qmodels.FieldCondition(
+                        key="file_path",
+                        match=qmodels.MatchValue(value=file_path),
+                    )
+                ]
+            )
+        ),
+    )
+    logger.info(
+        "Chunking pipeline: deleted existing Qdrant points for '%s'.",
+        file_path,
+    )
+
+
+def _delete_from_qdrant(source_key: str) -> None:
+    """Delete all Qdrant points for *source_key*; drop the collection when
+    it ends up empty so removed or renamed shelves don't linger."""
+    client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+    collection = _collection_for_path(source_key)
+    existing = {c.name for c in client.get_collections().collections}
+    if collection not in existing:
+        return
+
+    _delete_qdrant_points(client, collection, _to_file_path(source_key))
+
+    if client.count(collection_name=collection, exact=True).count == 0:
+        client.delete_collection(collection_name=collection)
+        logger.info(
+            "Chunking pipeline: dropped empty Qdrant collection '%s'.",
+            collection,
+        )
+
+
+def _delete_from_lancedb(source_key: str) -> None:
+    """Delete all LanceDB rows for *source_key*; drop the table when it ends
+    up empty so removed or renamed shelves don't linger."""
+    db = lancedb.connect(LANCEDB_PATH)
+    table = _collection_for_path(source_key)
+    if table not in db.table_names():
+        return
+
+    tbl = db.open_table(table)
+    # Escape single quotes in the file path for the SQL predicate
+    escaped = _to_file_path(source_key).replace("'", "''")
+    tbl.delete(f"file_path = '{escaped}'")
+    logger.info(
+        "Chunking pipeline: deleted existing LanceDB rows for '%s'.",
+        _to_file_path(source_key),
+    )
+
+    if tbl.count_rows() == 0:
+        db.drop_table(table)
+        logger.info(
+            "Chunking pipeline: dropped empty LanceDB table '%s'.", table
+        )
+
+
+def delete_stored_chunks(source_key: str) -> None:
+    """Remove every stored artifact derived from *source_key*.
+
+    Deletes the vector-store chunks (Qdrant when reachable, LanceDB
+    otherwise) and the book's entry in the ``memory.library`` index used by
+    search tag filtering.
+    """
+    if _qdrant_reachable():
+        _delete_from_qdrant(source_key)
+    else:
+        _delete_from_lancedb(source_key)
+
+    file_path_key = _to_file_path(source_key)
+    with Memory() as memory:
+        if hasattr(memory, "library") and file_path_key in memory.library:
+            del memory.library[file_path_key]
+
+
 def _write_to_qdrant(
     source_key: str,
     chunks: list[dict],
@@ -1206,23 +1304,7 @@ def _write_to_qdrant(
         )
 
     # Delete all existing points for this source file so we start clean
-    client.delete(
-        collection_name=collection,
-        points_selector=qmodels.FilterSelector(
-            filter=qmodels.Filter(
-                must=[
-                    qmodels.FieldCondition(
-                        key="file_path",
-                        match=qmodels.MatchValue(value=file_path),
-                    )
-                ]
-            )
-        ),
-    )
-    logger.info(
-        "Chunking pipeline: deleted existing Qdrant points for '%s'.",
-        file_path,
-    )
+    _delete_qdrant_points(client, collection, file_path)
 
     # Build PointStruct objects — each point carries the full metadata as payload
     points = []
@@ -1480,11 +1562,81 @@ def _set_chunking_done(md_key: str, completed_at: str) -> None:
         }
 
 
+def _reconcile_deleted_markdowns(md_files: list[Path]) -> None:
+    """Remove chunks, library entries, and state for deleted Markdown files.
+
+    Two-phase tombstone, mirroring the PDF pipeline: a state entry whose
+    file is no longer on disk is first marked ``Missing`` with a timestamp;
+    only when a later scan still finds it missing after
+    ``RECONCILIATION_GRACE_SECONDS`` are the vector-store chunks, the
+    ``memory.library`` index entry, and the state entry removed. Entries
+    currently ``Chunking`` are skipped until the work settles.
+    """
+    on_disk = {str(p) for p in md_files}
+    now = datetime.now(timezone.utc)
+
+    with Memory() as memory:
+        if not hasattr(memory, "chunking_pipeline_state"):
+            return
+        state_keys = list(memory.chunking_pipeline_state.keys())
+
+    for md_key in state_keys:
+        if md_key in on_disk:
+            continue
+
+        with Memory() as memory:
+            entry = dict(memory.chunking_pipeline_state.get(md_key) or {})
+        if entry.get("status") == STATUS_CHUNKING:
+            continue
+
+        missing_since = entry.get("missingSince")
+        if not missing_since:
+            with Memory() as memory:
+                memory.chunking_pipeline_state[md_key] = {
+                    **entry,
+                    "status": STATUS_MISSING,
+                    "missingSince": now.isoformat(),
+                }
+            logger.info(
+                "Chunking pipeline: %s missing from disk — grace period "
+                "started (%ss).",
+                Path(md_key).name,
+                RECONCILIATION_GRACE_SECONDS,
+            )
+            continue
+
+        try:
+            elapsed = (
+                now - datetime.fromisoformat(missing_since)
+            ).total_seconds()
+        except ValueError:
+            with Memory() as memory:
+                memory.chunking_pipeline_state[md_key] = {
+                    **entry,
+                    "missingSince": now.isoformat(),
+                }
+            continue
+        if elapsed < RECONCILIATION_GRACE_SECONDS:
+            continue
+
+        delete_stored_chunks(md_key)
+        with Memory() as memory:
+            if md_key in memory.chunking_pipeline_state:
+                del memory.chunking_pipeline_state[md_key]
+        logger.info(
+            "Chunking pipeline: reconciled deleted %s — chunks, library "
+            "entry, and state removed.",
+            Path(md_key).name,
+        )
+
+
 def _scan_and_queue_markdowns(library_dir: Path) -> list[Path]:
     """Phase 1 (sync): find Markdown files, mtime-check, update Redis state.
 
     Returns the list of paths that need (re-)chunking.  Runs in a thread
     executor so that Redis and file-stat I/O do not block the event loop.
+    Finishes by reconciling state entries whose files were deleted from the
+    library.
     """
     md_files = sorted(
         p
@@ -1514,7 +1666,9 @@ def _scan_and_queue_markdowns(library_dir: Path) -> list[Path]:
         with Memory() as memory:
             if not hasattr(memory, "chunking_pipeline_state"):
                 memory.chunking_pipeline_state = {}
-            entry = memory.chunking_pipeline_state.get(md_key) or {}
+            entry = dict(memory.chunking_pipeline_state.get(md_key) or {})
+            # The file is on disk, so any reconciliation tombstone is stale.
+            entry.pop("missingSince", None)
             memory.chunking_pipeline_state[md_key] = {
                 **entry,
                 "status": STATUS_CHECKING,
@@ -1554,6 +1708,16 @@ def _scan_and_queue_markdowns(library_dir: Path) -> list[Path]:
             logger.info(
                 "Chunking pipeline: %s queued — %s.", md_path.name, reason
             )
+
+    try:
+        _reconcile_deleted_markdowns(md_files)
+    except Exception as e:
+        logger.error(
+            "Chunking pipeline: reconciliation failed: %s — queued files "
+            "proceed; reconciliation retries next scan.",
+            e,
+            exc_info=True,
+        )
 
     return queued_paths
 

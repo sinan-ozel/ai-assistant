@@ -29,6 +29,8 @@ services:
       - QDRANT_HOST=qdrant-test
       - QDRANT_PORT=6333
       - CONVERSATION_WINDOW_LIMIT=2048
+      # Short grace period so library reconciliation tests finish quickly.
+      - LIBRARY_RECONCILIATION_GRACE_SECONDS=15
       # - LOG_LEVEL=DEBUG
       - OLLAMA_HOST
       - LLAMA_CPP_HOST

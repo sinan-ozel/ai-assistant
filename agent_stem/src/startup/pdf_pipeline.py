@@ -9,16 +9,23 @@ Status values per PDF:
   Queued     - hash changed (or new file), awaiting conversion
   Converting - conversion in progress
   Converted  - up-to-date Markdown exists
+  Missing    - file vanished from disk; reconciliation grace period running
 
 A missing state entry means the file has never been seen before.
+
+PDFs are the source of truth for the Markdown files this pipeline generates:
+when a PDF stays missing past the reconciliation grace period, its state
+entry and its generated .md are removed (hand-authored .md files are left
+alone), which in turn lets the chunking pipeline reconcile the vector store.
 """
 
 import asyncio
 import hashlib
 import logging
 import os
+import re
 from concurrent.futures import ProcessPoolExecutor
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pymupdf
@@ -42,11 +49,26 @@ OCR_WORDS_PER_PAGE_THRESHOLD = int(
 
 OCR_LANGUAGE = os.environ.get("OCR_LANGUAGE", "eng")
 
+# Fraction of U+FFFD replacement characters in extracted text above which the
+# text layer is considered garbled (broken font-to-Unicode mapping in the PDF)
+# and conversion is retried with OCR.
+GARBLED_CHAR_RATIO_THRESHOLD = float(
+    os.environ.get("GARBLED_CHAR_RATIO_THRESHOLD", "0.002")
+)
+
+# How long a file must stay missing from disk before its derived artifacts
+# (generated Markdown, state entries) are removed. The grace period protects
+# against transient absences, e.g. a file-sync tool moving files mid-scan.
+RECONCILIATION_GRACE_SECONDS = int(
+    os.environ.get("LIBRARY_RECONCILIATION_GRACE_SECONDS", "60")
+)
+
 # Status constants
 STATUS_CHECKING = "Checking"
 STATUS_QUEUED = "Queued"
 STATUS_CONVERTING = "Converting"
 STATUS_CONVERTED = "Converted"
+STATUS_MISSING = "Missing"
 
 _state_memory = Memory()
 if not hasattr(_state_memory, "pdf_pipeline_state"):
@@ -108,6 +130,10 @@ def _front_matter(
         "pdf_title": meta.get("title") or "",
         "pdf_author": meta.get("author") or "",
         "pages": page_count,
+        # Marks this file as pipeline output so reconciliation can delete it
+        # when its source PDF is removed; hand-authored Markdown lacks the
+        # marker and is never deleted.
+        "converted_from_pdf": True,
     }
 
     if ocr_used:
@@ -188,12 +214,49 @@ def _convert_safe(pdf_path: Path, **kwargs) -> str:
     return "".join(pages)
 
 
+def _garbled_ratio(text: str) -> float:
+    """Return the fraction of U+FFFD replacement characters in *text*.
+
+    PDFs with a broken or missing ToUnicode CMap (common in older books with
+    subset fonts) extract some glyphs — most often the space glyph — as
+    U+FFFD, producing text like ``C�r�e�a�t�u�r�e�s``.
+    """
+    if not text:
+        return 0.0
+    return text.count("�") / len(text)
+
+
+def _scrub_replacement_chars(md_text: str, pdf_name: str) -> str:
+    """Replace any remaining U+FFFD runs with a single space.
+
+    Last-resort cleanup after conversion (and the OCR retry, if it ran):
+    the replacement characters carry no information and poison chunking,
+    embedding, and search results downstream. Each run of U+FFFD plus any
+    adjacent spaces collapses to one space so ordinary indentation elsewhere
+    in the document is left untouched.
+    """
+    count = md_text.count("�")
+    if not count:
+        return md_text
+    logger.warning(
+        "PDF pipeline: %s — %d unmappable glyph(s) (U+FFFD) remain after "
+        "conversion; replacing with spaces. The source PDF has a broken "
+        "font-to-Unicode mapping; extracted text quality may be degraded.",
+        pdf_name,
+        count,
+    )
+    return re.sub(r"[ \t]*�[ \t�]*", " ", md_text)
+
+
 def _convert(pdf_path: Path) -> str:
     """Convert a PDF to Markdown with YAML front matter prepended (blocking).
 
     Performs a two-pass conversion: the first pass uses standard text
-    extraction. If the output looks image-based (too few words per page),
-    a second pass runs with Tesseract OCR enabled.
+    extraction. If the output looks image-based (too few words per page) or
+    garbled (too many U+FFFD replacement characters from a broken
+    font-to-Unicode mapping), a second pass runs with Tesseract OCR enabled.
+    Any replacement characters that survive both passes are scrubbed so they
+    never reach the chunking pipeline.
 
     Both passes gracefully handle JPX image decode errors via fallback
     strategies, because some PDFs simply cannot be trusted.
@@ -207,12 +270,22 @@ def _convert(pdf_path: Path) -> str:
     ocr_used = False
     if page_count > 0:
         words_per_page = len(md_text.split()) / page_count
+        garbled_ratio = _garbled_ratio(md_text)
         if words_per_page < OCR_WORDS_PER_PAGE_THRESHOLD:
+            ocr_reason = f"looks image-based ({words_per_page:.1f} words/page)"
+        elif garbled_ratio > GARBLED_CHAR_RATIO_THRESHOLD:
+            ocr_reason = (
+                f"text layer is garbled ({garbled_ratio:.2%} replacement "
+                f"characters — broken font-to-Unicode mapping)"
+            )
+        else:
+            ocr_reason = None
+
+        if ocr_reason:
             logger.info(
-                "PDF pipeline: %s looks image-based (%.1f words/page),"
-                " retrying with OCR (language: %s).",
+                "PDF pipeline: %s %s, retrying with OCR (language: %s).",
                 pdf_path.name,
-                words_per_page,
+                ocr_reason,
                 OCR_LANGUAGE,
             )
             md_text = _to_markdown_safe(
@@ -222,6 +295,8 @@ def _convert(pdf_path: Path) -> str:
             )
             ocr_used = True
 
+    md_text = _scrub_replacement_chars(md_text, pdf_path.name)
+
     return (
         _front_matter(
             pdf_path, md_text, page_count=page_count, ocr_used=ocr_used
@@ -230,12 +305,119 @@ def _convert(pdf_path: Path) -> str:
     )
 
 
+def _is_generated_markdown(md_path: Path) -> bool:
+    """Return True if *md_path* was written by this pipeline.
+
+    Detected via the ``converted_from_pdf`` front-matter marker, falling back
+    to the presence of the ``pdf_title`` key for files generated before the
+    marker existed. Hand-authored Markdown returns False and must never be
+    deleted by reconciliation.
+    """
+    yaml_lines: list[str] = []
+    try:
+        with open(md_path, encoding="utf-8") as f:
+            if f.readline().strip() != "---":
+                return False
+            for line in f:
+                if line.strip() == "---":
+                    break
+                yaml_lines.append(line)
+    except OSError:
+        return False
+
+    try:
+        meta = yaml.safe_load("".join(yaml_lines)) or {}
+    except yaml.YAMLError:
+        return False
+
+    if not isinstance(meta, dict):
+        return False
+    return bool(meta.get("converted_from_pdf")) or "pdf_title" in meta
+
+
+def _reconcile_deleted_pdfs(pdf_files: list[Path]) -> None:
+    """Remove state and generated Markdown for PDFs deleted from the library.
+
+    Two-phase tombstone: a state entry whose PDF is no longer on disk is
+    first marked ``Missing`` with a timestamp; only when a later scan still
+    finds it missing after ``RECONCILIATION_GRACE_SECONDS`` are the state
+    entry and the generated .md removed. The grace period protects against
+    transient absences (e.g. a file-sync tool moving files mid-scan), and
+    entries currently ``Converting`` are skipped until the work settles.
+
+    Deleting the generated .md is what cascades the cleanup: the chunking
+    pipeline's own reconciliation then removes the vector-store chunks.
+    """
+    on_disk = {str(p) for p in pdf_files}
+    now = datetime.now(timezone.utc)
+
+    for pdf_key in list(_pdf_pipeline_state.keys()):
+        if pdf_key in on_disk:
+            continue
+
+        entry = dict(_pdf_pipeline_state.get(pdf_key) or {})
+        if entry.get("status") == STATUS_CONVERTING:
+            continue
+
+        missing_since = entry.get("missingSince")
+        if not missing_since:
+            _pdf_pipeline_state[pdf_key] = {
+                **entry,
+                "status": STATUS_MISSING,
+                "missingSince": now.isoformat(),
+            }
+            logger.info(
+                "PDF pipeline: %s missing from disk — grace period "
+                "started (%ss).",
+                Path(pdf_key).name,
+                RECONCILIATION_GRACE_SECONDS,
+            )
+            continue
+
+        try:
+            elapsed = (now - datetime.fromisoformat(missing_since)).total_seconds()
+        except ValueError:
+            _pdf_pipeline_state[pdf_key] = {
+                **entry,
+                "missingSince": now.isoformat(),
+            }
+            continue
+        if elapsed < RECONCILIATION_GRACE_SECONDS:
+            continue
+
+        md_path = Path(pdf_key).with_suffix(".md")
+        if md_path.exists() and _is_generated_markdown(md_path):
+            try:
+                md_path.unlink()
+                logger.info(
+                    "PDF pipeline: deleted generated %s — source PDF was "
+                    "removed %.0fs ago.",
+                    md_path.name,
+                    elapsed,
+                )
+            except OSError as e:
+                logger.error(
+                    "PDF pipeline: could not delete generated %s: %s — "
+                    "will retry next scan.",
+                    md_path.name,
+                    e,
+                )
+                continue
+
+        del _pdf_pipeline_state[pdf_key]
+        logger.info(
+            "PDF pipeline: reconciled deleted %s — state entry removed.",
+            Path(pdf_key).name,
+        )
+
+
 def _scan_and_queue_pdfs(library_dir: Path) -> list[Path]:
     """Phase 1 (sync): find PDFs, hash-check, update state.
 
     Returns the list of PDF paths that need conversion.  Runs entirely in a
     thread executor so the event loop stays responsive while file I/O
-    operations block.
+    operations block.  Finishes by reconciling state entries whose PDFs were
+    deleted from the library.
     """
     pdf_files = sorted(
         p
@@ -258,6 +440,9 @@ def _scan_and_queue_pdfs(library_dir: Path) -> list[Path]:
 
         entry = dict(_pdf_pipeline_state.get(pdf_key) or {})
         stored_hash = entry.get("hash")
+
+        # The file is on disk, so any reconciliation tombstone is stale.
+        entry.pop("missingSince", None)
 
         _pdf_pipeline_state[pdf_key] = {**entry, "status": STATUS_CHECKING}
 
@@ -295,6 +480,16 @@ def _scan_and_queue_pdfs(library_dir: Path) -> list[Path]:
                 pdf_path.name,
                 current_hash[:8],
             )
+
+    try:
+        _reconcile_deleted_pdfs(pdf_files)
+    except Exception as e:
+        logger.error(
+            "PDF pipeline: reconciliation failed: %s — queued conversions "
+            "proceed; reconciliation retries next scan.",
+            e,
+            exc_info=True,
+        )
 
     return queued_paths
 

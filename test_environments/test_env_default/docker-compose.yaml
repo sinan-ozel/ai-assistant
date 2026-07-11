@@ -114,6 +114,8 @@ services:
       - REDIS_PORT=6379
       - QDRANT_HOST=qdrant-test
       - QDRANT_PORT=6333
+      # Short grace period so library reconciliation tests finish quickly.
+      - LIBRARY_RECONCILIATION_GRACE_SECONDS=15
       # - LOG_LEVEL=DEBUG
     env_file:
       - .env
@@ -161,6 +163,9 @@ services:
         condition: service_healthy
     volumes:
       - ${TEST_FOLDER:-.}:/tests
+      # Shared with the app so tests can place/remove library files — the
+      # user-facing input surface (mirrors test_env_no_qdrant/no_redis).
+      - ${AGENT_FOLDER:-./cortex}:/app/cortex
     command: ["pytest", "-v"]
 networks:
   test-network:

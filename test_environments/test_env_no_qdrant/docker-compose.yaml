@@ -60,6 +60,8 @@ services:
     environment:
       - REDIS_HOST=redis-test
       - REDIS_PORT=6379
+      # Short grace period so library reconciliation tests finish quickly.
+      - LIBRARY_RECONCILIATION_GRACE_SECONDS=15
     env_file:
       - .env
     depends_on:

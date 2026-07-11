@@ -287,6 +287,38 @@
             "problemMatcher": []
         },
         {
+            "label": "Run Integration Tests: library_reconciliation @ default",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_default/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/library_reconciliation/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/library_reconciliation/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Integration Tests: library_reconciliation @ no_qdrant",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "F='${workspaceFolder}/test_environments/test_env_no_qdrant/docker-compose.yaml'; docker compose -f \"$F\" down --remove-orphans 2>/dev/null || true; docker compose -f \"$F\" up --build --exit-code-from tests; EC=$?; [ $EC -eq 0 ] && docker compose -f \"$F\" down --remove-orphans; exit $EC"
+            ],
+            "options": {
+                "env": {
+                    "AGENT_FOLDER": "${workspaceFolder}/test_agents/library_reconciliation/cortex",
+                    "TEST_FOLDER": "${workspaceFolder}/test_agents/library_reconciliation/tests"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Run Integration Tests: agent_with_search @ no_qdrant",
             "type": "shell",
             "command": "bash",
@@ -822,6 +854,8 @@
             "label": "Run Quick & Costless Agent Integration Tests",
             "dependsOn": [
                 "Run Integration Tests: talk_to_your_documents @ no_qdrant",
+                "Run Integration Tests: library_reconciliation @ default",
+                "Run Integration Tests: library_reconciliation @ no_qdrant",
                 "Run Integration Tests: agent_with_only_a_system_message @ default",
                 "Run Integration Tests: agent_with_only_a_system_message @ no_qdrant",
                 "Run Integration Tests: agent_with_temperature @ default",

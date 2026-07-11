@@ -61,7 +61,9 @@ All variables consumed by the application. Groups below reflect where each varia
 | `PDF_CHECK_INTERVAL_SECONDS` | `5` | How often (seconds) the PDF pipeline polls for new PDF files. |
 | `OCR_WORDS_PER_PAGE_THRESHOLD` | `50` | Pages with fewer than this many words are processed with OCR. |
 | `OCR_LANGUAGE` | `eng` | Tesseract language code used for OCR. |
+| `GARBLED_CHAR_RATIO_THRESHOLD` | `0.002` | Documents whose extracted text exceeds this fraction of U+FFFD replacement characters are reprocessed with OCR. |
 | `CHUNK_CHECK_INTERVAL_SECONDS` | `10` | How often (seconds) the chunking pipeline polls for pending work. |
+| `LIBRARY_RECONCILIATION_GRACE_SECONDS` | `60` | How long a file must stay missing from the library before its derived artifacts (generated Markdown, vector-store chunks, state entries) are removed. |
 
 ---
 
@@ -88,7 +90,7 @@ The following variables are accepted by the application but are **never set in a
 - `QDRANT_COLLECTION` (always `"library"`)
 - `LANCEDB_PATH` (always `"/app/data/lancedb"`)
 - `LANCEDB_TABLE` (always `"library"`)
-- `PDF_CHECK_INTERVAL_SECONDS`, `OCR_WORDS_PER_PAGE_THRESHOLD`, `OCR_LANGUAGE`
+- `PDF_CHECK_INTERVAL_SECONDS`, `OCR_WORDS_PER_PAGE_THRESHOLD`, `OCR_LANGUAGE`, `GARBLED_CHAR_RATIO_THRESHOLD`
 - `CHUNK_CHECK_INTERVAL_SECONDS`
 - `DEFAULT_SYSTEM_MESSAGE`
 

@@ -32,25 +32,39 @@ Hidden files and files inside hidden folders (any path component starting with
      `50` words/page), the PDF is assumed to be image-based and the conversion
      is retried with Tesseract OCR (`use_ocr=True`, language
      `OCR_LANGUAGE`, default: `eng`).
+   - If the fraction of U+FFFD replacement characters exceeds
+     `GARBLED_CHAR_RATIO_THRESHOLD` (default: `0.002`), the text layer is
+     considered garbled (broken font-to-Unicode mapping) and the conversion
+     is retried with the same Tesseract OCR pass. Any U+FFFD runs that
+     survive are replaced with a single space before writing.
    - JPX image decode errors are handled with three fallback levels: retry
      with `ignore_images=True`, then page-by-page conversion skipping broken
      pages.
 4. **Front matter** — a YAML block is prepended to the Markdown output
    containing: `filename`, `tags` (derived from the folder path relative to
    `library/`), `pdf_title`, `pdf_author`, `pages`, `ocr` (if OCR was used),
-   and `body_title` (the single top-level Markdown header, when unique).
+   `converted_from_pdf: true` (marks the file as pipeline output for
+   reconciliation), and `body_title` (the single top-level Markdown header,
+   when unique).
 5. **Write** — the result is written to `<original_name>.md` beside the PDF.
+6. **Reconcile** — state entries whose PDF is no longer on disk are marked
+   `Missing`; when a later scan still finds them missing after
+   `LIBRARY_RECONCILIATION_GRACE_SECONDS`, the state entry and the generated
+   `.md` are removed. Hand-authored Markdown (no `converted_from_pdf`
+   marker) is never deleted. The grace period protects against transient
+   absences, e.g. a file-sync tool moving files mid-scan.
 
 ### Redis State (`memory:pdf_pipeline_state`)
 
 Each PDF is tracked by its absolute path:
 
-| Status      | Meaning                                      |
-|-------------|----------------------------------------------|
-| `Checking`  | Hash is being compared right now             |
-| `Queued`    | Change detected; awaiting conversion         |
-| `Converting`| Conversion in progress                       |
-| `Converted` | Up-to-date Markdown exists                   |
+| Status      | Meaning                                          |
+|-------------|--------------------------------------------------|
+| `Checking`  | Hash is being compared right now                 |
+| `Queued`    | Change detected; awaiting conversion             |
+| `Converting`| Conversion in progress                           |
+| `Converted` | Up-to-date Markdown exists                       |
+| `Missing`   | File vanished; reconciliation grace period runs  |
 
 A missing entry means the file has never been seen.
 
@@ -61,6 +75,8 @@ A missing entry means the file has never been seen.
 | `PDF_CHECK_INTERVAL_SECONDS` | `5`     | Seconds between scan cycles               |
 | `OCR_WORDS_PER_PAGE_THRESHOLD` | `50`  | Min words/page before OCR is triggered    |
 | `OCR_LANGUAGE`               | `eng`   | Tesseract language code                   |
+| `GARBLED_CHAR_RATIO_THRESHOLD` | `0.002` | Max U+FFFD ratio before OCR is triggered |
+| `LIBRARY_RECONCILIATION_GRACE_SECONDS` | `60` | Missing-file grace before cleanup   |
 
 ---
 
@@ -108,6 +124,12 @@ Hidden files and files inside hidden folders are skipped.
 6. **State update** — `chunking_completed_at` is written to Redis
      (`memory:chunking_pipeline_state`) using the timestamp from step 5
      so that it exactly matches the value stored in each chunk's payload.
+7. **Reconcile** — state entries whose Markdown file is no longer on disk
+   are marked `Missing`; when a later scan still finds them missing after
+   `LIBRARY_RECONCILIATION_GRACE_SECONDS`, the vector-store chunks, the
+   `memory:library` index entry, and the state entry are removed. A
+   collection/table left empty by the deletion is dropped, so removed or
+   renamed shelves don't linger in the vector store.
 
 ### Collection Routing
 
@@ -127,6 +149,7 @@ Each Markdown file is tracked by its absolute path:
 | `Queued`   | File is newer than last `chunking_completed_at` |
 | `Chunking` | Chunking/embedding/writing in progress          |
 | `Chunked`  | Up-to-date chunks exist in the vector store     |
+| `Missing`  | File vanished; reconciliation grace period runs |
 
 A missing entry means the file has never been processed.
 
@@ -141,6 +164,7 @@ A missing entry means the file has never been processed.
 | `LANCEDB_PATH`                | `/app/data/lancedb`  | LanceDB data directory                  |
 | `LANCEDB_TABLE`               | `library`            | Fallback table name                     |
 | `EMBEDDING_MODEL`             | `nomic-ai/nomic-embed-text-v1.5` | fastembed model name (runs in-process) |
+| `LIBRARY_RECONCILIATION_GRACE_SECONDS` | `60`        | Missing-file grace before cleanup       |
 
 ---
 
