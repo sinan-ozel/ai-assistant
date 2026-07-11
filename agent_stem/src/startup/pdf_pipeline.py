@@ -218,8 +218,8 @@ def _garbled_ratio(text: str) -> float:
     """Return the fraction of U+FFFD replacement characters in *text*.
 
     PDFs with a broken or missing ToUnicode CMap (common in older books with
-    subset fonts) extract some glyphs — most often the space glyph — as
-    U+FFFD, producing text like ``C�r�e�a�t�u�r�e�s``.
+    subset fonts) extract some glyphs — most often the space glyph — as U+FFFD,
+    producing text like ``C�r�e�a�t�u�r�e�s``.
     """
     if not text:
         return 0.0
@@ -229,11 +229,11 @@ def _garbled_ratio(text: str) -> float:
 def _scrub_replacement_chars(md_text: str, pdf_name: str) -> str:
     """Replace any remaining U+FFFD runs with a single space.
 
-    Last-resort cleanup after conversion (and the OCR retry, if it ran):
-    the replacement characters carry no information and poison chunking,
-    embedding, and search results downstream. Each run of U+FFFD plus any
-    adjacent spaces collapses to one space so ordinary indentation elsewhere
-    in the document is left untouched.
+    Last-resort cleanup after conversion (and the OCR retry, if it ran): the
+    replacement characters carry no information and poison chunking, embedding,
+    and search results downstream. Each run of U+FFFD plus any adjacent spaces
+    collapses to one space so ordinary indentation elsewhere in the document is
+    left untouched.
     """
     count = md_text.count("�")
     if not count:
@@ -375,7 +375,9 @@ def _reconcile_deleted_pdfs(pdf_files: list[Path]) -> None:
             continue
 
         try:
-            elapsed = (now - datetime.fromisoformat(missing_since)).total_seconds()
+            elapsed = (
+                now - datetime.fromisoformat(missing_since)
+            ).total_seconds()
         except ValueError:
             _pdf_pipeline_state[pdf_key] = {
                 **entry,

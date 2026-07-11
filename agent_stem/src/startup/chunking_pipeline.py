@@ -1214,8 +1214,8 @@ def _delete_qdrant_points(
 
 
 def _delete_from_qdrant(source_key: str) -> None:
-    """Delete all Qdrant points for *source_key*; drop the collection when
-    it ends up empty so removed or renamed shelves don't linger."""
+    """Delete all Qdrant points for *source_key*; drop the collection when it
+    ends up empty so removed or renamed shelves don't linger."""
     client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
     collection = _collection_for_path(source_key)
     existing = {c.name for c in client.get_collections().collections}
@@ -1233,8 +1233,8 @@ def _delete_from_qdrant(source_key: str) -> None:
 
 
 def _delete_from_lancedb(source_key: str) -> None:
-    """Delete all LanceDB rows for *source_key*; drop the table when it ends
-    up empty so removed or renamed shelves don't linger."""
+    """Delete all LanceDB rows for *source_key*; drop the table when it ends up
+    empty so removed or renamed shelves don't linger."""
     db = lancedb.connect(LANCEDB_PATH)
     table = _collection_for_path(source_key)
     if table not in db.table_names():
@@ -1259,9 +1259,9 @@ def _delete_from_lancedb(source_key: str) -> None:
 def delete_stored_chunks(source_key: str) -> None:
     """Remove every stored artifact derived from *source_key*.
 
-    Deletes the vector-store chunks (Qdrant when reachable, LanceDB
-    otherwise) and the book's entry in the ``memory.library`` index used by
-    search tag filtering.
+    Deletes the vector-store chunks (Qdrant when reachable, LanceDB otherwise)
+    and the book's entry in the ``memory.library`` index used by search tag
+    filtering.
     """
     if _qdrant_reachable():
         _delete_from_qdrant(source_key)
