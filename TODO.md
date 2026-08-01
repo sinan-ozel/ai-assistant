@@ -103,6 +103,20 @@ Anytime
   - [ ] test_agents/agent_with_tools, also needs to run in Mistral, because of (test_agent_succeeds_when_llm_skips_tools)
   - [ ] test_agents/agent_with_eval, also needs to run in Mistral, and make sure that the eval passes, even with rate limiting.
   - [ ] On Mistral, I need to run a test to make sure that 429 rate limit exceeded errors are passed properly.
+- [ ] Add black-box test coverage for the connection-error retry branch in
+      `agent_stem/src/common/tools_dsl.py` `make_prompt_fn` (litellm.InternalServerError
+      with "connection" in the message, retried up to `_LLM_MAX_RETRIES` with
+      backoff, now also calling `ctx.notify_fn`). No existing test agent's
+      provider points at anything but a real LLM backend, so this needs a
+      small OpenAI-compatible mock HTTP server added as a new compose
+      service (first N requests to /chat/completions return 500 with a
+      "connection"-containing error message, then succeed), a new test
+      agent whose `cortex/providers/default.yaml` points at it, and an SSE
+      test asserting a `notify` chunk containing "Provider connection
+      error — retrying" appears before the final answer. (Bug found
+      2026-08-01: local llama.cpp backend hit this path silently — no
+      notify — after a stage transition in eberron_dm_assistant; fixed by
+      adding the notify_fn call, but the retry path itself was untested.)
 - [ ] Up arrow repeats the last message, or rolls back the conversation?
 - [ ] Make sure that execute_prompt_script in agent_stem/src/common/prompt_dsl.py is removing duplicate messages, if `message_history` becomes editable.
 - [ ] Create an environment to test quick fails if the environmental variables are set incorrectly, or proper error messages.

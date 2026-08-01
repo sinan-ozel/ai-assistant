@@ -65,6 +65,15 @@ INVENTION_TEMPERATURE = float(
 RATE_LIMIT_RETRIES = int(os.environ.get("AGENT_RATE_LIMIT_RETRIES", "3"))
 RATE_LIMIT_BASE_DELAY = float(os.environ.get("AGENT_RATE_LIMIT_BASE_DELAY", "5.0"))
 
+# Paced pause before every completion call after the first in a stage (i.e.
+# once a tool round comes back and we're about to send the results to the
+# model again). Spreads out the request burst a multi-round, multi-stage
+# turn otherwise fires at the provider, so we hit rate limits less often
+# instead of only reacting to them after the fact.
+TOOL_ROUND_DELAY_SECONDS = float(
+    os.environ.get("AGENT_TOOL_ROUND_DELAY_SECONDS", "2.0")
+)
+
 ESCALATE = "[ESCALATE]"
 
 STAGE1_TOOLS = ["search__library_search"]
@@ -125,7 +134,9 @@ def _run_stage(tool_names, instruction, final_stage=False, **llm_kwargs):
     until the model returns text instead of another tool call."""
     response = ""
     with McpServer(tools=tool_names):
-        for _ in range(MAX_TOOL_ROUNDS):
+        for round_num in range(MAX_TOOL_ROUNDS):
+            if round_num > 0:
+                delay(TOOL_ROUND_DELAY_SECONDS)
             response = _prompt(instruction, provider=PROVIDER, **llm_kwargs)
             if response:
                 return response
@@ -176,6 +187,7 @@ with MessageHistory(HISTORY_TURNS):
             f"Nothing relevant in the canonical collections ({note}) — "
             "extending to the rest of the library and Keith Baker's blog…"
         )
+        delay(TOOL_ROUND_DELAY_SECONDS)
         response = _run_stage(
             STAGE2_TOOLS, STAGE2_INSTRUCTION_TEMPLATE.format(note=note)
         )
@@ -186,6 +198,7 @@ with MessageHistory(HISTORY_TURNS):
                 f"Nothing in the library or on Keith Baker's blog ({note}) — "
                 "extending to the wiki, World Anvil, and Reddit…"
             )
+            delay(TOOL_ROUND_DELAY_SECONDS)
             response = _run_stage(
                 STAGE3_TOOLS,
                 STAGE3_INSTRUCTION_TEMPLATE.format(note=note),
