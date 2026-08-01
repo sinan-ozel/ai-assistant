@@ -136,3 +136,9 @@ timeout: 150
 The Docker image that serves this model is `sinanozel/llama.cuda.6gb:gemma4-e2b`.
 Do NOT use `ollama/gemma3:1b` or any other gemma3 model for tests — those are
 outdated and have been replaced by this host.
+
+# Secrets and Local Agents
+
+Secrets are in .env files, do not touch these files.
+Do not put the local network addresses into the examples, the examples are for the public.
+To control the internal agents, use the folders under ~/config, these sync automatically.

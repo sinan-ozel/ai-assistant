@@ -1,4 +1,4 @@
-api_base: http://sinan.msi-nvidia-server.ts.ozel.network:8080/v1
-model: openai/gemma4:e2b
-api_key: dummy
+api_base: https://api.mistral.ai
+model: mistral/mistral-large-2512
+api_key: ${MISTRAL_API_KEY}
 timeout: 150
