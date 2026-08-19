@@ -303,11 +303,26 @@ async def handle_interactive_streaming(
         try:
             dsl_result = await dsl_task
         except litellm.RateLimitError:
+            error_payload = {"error": "rate_limit_exceeded"}
+        except litellm.BadRequestError as e:
+            error_payload = {"error": "bad_request", "detail": str(e)}
+        except litellm.InternalServerError as e:
+            error_payload = {"error": "provider_error", "detail": str(e)}
+        except litellm.ServiceUnavailableError as e:
+            error_payload = {"error": "provider_unavailable", "detail": str(e)}
+        except litellm.APIConnectionError as e:
+            error_payload = {"error": "provider_connection_error", "detail": str(e)}
+        except TimeoutError as e:
+            error_payload = {"error": "provider_timeout", "detail": str(e)}
+        else:
+            error_payload = None
+
+        if error_payload is not None:
             if stream_format == STREAM_FORMAT_SSE:
-                yield 'data: {"error": "rate_limit_exceeded"}\n\n'
+                yield f"data: {json.dumps(error_payload)}\n\n"
                 yield "data: [DONE]\n\n"
             else:
-                yield json.dumps({"error": "rate_limit_exceeded"}) + "\n"
+                yield json.dumps(error_payload) + "\n"
             return
 
         assistant_text = dsl_result.final_response or ""
