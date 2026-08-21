@@ -32,11 +32,11 @@ def root_cause_message(exc: BaseException) -> str:
     """Return *exc*'s message plus its deepest chained cause's message.
 
     The ``openai`` SDK hardcodes ``APIConnectionError``'s message to the
-    literal string "Connection error." regardless of what actually failed
-    (DNS lookup, connection refused, timeout, ...), and litellm re-wraps
-    that same generic string. The real reason survives only in Python's
-    exception chain (``__cause__``), which ``str(exc)`` never includes —
-    walk it so logs show what actually happened instead of a placeholder.
+    literal string "Connection error." regardless of what actually failed (DNS
+    lookup, connection refused, timeout, ...), and litellm re-wraps that same
+    generic string. The real reason survives only in Python's exception chain
+    (``__cause__``), which ``str(exc)`` never includes — walk it so logs show
+    what actually happened instead of a placeholder.
     """
     root = exc
     seen = {id(exc)}
@@ -51,10 +51,10 @@ def root_cause_message(exc: BaseException) -> str:
 class _ProviderHealth:
     """Tracks consecutive completion failures per model, across calls.
 
-    A single call's own retry loop only sees a couple of attempts a few
-    seconds apart — not enough to tell a one-off blip from a provider that
-    has been down across many turns and users. This keeps a small
-    in-process streak per model so failure logging can tell the difference.
+    A single call's own retry loop only sees a couple of attempts a few seconds
+    apart — not enough to tell a one-off blip from a provider that has been
+    down across many turns and users. This keeps a small in-process streak per
+    model so failure logging can tell the difference.
     """
 
     def __init__(self) -> None:
@@ -80,8 +80,8 @@ def _annotate_failure(exc: BaseException, model: str) -> None:
     """Record *model*'s failure and stamp streak info onto *exc*.
 
     Callers up the stack catch this same exception object, so they can read
-    ``exc.sustained_outage`` etc. directly instead of keeping their own
-    tracker or re-deriving the provider key.
+    ``exc.sustained_outage`` etc. directly instead of keeping their own tracker
+    or re-deriving the provider key.
     """
     count, since = _provider_health.note_failure(model)
     exc.consecutive_failures = count
