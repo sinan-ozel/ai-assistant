@@ -16,6 +16,7 @@ from common.llm import (
     call_llm_by_model,
     connect_llm_streaming,
     iterate_llm_stream,
+    root_cause_message,
 )
 from common.prompt_dsl import (
     execute_prompt_script,
@@ -46,6 +47,50 @@ DEFAULT_SYSTEM_MESSAGE = os.environ.get(
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _provider_error_response(
+    e: Exception, log_label: str, user_id: str, conversation_id: str
+) -> HTTPException:
+    """Build (and log) the 503 for a provider connection/server error.
+
+    Escalates both the log level and the wording once the provider has
+    been failing across many consecutive calls for a while (see
+    common.llm._annotate_failure), instead of always reading like a
+    one-off blip the caller should just retry.
+    """
+    if getattr(e, "sustained_outage", False):
+        logger.error(
+            "%s: provider has been failing for %.0fs across %d "
+            "consecutive calls for user=%s conversation=%s — this looks "
+            "like a sustained outage, not a transient error: %s",
+            log_label,
+            e.failing_since_seconds,
+            e.consecutive_failures,
+            user_id,
+            conversation_id,
+            root_cause_message(e),
+        )
+        return HTTPException(
+            status_code=503,
+            detail=(
+                "The LLM provider has been unreachable for over "
+                f"{e.failing_since_seconds:.0f}s "
+                f"({e.consecutive_failures} consecutive failures) — this "
+                "looks like a sustained outage, not a transient error."
+            ),
+        )
+    logger.warning(
+        "%s: transient LLM provider error for user=%s conversation=%s: %s",
+        log_label,
+        user_id,
+        conversation_id,
+        root_cause_message(e),
+    )
+    return HTTPException(
+        status_code=503,
+        detail="The LLM provider returned a temporary error — try again later.",
+    )
 
 
 _encoding = tiktoken.get_encoding("cl100k_base")
@@ -305,15 +350,30 @@ async def handle_interactive_streaming(
         except litellm.RateLimitError:
             error_payload = {"error": "rate_limit_exceeded"}
         except litellm.BadRequestError as e:
-            error_payload = {"error": "bad_request", "detail": str(e)}
-        except litellm.InternalServerError as e:
-            error_payload = {"error": "provider_error", "detail": str(e)}
-        except litellm.ServiceUnavailableError as e:
-            error_payload = {"error": "provider_unavailable", "detail": str(e)}
-        except litellm.APIConnectionError as e:
-            error_payload = {"error": "provider_connection_error", "detail": str(e)}
-        except TimeoutError as e:
-            error_payload = {"error": "provider_timeout", "detail": str(e)}
+            error_payload = {"error": "bad_request", "detail": root_cause_message(e)}
+        except (
+            litellm.InternalServerError,
+            litellm.ServiceUnavailableError,
+            litellm.APIConnectionError,
+            TimeoutError,
+        ) as e:
+            if isinstance(e, litellm.InternalServerError):
+                error_code = "provider_error"
+            elif isinstance(e, litellm.ServiceUnavailableError):
+                error_code = "provider_unavailable"
+            elif isinstance(e, litellm.APIConnectionError):
+                error_code = "provider_connection_error"
+            else:
+                error_code = "provider_timeout"
+            error_payload = {"error": error_code, "detail": root_cause_message(e)}
+            if getattr(e, "sustained_outage", False):
+                error_payload["error"] = "provider_sustained_outage"
+                error_payload["detail"] = (
+                    f"Provider has been unreachable for over "
+                    f"{e.failing_since_seconds:.0f}s "
+                    f"({e.consecutive_failures} consecutive failures) — "
+                    f"this looks like a sustained outage: {root_cause_message(e)}"
+                )
         else:
             error_payload = None
 
@@ -455,8 +515,17 @@ async def handle_streaming(
                     "the model supports image input."
                 ),
             )
+        detail = root_cause_message(e)
+        if getattr(e, "sustained_outage", False):
+            detail = (
+                f"Provider has been unreachable for over "
+                f"{e.failing_since_seconds:.0f}s "
+                f"({e.consecutive_failures} consecutive failures) — this "
+                f"looks like a sustained outage, not a retry-able blip: "
+                f"{detail}"
+            )
         raise HTTPException(
-            status_code=500, detail=f"LLM connection failed: {str(e)}"
+            status_code=500, detail=f"LLM connection failed: {detail}"
         )
 
     # Phase 1.5: prefetch the first token before committing to a 200 response.
@@ -505,8 +574,17 @@ async def handle_streaming(
                     f"to a faster model or provider."
                 ),
             )
+        detail = root_cause_message(e)
+        if getattr(e, "sustained_outage", False):
+            detail = (
+                f"Provider has been unreachable for over "
+                f"{e.failing_since_seconds:.0f}s "
+                f"({e.consecutive_failures} consecutive failures) — this "
+                f"looks like a sustained outage, not a retry-able blip: "
+                f"{detail}"
+            )
         raise HTTPException(
-            status_code=500, detail=f"LLM connection failed: {str(e)}"
+            status_code=500, detail=f"LLM connection failed: {detail}"
         )
 
     created = int(time.time())
@@ -560,7 +638,7 @@ async def handle_streaming(
                 "created": created,
                 "delta": {},
                 "finish_reason": "error",
-                "error": str(e),
+                "error": root_cause_message(e),
             }
             if stream_format == STREAM_FORMAT_SSE:
                 yield f"data: {json.dumps(error_chunk)}\n\n"
@@ -824,22 +902,8 @@ async def handler(request: dict, headers: dict = None):
                 litellm.ServiceUnavailableError,
                 litellm.APIConnectionError,
             ) as e:
-                # Transient upstream/provider problem — not a defect in the
-                # request or the agent, so warn (not error) and tell the
-                # caller to retry.
-                logger.warning(
-                    "Agent chat (DSL): transient LLM provider error for "
-                    "user=%s conversation=%s: %s",
-                    user_id,
-                    conversation_id,
-                    e,
-                )
-                raise HTTPException(
-                    status_code=503,
-                    detail=(
-                        "The LLM provider returned a temporary error — "
-                        "try again later."
-                    ),
+                raise _provider_error_response(
+                    e, "Agent chat (DSL)", user_id, conversation_id
                 )
 
             # _override escape hatch: execute messages directly via LLM.
@@ -865,19 +929,8 @@ async def handler(request: dict, headers: dict = None):
                         litellm.ServiceUnavailableError,
                         litellm.APIConnectionError,
                     ) as e:
-                        logger.warning(
-                            "Agent chat (override): transient LLM provider "
-                            "error for user=%s conversation=%s: %s",
-                            user_id,
-                            conversation_id,
-                            e,
-                        )
-                        raise HTTPException(
-                            status_code=503,
-                            detail=(
-                                "The LLM provider returned a temporary "
-                                "error — try again later."
-                            ),
+                        raise _provider_error_response(
+                            e, "Agent chat (override)", user_id, conversation_id
                         )
                     _assistant_msg = _resp.choices[0].message.content or ""
                     memory.messages.append({"role": "user", "content": message})
@@ -1054,41 +1107,16 @@ async def handler(request: dict, headers: dict = None):
                         "the model supports image input."
                     ),
                 )
-            # Otherwise: transient connectivity problem with the provider —
-            # warn (not error) and tell the caller to retry.
-            logger.warning(
-                "Agent chat: LLM provider unreachable for user=%s "
-                "conversation=%s: %s",
-                user_id,
-                conversation_id,
-                e,
-            )
-            raise HTTPException(
-                status_code=503,
-                detail=(
-                    "The LLM provider could not be reached — "
-                    "try again later."
-                ),
+            # Otherwise: connectivity problem with the provider.
+            raise _provider_error_response(
+                e, "Agent chat", user_id, conversation_id
             )
         except (
             litellm.InternalServerError,
             litellm.ServiceUnavailableError,
         ) as e:
-            # Transient upstream/provider error — not a defect in the
-            # request, so warn (not error) and tell the caller to retry.
-            logger.warning(
-                "Agent chat: transient LLM provider error for user=%s "
-                "conversation=%s: %s",
-                user_id,
-                conversation_id,
-                e,
-            )
-            raise HTTPException(
-                status_code=503,
-                detail=(
-                    "The LLM provider returned a temporary error — "
-                    "try again later."
-                ),
+            raise _provider_error_response(
+                e, "Agent chat", user_id, conversation_id
             )
 
         # Extract response

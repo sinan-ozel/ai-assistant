@@ -19,6 +19,78 @@ logger = logging.getLogger(__name__)
 # an LLM backend (e.g. Ollama) accepts the connection but never sends a reply.
 _DEFAULT_TIMEOUT = 30.0
 
+# A provider crossing both of these counts as a sustained outage rather than
+# a transient blip, changing how failures get logged/reported. Chosen so a
+# single prompt()'s own in-turn retry loop (2-3 attempts, ~15s of backoff)
+# never triggers this on its own — it only fires once a provider has kept
+# failing across multiple separate calls over more than a minute.
+_SUSTAINED_OUTAGE_FAILURE_COUNT = 5
+_SUSTAINED_OUTAGE_SECONDS = 60.0
+
+
+def root_cause_message(exc: BaseException) -> str:
+    """Return *exc*'s message plus its deepest chained cause's message.
+
+    The ``openai`` SDK hardcodes ``APIConnectionError``'s message to the
+    literal string "Connection error." regardless of what actually failed
+    (DNS lookup, connection refused, timeout, ...), and litellm re-wraps
+    that same generic string. The real reason survives only in Python's
+    exception chain (``__cause__``), which ``str(exc)`` never includes —
+    walk it so logs show what actually happened instead of a placeholder.
+    """
+    root = exc
+    seen = {id(exc)}
+    while root.__cause__ is not None and id(root.__cause__) not in seen:
+        root = root.__cause__
+        seen.add(id(root))
+    if root is exc:
+        return str(exc)
+    return f"{exc} — caused by: {root}"
+
+
+class _ProviderHealth:
+    """Tracks consecutive completion failures per model, across calls.
+
+    A single call's own retry loop only sees a couple of attempts a few
+    seconds apart — not enough to tell a one-off blip from a provider that
+    has been down across many turns and users. This keeps a small
+    in-process streak per model so failure logging can tell the difference.
+    """
+
+    def __init__(self) -> None:
+        self._consecutive_failures: Dict[str, int] = {}
+        self._failing_since: Dict[str, float] = {}
+
+    def note_success(self, model: str) -> None:
+        self._consecutive_failures.pop(model, None)
+        self._failing_since.pop(model, None)
+
+    def note_failure(self, model: str) -> tuple[int, float]:
+        now = time.monotonic()
+        count = self._consecutive_failures.get(model, 0) + 1
+        self._consecutive_failures[model] = count
+        since = self._failing_since.setdefault(model, now)
+        return count, now - since
+
+
+_provider_health = _ProviderHealth()
+
+
+def _annotate_failure(exc: BaseException, model: str) -> None:
+    """Record *model*'s failure and stamp streak info onto *exc*.
+
+    Callers up the stack catch this same exception object, so they can read
+    ``exc.sustained_outage`` etc. directly instead of keeping their own
+    tracker or re-deriving the provider key.
+    """
+    count, since = _provider_health.note_failure(model)
+    exc.consecutive_failures = count
+    exc.failing_since_seconds = since
+    exc.sustained_outage = (
+        count >= _SUSTAINED_OUTAGE_FAILURE_COUNT
+        and since >= _SUSTAINED_OUTAGE_SECONDS
+    )
+
 
 def _truncate_value(value: Any, max_length: int = 100) -> Any:
     """Truncate long string values for logging."""
@@ -274,9 +346,31 @@ async def call_llm_by_model(
         litellm.Timeout,
         litellm.APIConnectionError,
         litellm.InternalServerError,
-    ):
+    ) as e:
+        _annotate_failure(e, model_to_use)
+        if e.sustained_outage:
+            logger.error(
+                "[llm] call_llm_by_model: provider '%s' (api_base=%s) has "
+                "been failing for %.0fs across %d consecutive calls — this "
+                "looks like a sustained outage, not a transient blip: %s",
+                model_to_use,
+                litellm_kwargs.get("api_base"),
+                e.failing_since_seconds,
+                e.consecutive_failures,
+                root_cause_message(e),
+            )
+        else:
+            logger.warning(
+                "[llm] call_llm_by_model: provider '%s' (api_base=%s) call "
+                "failed (consecutive failures: %d): %s",
+                model_to_use,
+                litellm_kwargs.get("api_base"),
+                e.consecutive_failures,
+                root_cause_message(e),
+            )
         raise
     except Exception as e:
+        _annotate_failure(e, model_to_use)
         kwargs_for_log = litellm_kwargs.copy()
         if "api_key" in kwargs_for_log:
             kwargs_for_log["api_key"] = "***masked***"
@@ -285,8 +379,10 @@ async def call_llm_by_model(
                 kwargs_for_log["messages"]
             )
         logger.error(f"LiteLLM completion failed with kwargs: {kwargs_for_log}")
-        logger.error(f"Error: {e}")
+        logger.error(f"Error: {root_cause_message(e)}")
         raise
+    else:
+        _provider_health.note_success(model_to_use)
 
     return response
 
@@ -393,22 +489,55 @@ async def connect_llm_streaming(
         )
         response = _task.result()
     except litellm.Timeout as e:
-        logger.warning(
-            "LiteLLM streaming timed out for model '%s' (api_base=%s): %s.",
-            litellm_kwargs.get("model"),
-            litellm_kwargs.get("api_base"),
-            e,
-        )
+        _annotate_failure(e, model_to_use)
+        if e.sustained_outage:
+            logger.error(
+                "[llm] connect_llm_streaming: provider '%s' (api_base=%s) "
+                "has been timing out for %.0fs across %d consecutive calls "
+                "— this looks like a sustained outage, not a transient "
+                "blip: %s",
+                model_to_use,
+                litellm_kwargs.get("api_base"),
+                e.failing_since_seconds,
+                e.consecutive_failures,
+                root_cause_message(e),
+            )
+        else:
+            logger.warning(
+                "LiteLLM streaming timed out for model '%s' (api_base=%s, "
+                "consecutive failures: %d): %s.",
+                litellm_kwargs.get("model"),
+                litellm_kwargs.get("api_base"),
+                e.consecutive_failures,
+                root_cause_message(e),
+            )
         raise
     except litellm.APIConnectionError as e:
-        logger.warning(
-            "LiteLLM streaming could not connect to model '%s' (api_base=%s): %s.",
-            litellm_kwargs.get("model"),
-            litellm_kwargs.get("api_base"),
-            e,
-        )
+        _annotate_failure(e, model_to_use)
+        if e.sustained_outage:
+            logger.error(
+                "[llm] connect_llm_streaming: provider '%s' (api_base=%s) "
+                "has been unreachable for %.0fs across %d consecutive "
+                "calls — this looks like a sustained outage, not a "
+                "transient blip: %s",
+                model_to_use,
+                litellm_kwargs.get("api_base"),
+                e.failing_since_seconds,
+                e.consecutive_failures,
+                root_cause_message(e),
+            )
+        else:
+            logger.warning(
+                "LiteLLM streaming could not connect to model '%s' "
+                "(api_base=%s, consecutive failures: %d): %s.",
+                litellm_kwargs.get("model"),
+                litellm_kwargs.get("api_base"),
+                e.consecutive_failures,
+                root_cause_message(e),
+            )
         raise
     except Exception as e:
+        _annotate_failure(e, model_to_use)
         kwargs_for_log = litellm_kwargs.copy()
         if "api_key" in kwargs_for_log:
             kwargs_for_log["api_key"] = "***masked***"
@@ -417,8 +546,10 @@ async def connect_llm_streaming(
                 kwargs_for_log["messages"]
             )
         logger.error("LiteLLM streaming failed with kwargs: %s", kwargs_for_log)
-        logger.error("Error: %s", e)
+        logger.error("Error: %s", root_cause_message(e))
         raise
+    else:
+        _provider_health.note_success(model_to_use)
 
     return response, enforced_timeout, model_to_use
 
@@ -466,7 +597,7 @@ async def iterate_llm_stream(
             logger.warning(
                 "LiteLLM streaming failed during chunk iteration for model '%s': %s",
                 model,
-                e,
+                root_cause_message(e),
             )
             raise litellm.APIConnectionError(
                 message=str(e),

@@ -59,6 +59,7 @@ from common.llm import (
     call_llm_by_model,
     call_llm_by_model_streaming,
     get_provider_config,
+    root_cause_message,
 )
 from situational.awareness import get_provider_context_window
 
@@ -780,16 +781,38 @@ def make_prompt_fn(ctx: DslRunContext):
                 ):
                     raise
                 wait = _LLM_RETRY_BASE_DELAY * (2 ** (attempt - 1))
-                logger.warning(
-                    "LLM connection error (attempt %d/%d); retrying in %.0fs: %s",
-                    attempt,
-                    _LLM_MAX_RETRIES,
-                    wait,
-                    e,
-                )
-                ctx.notify_fn(
-                    f"Provider connection error — retrying in {wait:.0f}s…"
-                )
+                detail = root_cause_message(e)
+                if getattr(e, "sustained_outage", False):
+                    logger.error(
+                        "LLM connection error (attempt %d/%d) — provider "
+                        "has been failing for %.0fs across %d consecutive "
+                        "calls, this looks like a sustained outage, not a "
+                        "transient blip: %s",
+                        attempt,
+                        _LLM_MAX_RETRIES,
+                        e.failing_since_seconds,
+                        e.consecutive_failures,
+                        detail,
+                    )
+                    ctx.notify_fn(
+                        "Provider has been unreachable for over "
+                        f"{e.failing_since_seconds:.0f}s "
+                        f"({e.consecutive_failures} consecutive failures) — "
+                        "this looks like a sustained outage, not a brief "
+                        f"blip. Still retrying in {wait:.0f}s…"
+                    )
+                else:
+                    logger.warning(
+                        "LLM connection error (attempt %d/%d); retrying in "
+                        "%.0fs: %s",
+                        attempt,
+                        _LLM_MAX_RETRIES,
+                        wait,
+                        detail,
+                    )
+                    ctx.notify_fn(
+                        f"Provider connection error — retrying in {wait:.0f}s…"
+                    )
                 time.sleep(wait)
 
         choice = response.choices[0]
