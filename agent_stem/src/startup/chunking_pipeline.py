@@ -86,6 +86,19 @@ def _get_embedding_model():
     return _embedding_model
 
 
+# Reused across every file: a fresh QdrantClient per call left one
+# connection's worth of unclosed sockets behind on every ingest, which
+# only surfaces once a large batch runs back-to-back in one process.
+_qdrant_client: Optional[QdrantClient] = None
+
+
+def _get_qdrant_client() -> QdrantClient:
+    global _qdrant_client
+    if _qdrant_client is None:
+        _qdrant_client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+    return _qdrant_client
+
+
 # Tiktoken encoder for token counting (cl100k_base covers GPT-3.5/4 vocab)
 _tokenizer = tiktoken.get_encoding("cl100k_base")
 
@@ -165,7 +178,7 @@ def _validate_embedding_model_consistency() -> None:
 
 
 def _validate_qdrant_embedding_models() -> None:
-    client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+    client = _get_qdrant_client()
     collections = [c.name for c in client.get_collections().collections]
     if not collections:
         return
@@ -1216,7 +1229,7 @@ def _delete_qdrant_points(
 def _delete_from_qdrant(source_key: str) -> None:
     """Delete all Qdrant points for *source_key*; drop the collection when it
     ends up empty so removed or renamed shelves don't linger."""
-    client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+    client = _get_qdrant_client()
     collection = _collection_for_path(source_key)
     existing = {c.name for c in client.get_collections().collections}
     if collection not in existing:
@@ -1284,7 +1297,7 @@ def _write_to_qdrant(
     Creates the collection with cosine-distance vectors (dimension resolved
     from the embedding server) if it does not yet exist.
     """
-    client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+    client = _get_qdrant_client()
     collection = _collection_for_path(source_key)
     file_path = _to_file_path(source_key)
 

@@ -49,6 +49,12 @@ OCR_WORDS_PER_PAGE_THRESHOLD = int(
 
 OCR_LANGUAGE = os.environ.get("OCR_LANGUAGE", "eng")
 
+# pymupdf/Tesseract keep process-wide caches (fonts, glyphs, rendered pages)
+# that are never fully released between documents, so a long batch converted
+# in one worker grows without bound. Recycling the worker every N files
+# resets that growth to a clean baseline regardless of which library holds it.
+PDF_WORKER_MAX_TASKS = int(os.environ.get("PDF_WORKER_MAX_TASKS", "10"))
+
 # Fraction of U+FFFD replacement characters in extracted text above which the
 # text layer is considered garbled (broken font-to-Unicode mapping in the PDF)
 # and conversion is retried with OCR.
@@ -79,7 +85,9 @@ _pdf_pipeline_state: SyncedDict = _state_memory.pdf_pipeline_state
 # rendering or OCR, so running _convert() in a thread executor still stalls
 # every other coroutine (health checks included) for the full page-by-page
 # conversion time. A separate process gives the event loop its own GIL.
-_pdf_conversion_pool = ProcessPoolExecutor(max_workers=1)
+_pdf_conversion_pool = ProcessPoolExecutor(
+    max_workers=1, max_tasks_per_child=PDF_WORKER_MAX_TASKS
+)
 
 
 def _compute_hash(path: Path) -> str:
