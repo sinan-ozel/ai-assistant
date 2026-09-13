@@ -7,7 +7,7 @@ import requests
 BASE_URL = os.getenv("BASE_URL", "http://app:8000")
 
 
-@pytest.mark.depends(on=['ollama_server_available',
+@pytest.mark.depends(on=['llamacpp_server_available',
                          'healthy'],
                      name='providers_loaded')
 def test_providers():
@@ -37,7 +37,7 @@ def test_providers():
     assert data["default"] == 'default', f"Expected default provider to be 'default' but got '{data['default']}'"
 
 
-@pytest.mark.depends(on=['ollama_server_available'], name='test_provider_context_window')
+@pytest.mark.depends(on=['llamacpp_server_available'], name='test_provider_context_window')
 def test_provider_context_window():
     """Test if the provider's context window endpoint works correctly."""
     # First get the list of providers

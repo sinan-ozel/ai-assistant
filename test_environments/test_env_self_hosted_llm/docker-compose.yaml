@@ -86,7 +86,6 @@ services:
       - .env
     environment:
       - BASE_URL=http://app:8000
-      - OLLAMA_HOST
       - LLAMA_CPP_HOST
       - REDIS_HOST=redis-test
       - QDRANT_HOST=qdrant-test

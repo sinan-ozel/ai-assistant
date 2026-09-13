@@ -23,7 +23,7 @@ def test_chat_completions_basic():
 
     # Ask a trivial question
     payload = {
-        "model": "ollama/gemma3:4b",
+        "model": "openai/gemma4:e2b",
         "messages": [
             {"role": "user", "content": "What is 2+2? Answer with only the number."}
         ],
@@ -77,7 +77,7 @@ def test_chat_completions_litellm():
     # Use litellm to make a completion request
     # Prefix with "openai/" to tell LiteLLM to use OpenAI-compatible format
     response = litellm.completion(
-        model="ollama/gemma3:4b",
+        model="openai/gemma4:e2b",
         messages=[
             {"role": "user", "content": "What is the capital of France? Answer with only the city name."}
         ],
@@ -117,7 +117,7 @@ def test_chat_completions_timeout_validation():
     url = f"{BASE_URL}/v1/chat/completions"
 
     payload = {
-        "model": "ollama/gemma3:4b",
+        "model": "openai/gemma4:e2b",
         "messages": [{"role": "user", "content": "Hello"}],
         "timeout": 0,
     }
@@ -136,7 +136,7 @@ def test_chat_completions_timeout():
     url = f"{BASE_URL}/v1/chat/completions"
 
     payload = {
-        "model": "ollama/gemma3:4b",
+        "model": "openai/gemma4:e2b",
         "messages": [
             {"role": "user", "content": "Write a very long story about the history of the universe from the big bang to today."}
         ],
@@ -159,7 +159,7 @@ def test_chat_completions_invalid_parameters():
 
     # Test with invalid temperature (out of range)
     payload = {
-        "model": "ollama/gemma3:4b",
+        "model": "openai/gemma4:e2b",
         "messages": [
             {"role": "user", "content": "Hello"}
         ],
@@ -180,7 +180,7 @@ def test_chat_completions_missing_required_fields():
 
     # Test with missing messages
     payload = {
-        "model": "ollama/gemma3:4b",
+        "model": "openai/gemma4:e2b",
         # Missing required "messages" field
     }
 

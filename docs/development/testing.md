@@ -24,7 +24,7 @@ docker compose -f test_environments/<env>/docker-compose.yaml up --build --exit-
 | Environment | LLM | Notes |
 |---|---|---|
 | `test_env_default` | gemma3-270m (Ollama bundled) | Bridge network. Recommended for local development. |
-| `test_env_self_hosted_llm` | external (`OLLAMA_HOST`) | Host network. Requires a running Ollama server. |
+| `test_env_self_hosted_llm` | external (`LLAMA_CPP_HOST`) | Host network. Requires a running llama.cpp server. |
 | `test_env_mistral` | Mistral API | Requires `MISTRAL_API_KEY`. |
 | `test_env_no_llm` | none | Tests infrastructure and non-LLM paths. |
 | `test_env_no_qdrant` | external | LanceDB fallback active. |

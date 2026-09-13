@@ -32,7 +32,6 @@ services:
       # Short grace period so library reconciliation tests finish quickly.
       - LIBRARY_RECONCILIATION_GRACE_SECONDS=15
       # - LOG_LEVEL=DEBUG
-      - OLLAMA_HOST
       - LLAMA_CPP_HOST
     env_file:
       - .env
@@ -65,7 +64,6 @@ services:
     container_name: tests-runner-no-redis
     environment:
       - BASE_URL=http://app:8000
-      - OLLAMA_HOST
       - LLAMA_CPP_HOST
     env_file:
       - .env
