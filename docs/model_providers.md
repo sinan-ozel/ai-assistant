@@ -171,6 +171,9 @@ Provider files are YAML files with configuration that gets passed as keyword arg
 - `api_key`: API key (can use `${ENV_VAR}` syntax)
 - `max_tokens`: Maximum tokens for responses
 - `timeout`: Request timeout in seconds
+- `retry_on_rate_limit`: Retry with backoff instead of failing the turn on a `429` (default: `false`). See [Handling Rate Limits (429s)](#handling-rate-limits-429s) below.
+- `rate_limit_max_retries`: Max attempts when `retry_on_rate_limit` is set (default: `3`)
+- `rate_limit_base_delay`: Base delay in seconds for exponential backoff between retries (default: `5.0`, doubles each attempt)
 
 **Example with Environment Variable:**
 ```yaml
@@ -195,6 +198,75 @@ _enabled: false
 model: some-model
 api_key: ${API_KEY}
 ```
+
+## Handling Rate Limits (429s)
+
+A rate-limited provider (Mistral is the common case) can return a `429`
+when a cortex sends requests in a burst — e.g. a multi-stage `prompt.py`
+that runs several tool-calling rounds back to back.
+
+By default, a `429` fails the turn immediately: the agent chat endpoint
+returns an error (`rate_limit_exceeded`, or HTTP 429 on non-streaming
+endpoints) to the caller instead of retrying. This is deliberate — the
+framework does not assume how a given cortex wants a rate limit handled —
+but it's opt-in per provider from the YAML, not something you have to
+reimplement in Python.
+
+### Opting in from `cortex/providers/<name>.yaml`
+
+```yaml
+model: mistral/mistral-large-2512
+api_key: ${MISTRAL_API_KEY}
+retry_on_rate_limit: true
+rate_limit_max_retries: 3       # optional, default: 3
+rate_limit_base_delay: 5.0      # optional, default: 5.0 seconds
+```
+
+With `retry_on_rate_limit: true`, every `prompt()` call in
+`cortex/chat/prompt.py` (or `agent.py`) that uses this provider retries a
+`litellm.RateLimitError` with exponential backoff —
+`rate_limit_base_delay * 2 ** (attempt - 1)` — so with the defaults a
+rate-limited burst waits 5s, then 10s, before giving up on the 3rd attempt
+and surfacing the error to the caller as before.
+
+This is per-provider, not global: a cortex with both a Mistral provider and
+a local llama.cpp provider can enable it on the Mistral entry only — the
+local provider will never rate-limit, so retrying a real failure there
+would just add a pointless delay.
+
+**Scope:** this only applies to the non-streaming `prompt()` path (the
+common case — tool-calling turns). The streaming variant (when the DSL
+streams tokens directly via `delta_fn`) makes a single attempt and always
+surfaces a `RateLimitError` immediately, regardless of this setting.
+
+### Is a rate limit reflected in the logs?
+
+Yes, always — independent of `retry_on_rate_limit`. Every LLM call failure,
+including a `429`, is logged at `ERROR` level inside
+`agent_stem/src/common/llm.py` (`call_llm_by_model` /
+`connect_llm_streaming`), the single choke point every LLM call goes
+through. So a rate limit is visible in the agent's logs even on the very
+first attempt, before any retry/backoff kicks in. When
+`retry_on_rate_limit` is set, each retry additionally logs a `WARNING`:
+
+```
+LLM rate-limited (attempt 1/3); retrying in 5s.
+```
+
+One gap to be aware of: unlike timeouts and connection errors, rate limits
+are not tracked by the consecutive-failure/"sustained outage" detection in
+`llm.py` (`_ProviderHealth`) — each `429` is logged as a standalone event,
+not accumulated into a streak across calls.
+
+### Before this setting existed
+
+The only way to survive Mistral rate limits used to be hand-rolling
+retry/backoff inside `prompt.py` around every `prompt()` call. The
+`eberron` cortex's `_prompt()` wrapper (in `cortex/chat/prompt.py`) is an
+example of that pattern — it predates this setting and can be replaced by
+`retry_on_rate_limit: true` in its provider YAML, though it additionally
+paces multi-round tool calls to avoid triggering the limit in the first
+place, which the provider-level setting does not do.
 
 ## Using Providers in Workflows
 

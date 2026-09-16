@@ -671,6 +671,30 @@ def make_prompt_fn(ctx: DslRunContext):
             call_messages = _fit_to_context(call_messages, _ctx_window)
 
         requested_model = None if provider == "default" else provider
+
+        # Rate-limit retry/backoff is configured per provider so cortex
+        # authors can opt in (or tune it) without writing Python: set
+        # retry_on_rate_limit / rate_limit_max_retries / rate_limit_base_delay
+        # in cortex/providers/<name>.yaml. Falls back to ctx.retry_on_rate_limit
+        # (currently: on for the eval harness only) when the provider config
+        # is silent on it, so existing behaviour is unchanged unless a cortex
+        # opts in explicitly. See "Handling Rate Limits (429s)" in
+        # docs/model_providers.md.
+        _, _provider_cfg = get_provider_config(ctx.providers_state, requested_model)
+        _retry_on_rate_limit = _provider_cfg.get(
+            "retry_on_rate_limit", ctx.retry_on_rate_limit
+        )
+        # Clamped to >= 1 so the "last attempt" check below (attempt ==
+        # _rate_limit_max_retries) is always reachable within the loop —
+        # otherwise a misconfigured 0 would fall out of the loop silently
+        # instead of re-raising the RateLimitError.
+        _rate_limit_max_retries = max(
+            1, int(_provider_cfg.get("rate_limit_max_retries", _LLM_MAX_RETRIES))
+        )
+        _rate_limit_base_delay = float(
+            _provider_cfg.get("rate_limit_base_delay", _LLM_RETRY_BASE_DELAY)
+        )
+
         tools = ctx.available_tools if ctx.available_tools else None
         if tools:
             kwargs.setdefault("tools", tools)
@@ -734,7 +758,12 @@ def make_prompt_fn(ctx: DslRunContext):
             ctx.final_response = assistant_text
             return assistant_text
 
-        for attempt in range(1, _LLM_MAX_RETRIES + 1):
+        # The loop must run long enough for whichever retry budget is larger:
+        # the configured rate-limit retries, or the fixed connection-error
+        # retry budget below (unrelated to rate limiting, unaffected by the
+        # provider config). Each branch still enforces its own ceiling.
+        _max_attempts = max(_rate_limit_max_retries, _LLM_MAX_RETRIES)
+        for attempt in range(1, _max_attempts + 1):
             coro = call_llm_by_model(
                 messages=call_messages,
                 providers_state=ctx.providers_state,
@@ -764,13 +793,13 @@ def make_prompt_fn(ctx: DslRunContext):
                 )
                 raise
             except litellm.RateLimitError:
-                if not ctx.retry_on_rate_limit or attempt == _LLM_MAX_RETRIES:
+                if not _retry_on_rate_limit or attempt == _rate_limit_max_retries:
                     raise
-                wait = _LLM_RETRY_BASE_DELAY * (2 ** (attempt - 1))
+                wait = _rate_limit_base_delay * (2 ** (attempt - 1))
                 logger.warning(
                     "LLM rate-limited (attempt %d/%d); retrying in %.0fs.",
                     attempt,
-                    _LLM_MAX_RETRIES,
+                    _rate_limit_max_retries,
                     wait,
                 )
                 time.sleep(wait)

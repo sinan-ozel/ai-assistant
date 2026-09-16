@@ -306,6 +306,11 @@ async def handle_interactive_streaming(
             init_messages=init_messages,
             providers_state=providers_state_ref,
             notify_fn=_notify_fn,
+            # Fallback only — a cortex's provider YAML (retry_on_rate_limit /
+            # rate_limit_max_retries / rate_limit_base_delay) takes priority
+            # when set; see tools_dsl.make_prompt_fn. This just preserves the
+            # eval harness's existing default when a cortex is silent on it.
+            retry_on_rate_limit=(user_id == "__eval__"),
             delta_fn=_delta_fn,
         )
     )
@@ -865,6 +870,7 @@ async def handler(request: dict, headers: dict = None):
                     init_messages=_init_msgs,
                     providers_state=providers_state,
                     notify_fn=_notifications.append,
+                    # Fallback only — see comment in handle_interactive_streaming.
                     retry_on_rate_limit=(user_id == "__eval__"),
                 )
             except litellm.BadRequestError as e:

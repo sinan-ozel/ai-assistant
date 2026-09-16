@@ -100,6 +100,14 @@ if results:
 print(input_text)
 ```
 
+## Rate limits
+
+If the provider `prompt()` calls into (e.g. Mistral) returns a `429`, the
+turn fails immediately by default. To retry with backoff instead, set
+`retry_on_rate_limit: true` in that provider's `cortex/providers/<name>.yaml`
+— see [Handling Rate Limits (429s)](../model_providers.md#handling-rate-limits-429s)
+in the provider docs.
+
 ## What `prompt.py` cannot do (yet)
 
 - Modify the conversation history
