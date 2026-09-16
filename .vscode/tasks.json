@@ -982,6 +982,7 @@
                 "Run Quick & Costless Agent Integration Tests",
                 "_Release (Dev) (Do not run directly)",
                 "Publish Helm Chart (Dev)",
+                "Docker System Prune",
                 "Run Post-Release Tests",
             ],
             "dependsOrder": "sequence",
@@ -1120,11 +1121,26 @@
             "problemMatcher": []
         },
         {
+            "label": "Minikube Delete",
+            "type": "shell",
+            "command": "minikube",
+            "args": ["delete"],
+            "problemMatcher": []
+        },
+        {
+            "label": "Docker System Prune",
+            "type": "shell",
+            "command": "docker",
+            "args": ["system", "prune", "-f"],
+            "problemMatcher": []
+        },
+        {
             "label": "Run Post-Release Tests",
             "type": "shell",
             "command": "bash",
             "args": [
-                "${workspaceFolder}/scripts/post-release-test.sh"
+                "-c",
+                "bash '${workspaceFolder}/scripts/post-release-test.sh'; EC=$?; minikube delete || true; exit $EC"
             ],
             "problemMatcher": []
         },
