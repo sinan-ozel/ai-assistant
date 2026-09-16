@@ -680,7 +680,9 @@ def make_prompt_fn(ctx: DslRunContext):
         # is silent on it, so existing behaviour is unchanged unless a cortex
         # opts in explicitly. See "Handling Rate Limits (429s)" in
         # docs/model_providers.md.
-        _, _provider_cfg = get_provider_config(ctx.providers_state, requested_model)
+        _, _provider_cfg = get_provider_config(
+            ctx.providers_state, requested_model
+        )
         _retry_on_rate_limit = _provider_cfg.get(
             "retry_on_rate_limit", ctx.retry_on_rate_limit
         )
@@ -689,7 +691,8 @@ def make_prompt_fn(ctx: DslRunContext):
         # otherwise a misconfigured 0 would fall out of the loop silently
         # instead of re-raising the RateLimitError.
         _rate_limit_max_retries = max(
-            1, int(_provider_cfg.get("rate_limit_max_retries", _LLM_MAX_RETRIES))
+            1,
+            int(_provider_cfg.get("rate_limit_max_retries", _LLM_MAX_RETRIES)),
         )
         _rate_limit_base_delay = float(
             _provider_cfg.get("rate_limit_base_delay", _LLM_RETRY_BASE_DELAY)
@@ -793,7 +796,10 @@ def make_prompt_fn(ctx: DslRunContext):
                 )
                 raise
             except litellm.RateLimitError:
-                if not _retry_on_rate_limit or attempt == _rate_limit_max_retries:
+                if (
+                    not _retry_on_rate_limit
+                    or attempt == _rate_limit_max_retries
+                ):
                     raise
                 wait = _rate_limit_base_delay * (2 ** (attempt - 1))
                 logger.warning(
