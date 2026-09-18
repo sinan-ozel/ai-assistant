@@ -976,6 +976,7 @@
             //     "--dev"
             // ],
             "dependsOn": [
+                "Clean Test Env (Default)",
                 "Assert Main Branch",
                 "Run Checks",
                 "Assert Head is Clean",
@@ -1132,6 +1133,18 @@
             "type": "shell",
             "command": "docker",
             "args": ["system", "prune", "-f"],
+            "problemMatcher": []
+        },
+        {
+            "label": "Clean Test Env (Default)",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f", "${workspaceFolder}/test_environments/test_env_default/docker-compose.yaml",
+                "down",
+                "--remove-orphans"
+            ],
             "problemMatcher": []
         },
         {
